@@ -1,0 +1,47 @@
+.main-board {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.content-container {
+  height: 500px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  padding: 20px;
+}
+
+.notice-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content-container {
+    grid-template-columns: 1fr;
+    padding: 15px;
+    gap: 20px;
+  }
+  
+  .notice-section {
+    padding: 20px;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
+  }
+}
