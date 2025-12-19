@@ -1,10 +1,10 @@
 package com.example.gbswer.service;
 
+import com.example.gbswer.config.properties.NeisProperties;
 import com.example.gbswer.dto.NeisTimetableApiResponse;
 import com.example.gbswer.dto.TimetableDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,18 +21,7 @@ import java.util.stream.Collectors;
 public class TimetableService {
 
     private final RestTemplate restTemplate;
-
-    @Value("${neis.api.key}")
-    private String apiKey;
-
-    @Value("${neis.api.atpt-code}")
-    private String atptCode;
-
-    @Value("${neis.api.school-code}")
-    private String schoolCode;
-
-    @Value("${neis.api.timetable-url}")
-    private String timetableUrl;
+    private final NeisProperties neisProperties;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final int DEFAULT_DAYS = 7;
@@ -85,11 +74,11 @@ public class TimetableService {
     }
 
     private NeisTimetableApiResponse callNeisApi(String fromDate, String toDate, String department, String grade, String className, String semester) {
-        String url = UriComponentsBuilder.fromHttpUrl(timetableUrl)
-                .queryParam("KEY", apiKey)
+        String url = UriComponentsBuilder.fromHttpUrl(neisProperties.getTimetableUrl())
+                .queryParam("KEY", neisProperties.getKey())
                 .queryParam("Type", "json")
-                .queryParam("ATPT_OFCDC_SC_CODE", atptCode)
-                .queryParam("SD_SCHUL_CODE", schoolCode)
+                .queryParam("ATPT_OFCDC_SC_CODE", neisProperties.getAtptCode())
+                .queryParam("SD_SCHUL_CODE", neisProperties.getSchoolCode())
                 .queryParam("pIndex", 1)
                 .queryParam("pSize", PAGE_SIZE)
                 .queryParam("SEM", semester)

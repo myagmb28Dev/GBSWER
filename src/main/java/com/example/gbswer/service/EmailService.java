@@ -1,5 +1,6 @@
 package com.example.gbswer.service;
 
+import com.example.gbswer.config.properties.VerificationProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +19,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final StringRedisTemplate redisTemplate;
-
-    @Value("${verification.code.expiration-minutes:5}")
-    private int expirationMinutes;
+    private final VerificationProperties verificationProperties;
 
     @Value("${spring.mail.username:}")
     private String fromEmail;
@@ -30,7 +29,7 @@ public class EmailService {
 
     public void sendVerificationCode(String email) {
         String code = generateVerificationCode();
-        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX + email, code, expirationMinutes, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX + email, code, verificationProperties.getExpirationMinutes(), TimeUnit.MINUTES);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
@@ -49,7 +48,7 @@ public class EmailService {
 
     public void sendPasswordResetCode(String email) {
         String code = generateVerificationCode();
-        redisTemplate.opsForValue().set(PASSWORD_RESET_PREFIX + email, code, expirationMinutes, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(PASSWORD_RESET_PREFIX + email, code, verificationProperties.getExpirationMinutes(), TimeUnit.MINUTES);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
@@ -101,7 +100,7 @@ public class EmailService {
             
             감사합니다.
             GBSWER 팀
-            """, code, expirationMinutes);
+            """, code, verificationProperties.getExpirationMinutes());
     }
 
     private String buildPasswordResetEmailContent(String code) {
@@ -115,7 +114,7 @@ public class EmailService {
             
             감사합니다.
             GBSWER 팀
-            """, code, expirationMinutes);
+            """, code, verificationProperties.getExpirationMinutes());
     }
 }
 

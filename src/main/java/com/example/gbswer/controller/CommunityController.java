@@ -1,7 +1,6 @@
 package com.example.gbswer.controller;
 
 import com.example.gbswer.dto.ApiResponseDto;
-import com.example.gbswer.dto.CommunityDto;
 import com.example.gbswer.dto.UserDto;
 import com.example.gbswer.service.CommunityService;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +49,10 @@ public class CommunityController {
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal UserDto userDto,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam(value = "department", defaultValue = "ALL") String department,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @RequestParam String title,
+            @RequestParam String content,
+            @RequestParam(defaultValue = "ALL") String department,
+            @RequestParam(required = false) List<MultipartFile> images) {
         return ResponseEntity.ok(ApiResponseDto.success(
                 communityService.createPost(userDto.getId(), title, content, department, images)));
     }

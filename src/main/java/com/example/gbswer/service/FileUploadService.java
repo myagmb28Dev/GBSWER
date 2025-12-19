@@ -1,8 +1,9 @@
 package com.example.gbswer.service;
 
+import com.example.gbswer.config.properties.AwsProperties;
+import com.example.gbswer.config.properties.FileProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,9 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,12 +29,12 @@ import java.util.UUID;
 public class FileUploadService {
 
     private final S3Client s3Client;
+    private final AwsProperties awsProperties;
+    private final FileProperties fileProperties;
 
-    @Value("${aws.s3.bucket}")
-    private String bucket;
-
-    @Value("${aws.s3.region}")
-    private String region;
+    // upload directory and storage type moved to FileProperties
+    private String uploadDir() { return fileProperties.getUploadDir(); }
+    private String serverPort() { return System.getProperty("server.port", "8080"); }
 
     private static final Set<String> ALLOWED_IMAGE_MIME_TYPES = Set.of(
             "image/jpeg", "image/png", "image/gif", "image/webp"
@@ -53,6 +57,7 @@ public class FileUploadService {
     private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;
     private static final long MAX_TASK_FILE_SIZE = 50 * 1024 * 1024;
 
+    // S3 업로드 메소드
     public String uploadCommunityImage(MultipartFile file) {
         validateImageFile(file);
         return uploadToS3(file, "posts");
@@ -68,6 +73,22 @@ public class FileUploadService {
         return uploadToS3(file, "submissions");
     }
 
+    // 로컬 저장 메소드 (테스트용)
+    public String uploadCommunityImageLocal(MultipartFile file) {
+        validateImageFile(file);
+        return uploadToLocal(file, "posts");
+    }
+
+    public String uploadTaskFileLocal(MultipartFile file) {
+        validateTaskFile(file);
+        return uploadToLocal(file, "tasks");
+    }
+
+    public String uploadSubmissionFileLocal(MultipartFile file) {
+        validateTaskFile(file);
+        return uploadToLocal(file, "submissions");
+    }
+
     public void deleteFile(String imageUrl) {
         if (imageUrl == null || imageUrl.isEmpty()) return;
 
@@ -76,7 +97,7 @@ public class FileUploadService {
             if (s3Key == null) return;
 
             s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(bucket)
+                    .bucket(awsProperties.getS3Bucket())
                     .key(s3Key)
                     .build());
             log.info("S3 delete success: {}", s3Key);
@@ -88,6 +109,27 @@ public class FileUploadService {
     public void deleteFiles(List<String> imageUrls) {
         if (imageUrls == null) return;
         imageUrls.forEach(this::deleteFile);
+    }
+
+    // 로컬 파일 삭제
+    public void deleteLocalFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) return;
+
+        try {
+            String relativePath = extractLocalPath(fileUrl);
+            if (relativePath == null) return;
+
+            Path path = Paths.get(uploadDir(), relativePath);
+            Files.deleteIfExists(path);
+            log.info("Local file deleted: {}", path);
+        } catch (Exception e) {
+            log.error("Failed to delete local file: {}", fileUrl, e);
+        }
+    }
+
+    public void deleteLocalFiles(List<String> fileUrls) {
+        if (fileUrls == null) return;
+        fileUrls.forEach(this::deleteLocalFile);
     }
 
     private String uploadToS3(MultipartFile file, String folder) {
@@ -102,7 +144,7 @@ public class FileUploadService {
         try {
             s3Client.putObject(
                     PutObjectRequest.builder()
-                            .bucket(bucket)
+                            .bucket(awsProperties.getS3Bucket())
                             .key(s3Key)
                             .contentType(file.getContentType())
                             .build(),
@@ -113,7 +155,32 @@ public class FileUploadService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
 
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, s3Key);
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProperties.getS3Bucket(), awsProperties.getRegion(), s3Key);
+    }
+
+    private String uploadToLocal(MultipartFile file, String folder) {
+        String extension = getExtension(file.getOriginalFilename());
+        String generatedFilename = UUID.randomUUID() + "." + extension;
+        LocalDate now = LocalDate.now();
+
+        String relativePath = String.format("%s/%s/%s/%s", folder,
+                now.format(DateTimeFormatter.ofPattern("yyyy")),
+                now.format(DateTimeFormatter.ofPattern("MM")),
+                generatedFilename);
+
+        Path fullPath = Paths.get(uploadDir(), relativePath);
+
+        try {
+            Files.createDirectories(fullPath.getParent());
+            file.transferTo(fullPath.toFile());
+            log.info("Local file upload success: {}", fullPath);
+
+            // 프론트가 접근할 수 있는 URL 반환
+            return String.format("http://localhost:%s/uploads/%s", serverPort(), relativePath);
+        } catch (IOException e) {
+            log.error("Local file upload failed: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+        }
     }
 
     private void validateImageFile(MultipartFile file) {
@@ -149,13 +216,25 @@ public class FileUploadService {
 
     private String extractS3Key(String imageUrl) {
         try {
-            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", bucket, region);
+            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", awsProperties.getS3Bucket(), awsProperties.getRegion());
             if (imageUrl.startsWith(prefix)) {
                 return imageUrl.substring(prefix.length());
             }
             return null;
         } catch (Exception e) {
             log.error("Failed to extract S3 key from URL: {}", imageUrl);
+            return null;
+        }
+    }
+
+    private String extractLocalPath(String fileUrl) {
+        try {
+            if (fileUrl.contains("/uploads/")) {
+                return fileUrl.substring(fileUrl.indexOf("/uploads/") + 9);
+            }
+            return fileUrl;
+        } catch (Exception e) {
+            log.error("Failed to extract local path from URL: {}", fileUrl);
             return null;
         }
     }

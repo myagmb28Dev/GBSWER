@@ -1,5 +1,6 @@
 package com.example.gbswer.service;
 
+import com.example.gbswer.config.properties.NeisProperties;
 import com.example.gbswer.dto.DayMealsDto;
 import com.example.gbswer.dto.MealDto;
 import com.example.gbswer.dto.NeisApiResponse;
@@ -8,7 +9,6 @@ import com.example.gbswer.repository.MealRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,19 +26,9 @@ public class MealService {
 
     private final MealRepository mealRepository;
     private final RestTemplate restTemplate;
+    private final NeisProperties neisProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${neis.api.key}")
-    private String neisApiKey;
-
-    @Value("${neis.api.atpt-code:R10}")
-    private String atptCode;
-
-    @Value("${neis.api.school-code:8750829}")
-    private String schoolCode;
-
-    @Value("${neis.api.url:https://open.neis.go.kr/hub/mealServiceDietInfo}")
-    private String neisApiUrl;
 
     private static final DateTimeFormatter NEIS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter RESPONSE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -65,11 +55,11 @@ public class MealService {
 
         String url = String.format(
             "%s?KEY=%s&Type=json&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=%s&SD_SCHUL_CODE=%s&MLSV_FROM_YMD=%s&MLSV_TO_YMD=%s",
-            neisApiUrl, neisApiKey, atptCode, schoolCode,
+            neisProperties.getUrl(), neisProperties.getKey(), neisProperties.getAtptCode(), neisProperties.getSchoolCode(),
             startDate.format(NEIS_DATE_FORMAT), endDate.format(NEIS_DATE_FORMAT)
         );
 
-        log.info("NEIS API 호출: {}", url.replace(neisApiKey, "***"));
+        log.info("NEIS API 호출: {}", url.replace(neisProperties.getKey(), "***"));
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);

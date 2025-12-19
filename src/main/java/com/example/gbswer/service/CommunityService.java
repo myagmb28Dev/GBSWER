@@ -8,6 +8,7 @@ import com.example.gbswer.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.gbswer.config.properties.FileProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,9 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final FileUploadService fileUploadService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final FileProperties fileProperties;
+
+    private String storageType() { return fileProperties.getType(); }
 
     public List<CommunityDto> getAllPosts() {
         return communityRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -79,7 +83,12 @@ public class CommunityService {
             return convertToDto(community);
         } catch (Exception e) {
             log.error("Failed to save community, rolling back uploaded images", e);
-            fileUploadService.deleteFiles(imageUrls);
+            boolean useLocal = "local".equalsIgnoreCase(storageType());
+            if (useLocal) {
+                fileUploadService.deleteLocalFiles(imageUrls);
+            } else {
+                fileUploadService.deleteFiles(imageUrls);
+            }
             throw e;
         }
     }
@@ -101,10 +110,16 @@ public class CommunityService {
             newUploadedUrls = uploadImagesWithRollback(newImages);
         }
 
+        boolean useLocal = "local".equalsIgnoreCase(storageType());
+
         try {
             for (String oldUrl : oldImageUrls) {
                 if (!keepImageUrls.contains(oldUrl)) {
-                    fileUploadService.deleteFile(oldUrl);
+                    if (useLocal) {
+                        fileUploadService.deleteLocalFile(oldUrl);
+                    } else {
+                        fileUploadService.deleteFile(oldUrl);
+                    }
                 }
             }
 
@@ -120,7 +135,11 @@ public class CommunityService {
             return convertToDto(community);
         } catch (Exception e) {
             log.error("Failed to update community, rolling back newly uploaded images", e);
-            fileUploadService.deleteFiles(newUploadedUrls);
+            if (useLocal) {
+                fileUploadService.deleteLocalFiles(newUploadedUrls);
+            } else {
+                fileUploadService.deleteFiles(newUploadedUrls);
+            }
             throw e;
         }
     }
@@ -133,7 +152,12 @@ public class CommunityService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        fileUploadService.deleteFiles(convertJsonToList(community.getImageUrls()));
+        boolean useLocal = "local".equalsIgnoreCase(storageType());
+        if (useLocal) {
+            fileUploadService.deleteLocalFiles(convertJsonToList(community.getImageUrls()));
+        } else {
+            fileUploadService.deleteFiles(convertJsonToList(community.getImageUrls()));
+        }
         communityRepository.delete(community);
     }
 
@@ -142,7 +166,6 @@ public class CommunityService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-
 
     private Community findCommunityById(Long postId) {
         return communityRepository.findById(postId)

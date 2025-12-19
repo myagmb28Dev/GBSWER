@@ -2,7 +2,7 @@ package com.example.gbswer.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.example.gbswer.config.properties.JwtProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +27,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-
-    @Value("${jwt.refresh-expiration-ms:604800000}")
-    private long refreshExpirationMillis;
+    private final JwtProperties jwtProperties;
 
     @Transactional
     public AuthResponseDto login(LoginRequestDto request) {
@@ -77,7 +75,7 @@ public class AuthService {
         try {
             // 3. JWT 토큰 생성
             String accessToken = tokenService.createToken(user.getId(), user.getName(), user.getRole().name());
-            String refreshToken = tokenService.createTokenWithExpiration(user.getId(), user.getName(), user.getRole().name(), refreshExpirationMillis);
+            String refreshToken = tokenService.createTokenWithExpiration(user.getId(), user.getName(), user.getRole().name(), jwtProperties.getRefreshExpirationMs());
 
             log.debug("Tokens created successfully for user: {}", user.getName());
 

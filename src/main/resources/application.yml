@@ -39,12 +39,12 @@ spring:
       max-request-size: 10MB
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD:}
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
@@ -64,13 +64,13 @@ jwt:
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
 
 file:
-  upload-dir: uploads
+  upload-dir: ${FILE_UPLOAD_DIR}
+  type: ${FILE_STORAGE_TYPE}
 
 aws:
   s3:
     bucket: ${AWS_S3_BUCKET}
-    region: ${AWS_REGION:ap-northeast-2}
-  credentials:
+    region: ${AWS_REGION}
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
 
@@ -81,11 +81,20 @@ verification:
 neis:
   api:
     key: ${NEIS_API_KEY}
-    atpt-code: ${NEIS_ATPT_CODE:R10}
-    school-code: ${NEIS_SCHOOL_CODE:8750829}
+    atpt-code: ${NEIS_ATPT_CODE}
+    school-code: ${NEIS_SCHOOL_CODE}
     url: https://open.neis.go.kr/hub/mealServiceDietInfo
     schedule-url: https://open.neis.go.kr/hub/SchoolSchedule
     timetable-url: https://open.neis.go.kr/hub/hisTimetable
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized
 
 ---
 # Local Settings
@@ -95,9 +104,6 @@ spring:
       on-profile: local
     import: optional:file:.env.local[.properties]
 
-server:
-  address: 0.0.0.0
-  port: 8080
 ---
 # Prod settings
 spring:
