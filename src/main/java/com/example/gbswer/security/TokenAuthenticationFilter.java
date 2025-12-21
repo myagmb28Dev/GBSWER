@@ -31,12 +31,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             tokenService.parseToken(token).ifPresent(user -> {
+                System.out.println("[DEBUG] user.getRole(): " + user.getRole());
                 List<SimpleGrantedAuthority> authorities = Collections.emptyList();
                 if (user.getRole() != null && !user.getRole().isBlank()) {
                     authorities = Collections.singletonList(
                             new SimpleGrantedAuthority("ROLE_" + user.getRole())
                     );
                 }
+                System.out.println("[DEBUG] authorities: " + authorities);
                 var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             });

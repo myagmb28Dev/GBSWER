@@ -41,7 +41,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD}
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -104,6 +104,10 @@ spring:
       on-profile: local
     import: optional:file:.env.local[.properties]
 
+file:
+  upload-dir: D:/Codes/GBSWER/Back/uploads
+  type: local
+
 ---
 # Prod settings
 spring:
@@ -111,3 +115,6 @@ spring:
     activate:
       on-profile: prod
 
+file:
+  upload-dir: uploads
+  type: s3

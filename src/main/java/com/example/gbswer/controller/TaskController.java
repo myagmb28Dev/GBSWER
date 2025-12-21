@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/task")
 @RequiredArgsConstructor
@@ -21,12 +23,14 @@ public class TaskController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getAllTasks() {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getAllTasks()));
+        var result = taskService.getAllTasks();
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getTaskById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getTaskById(id)));
+        var result = taskService.getTaskById(id);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/submit")
@@ -34,14 +38,16 @@ public class TaskController {
     public ResponseEntity<?> submitTask(
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam Long taskId,
-            @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.submitTask(taskId, userDto.getId(), file)));
+            @RequestParam List<MultipartFile> files) {
+        var result = taskService.submitTask(taskId, userDto.getId(), files);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/my-submissions")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> getMySubmissions(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getMySubmissions(userDto.getId())));
+        var result = taskService.getMySubmissions(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/upload")
@@ -49,8 +55,9 @@ public class TaskController {
     public ResponseEntity<?> createTask(
             @AuthenticationPrincipal UserDto userDto,
             @RequestPart TaskCreateDto request,
-            @RequestPart(required = false) MultipartFile file) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.createTask(userDto.getId(), request, file)));
+            @RequestPart(required = false) List<MultipartFile> files) {
+        var result = taskService.createTask(userDto.getId(), request, files);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PutMapping("/{id}")
@@ -58,8 +65,10 @@ public class TaskController {
     public ResponseEntity<?> updateTask(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
-            @RequestBody TaskCreateDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.updateTask(id, userDto.getId(), request)));
+            @RequestPart TaskCreateDto request,
+            @RequestPart(required = false) List<MultipartFile> files) {
+        var result = taskService.updateTask(id, userDto.getId(), request, files);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @DeleteMapping("/{id}")
@@ -74,13 +83,15 @@ public class TaskController {
     @GetMapping("/submissions/{taskId}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<?> getSubmissionsByTask(@PathVariable Long taskId) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getSubmissionsByTask(taskId)));
+        var result = taskService.getSubmissionsByTask(taskId);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/submission/{submissionId}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<?> getSubmissionById(@PathVariable Long submissionId) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getSubmissionById(submissionId)));
+        var result = taskService.getSubmissionById(submissionId);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/submission/{submissionId}/review")
@@ -88,8 +99,7 @@ public class TaskController {
     public ResponseEntity<?> reviewSubmission(
             @PathVariable Long submissionId,
             @RequestBody SubmissionReviewDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(
-                taskService.reviewSubmission(submissionId, request.getFeedback(), request.getStatus())));
+        var result = taskService.reviewSubmission(submissionId, request.getFeedback(), request.getStatus());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }
-

@@ -4,7 +4,6 @@ import com.example.gbswer.dto.*;
 import com.example.gbswer.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,16 +15,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto req) {
-        return ResponseEntity.ok(ApiResponseDto.success(authService.login(req)));
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(authService.getCurrentUser(userDto.getId())));
+        var result = authService.login(req);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshDto req) {
-        return ResponseEntity.ok(ApiResponseDto.success(authService.refreshAccessToken(req.getRefreshToken())));
+        var result = authService.refreshAccessToken(req.getRefreshToken());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }

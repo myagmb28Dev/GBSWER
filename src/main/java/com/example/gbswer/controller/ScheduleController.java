@@ -21,19 +21,22 @@ public class ScheduleController {
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam Integer year,
             @RequestParam Integer month) {
-        return ResponseEntity.ok(ApiResponseDto.success(scheduleService.getSchedulesByMonth(userDto.getId(), year, month)));
+        var result = scheduleService.getSchedulesByMonth(userDto.getId(), year, month);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/today")
     public ResponseEntity<?> getTodaySchedules(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(scheduleService.getTodaySchedules(userDto.getId())));
+        var result = scheduleService.getTodaySchedules(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/add")
     public ResponseEntity<?> createSchedule(
             @AuthenticationPrincipal UserDto userDto,
             @RequestBody ScheduleCreateDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(scheduleService.createSchedule(userDto.getId(), request)));
+        var result = scheduleService.createSchedule(userDto.getId(), request);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PutMapping("/{id}")
@@ -41,7 +44,8 @@ public class ScheduleController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
             @RequestBody ScheduleCreateDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(scheduleService.updateSchedule(id, userDto.getId(), request)));
+        var result = scheduleService.updateSchedule(id, userDto.getId(), request);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @DeleteMapping("/{id}")

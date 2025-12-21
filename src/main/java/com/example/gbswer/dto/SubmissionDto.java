@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,10 +19,9 @@ public class SubmissionDto {
     private String taskTitle;
     private Long studentId;
     private String studentName;
-    private String fileUrl;
+    private List<FileInfoDto> files;
     private LocalDateTime submittedAt;
     private String feedback;
     private Submission.SubmissionStatus status;
     private LocalDateTime reviewedAt;
 }
-

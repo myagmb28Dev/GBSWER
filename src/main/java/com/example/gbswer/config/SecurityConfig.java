@@ -32,8 +32,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/error").permitAll()
                 .requestMatchers("/api/meals/**").permitAll()
                 .requestMatchers("/api/school-events/**").permitAll()
-                .requestMatchers("/api/user/password/reset/**").permitAll()  // 비밀번호 재설정 API 허용
-                .requestMatchers("/uploads/**").permitAll()  // 업로드된 파일 접근 허용
+                .requestMatchers("/api/user/password/reset/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

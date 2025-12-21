@@ -19,16 +19,19 @@ public class StudentController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getStudentList() {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getStudentList()));
+        var result = userService.getStudentList();
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/{studentId}/tasks")
     public ResponseEntity<?> getStudentTasks(@PathVariable Long studentId) {
-        return ResponseEntity.ok(ApiResponseDto.success(taskService.getMySubmissions(studentId)));
+        var result = taskService.getMySubmissions(studentId);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/{studentId}/profile")
     public ResponseEntity<?> getStudentProfile(@PathVariable Long studentId) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getProfile(studentId)));
+        var result = userService.getProfile(studentId);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }

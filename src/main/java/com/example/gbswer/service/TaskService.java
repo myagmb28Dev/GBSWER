@@ -3,6 +3,7 @@ package com.example.gbswer.service;
 import com.example.gbswer.dto.TaskCreateDto;
 import com.example.gbswer.dto.SubmissionDto;
 import com.example.gbswer.dto.TaskDto;
+import com.example.gbswer.dto.FileInfoDto;
 import com.example.gbswer.entity.Submission;
 import com.example.gbswer.entity.Task;
 import com.example.gbswer.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,13 +43,19 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto createTask(Long teacherId, TaskCreateDto request, MultipartFile file) {
+    public TaskDto createTask(Long teacherId, TaskCreateDto request, List<MultipartFile> files) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
-        String filePath = null;
-        if (file != null && !file.isEmpty()) {
-            filePath = fileUploadService.uploadTaskFile(file);
+        List<String> fileUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue;
+                String url = fileUploadService.uploadTaskFile(file);
+                fileUrls.add(url);
+                fileNames.add(file.getOriginalFilename());
+            }
         }
 
         Task task = Task.builder()
@@ -56,7 +64,8 @@ public class TaskService {
                 .dueDate(request.getDueDate())
                 .teacher(teacher)
                 .teacherName(teacher.getName())
-                .filePath(filePath)
+                .fileNames(convertListToJson(fileNames))
+                .fileUrls(convertListToJson(fileUrls))
                 .build();
 
         taskRepository.save(task);
@@ -64,7 +73,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long taskId, Long teacherId, TaskCreateDto request) {
+    public TaskDto updateTask(Long taskId, Long teacherId, TaskCreateDto request, List<MultipartFile> files) {
         Task task = findTaskById(taskId);
 
         if (!task.getTeacher().getId().equals(teacherId)) {
@@ -79,25 +88,33 @@ public class TaskService {
     }
 
     @Transactional
-    public SubmissionDto submitTask(Long taskId, Long studentId, MultipartFile file) {
+    public SubmissionDto submitTask(Long taskId, Long studentId, List<MultipartFile> files) {
         Task task = findTaskById(taskId);
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
 
-        if (file == null || file.isEmpty()) {
+        if (files == null || files.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "file is required");
         }
 
-        String fileUrl = fileUploadService.uploadSubmissionFile(file);
+        List<String> fileUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+            String url = fileUploadService.uploadSubmissionFile(file);
+            fileUrls.add(url);
+            fileNames.add(file.getOriginalFilename());
+        }
 
         Submission submission = submissionRepository.findByTaskAndStudent(task, student)
                 .orElse(Submission.builder().task(task).student(student).build());
 
-        if (submission.getFileUrl() != null) {
-            fileUploadService.deleteFile(submission.getFileUrl());
+        if (submission.getFileNames() != null) {
+            fileUploadService.deleteFiles(convertJsonToList(submission.getFileNames()));
         }
 
-        submission.setFileUrl(fileUrl);
+        submission.setFileNames(convertListToJson(fileNames));
+        submission.setFileUrls(convertListToJson(fileUrls));
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setStatus(Submission.SubmissionStatus.SUBMITTED);
         submission.setFeedback(null);
@@ -161,14 +178,14 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        if (task.getFilePath() != null) {
-            fileUploadService.deleteFile(task.getFilePath());
+        if (task.getFileNames() != null) {
+            fileUploadService.deleteFiles(convertJsonToList(task.getFileNames()));
         }
 
         List<Submission> submissions = submissionRepository.findByTask(task);
         for (Submission submission : submissions) {
-            if (submission.getFileUrl() != null) {
-                fileUploadService.deleteFile(submission.getFileUrl());
+            if (submission.getFileNames() != null) {
+                fileUploadService.deleteFiles(convertJsonToList(submission.getFileNames()));
             }
         }
 
@@ -181,28 +198,62 @@ public class TaskService {
     }
 
     private TaskDto convertToDto(Task task) {
+        List<String> fileUrls = convertJsonToList(task.getFileUrls());
+        List<String> fileNames = convertJsonToList(task.getFileNames());
+        List<FileInfoDto> files = new ArrayList<>();
+        for (int i = 0; i < fileUrls.size(); i++) {
+            String url = fileUrls.get(i);
+            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
+            files.add(new FileInfoDto(url, name));
+        }
         return TaskDto.builder()
                 .id(task.getId())
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .teacherName(task.getTeacherName())
                 .dueDate(task.getDueDate())
-                .filePath(task.getFilePath())
+                .files(files)
                 .build();
     }
 
     private SubmissionDto convertSubmissionToDto(Submission submission) {
+        List<String> fileUrls = convertJsonToList(submission.getFileUrls());
+        List<String> fileNames = convertJsonToList(submission.getFileNames());
+        List<FileInfoDto> files = new ArrayList<>();
+        for (int i = 0; i < fileUrls.size(); i++) {
+            String url = fileUrls.get(i);
+            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
+            files.add(new FileInfoDto(url, name));
+        }
         return SubmissionDto.builder()
                 .id(submission.getId())
                 .taskId(submission.getTask().getId())
                 .taskTitle(submission.getTask().getTitle())
                 .studentId(submission.getStudent().getId())
                 .studentName(submission.getStudent().getName())
-                .fileUrl(submission.getFileUrl())
+                .files(files)
                 .submittedAt(submission.getSubmittedAt())
                 .feedback(submission.getFeedback())
                 .status(submission.getStatus())
                 .reviewedAt(submission.getReviewedAt())
                 .build();
+    }
+
+    private String convertListToJson(List<String> list) {
+        if (list == null || list.isEmpty()) return null;
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(list);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<String> convertJsonToList(String json) {
+        if (json == null || json.isEmpty()) return new ArrayList<>();
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 }

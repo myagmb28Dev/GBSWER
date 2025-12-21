@@ -27,11 +27,11 @@ public class TimetableController {
             @RequestParam(required = false) String semester) {
         try {
             if (date != null && !date.isEmpty()) {
-                return ResponseEntity.ok(ApiResponseDto.success(
-                        timetableService.getDailyTimetable(date, department, grade, className, semester)));
+                var result = timetableService.getDailyTimetable(date, department, grade, className, semester);
+                return ResponseEntity.ok(ApiResponseDto.success(result));
             } else {
-                return ResponseEntity.ok(ApiResponseDto.success(
-                        timetableService.getWeeklyTimetable(null, null, department, grade, className, semester)));
+                var result = timetableService.getWeeklyTimetable(null, null, department, grade, className, semester);
+                return ResponseEntity.ok(ApiResponseDto.success(result));
             }
         } catch (Exception e) {
             log.error("시간표 조회 오류", e);
@@ -48,8 +48,8 @@ public class TimetableController {
             @RequestParam(required = false) String semester) {
         try {
             String queryDate = (date != null) ? date : LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            return ResponseEntity.ok(ApiResponseDto.success(
-                    timetableService.getDailyTimetable(queryDate, department, grade, className, semester)));
+            var result = timetableService.getDailyTimetable(queryDate, department, grade, className, semester);
+            return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
             log.error("시간표 조회 오류", e);
             return ResponseEntity.internalServerError().body(ApiResponseDto.error("시간표 조회 오류: " + e.getMessage()));
@@ -65,8 +65,8 @@ public class TimetableController {
             @RequestParam(name = "class") String className,
             @RequestParam(required = false) String semester) {
         try {
-            return ResponseEntity.ok(ApiResponseDto.success(
-                    timetableService.getWeeklyTimetable(startDate, days, department, grade, className, semester)));
+            var result = timetableService.getWeeklyTimetable(startDate, days, department, grade, className, semester);
+            return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
             log.error("시간표 조회 오류", e);
             return ResponseEntity.internalServerError().body(ApiResponseDto.error("시간표 조회 오류: " + e.getMessage()));

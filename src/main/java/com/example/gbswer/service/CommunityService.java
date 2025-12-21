@@ -1,6 +1,7 @@
 package com.example.gbswer.service;
 
 import com.example.gbswer.dto.CommunityDto;
+import com.example.gbswer.dto.FileInfoDto;
 import com.example.gbswer.entity.Community;
 import com.example.gbswer.entity.User;
 import com.example.gbswer.repository.CommunityRepository;
@@ -8,9 +9,9 @@ import com.example.gbswer.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.example.gbswer.config.properties.FileProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +31,11 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final FileUploadService fileUploadService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final FileProperties fileProperties;
 
-    private String storageType() { return fileProperties.getType(); }
+    @Value("${file.type}")
+    private String fileType;
+
+    private String storageType() { return fileType; }
 
     public List<CommunityDto> getAllPosts() {
         return communityRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -64,9 +67,15 @@ public class CommunityService {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
-        List<String> imageUrls = new ArrayList<>();
+        List<String> fileUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
-            imageUrls = uploadImagesWithRollback(images);
+            for (MultipartFile file : images) {
+                if (file == null || file.isEmpty()) continue;
+                String url = fileUploadService.uploadCommunityImage(file);
+                fileUrls.add(url);
+                fileNames.add(file.getOriginalFilename());
+            }
         }
 
         try {
@@ -76,7 +85,8 @@ public class CommunityService {
                     .writer(author.getName())
                     .author(author)
                     .department(department != null ? department : "ALL")
-                    .imageUrls(convertListToJson(imageUrls))
+                    .fileNames(convertListToJson(fileNames))
+                    .fileUrls(convertListToJson(fileUrls))
                     .build();
 
             communityRepository.save(community);
@@ -85,9 +95,9 @@ public class CommunityService {
             log.error("Failed to save community, rolling back uploaded images", e);
             boolean useLocal = "local".equalsIgnoreCase(storageType());
             if (useLocal) {
-                fileUploadService.deleteLocalFiles(imageUrls);
+                fileUploadService.deleteLocalFiles(fileUrls);
             } else {
-                fileUploadService.deleteFiles(imageUrls);
+                fileUploadService.deleteFiles(fileUrls);
             }
             throw e;
         }
@@ -95,53 +105,42 @@ public class CommunityService {
 
     @Transactional
     public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
-                                    String department, List<MultipartFile> newImages, List<String> existingImageUrls) {
+                                    String department, List<MultipartFile> files) {
         Community community = findCommunityById(postId);
 
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        List<String> oldImageUrls = convertJsonToList(community.getImageUrls());
-        List<String> keepImageUrls = existingImageUrls != null ? new ArrayList<>(existingImageUrls) : new ArrayList<>();
-
-        List<String> newUploadedUrls = new ArrayList<>();
-        if (newImages != null && !newImages.isEmpty()) {
-            newUploadedUrls = uploadImagesWithRollback(newImages);
-        }
-
+        // 기존 파일 모두 삭제
+        List<String> oldFileUrls = convertJsonToList(community.getFileUrls());
         boolean useLocal = "local".equalsIgnoreCase(storageType());
-
-        try {
-            for (String oldUrl : oldImageUrls) {
-                if (!keepImageUrls.contains(oldUrl)) {
-                    if (useLocal) {
-                        fileUploadService.deleteLocalFile(oldUrl);
-                    } else {
-                        fileUploadService.deleteFile(oldUrl);
-                    }
-                }
-            }
-
-            List<String> finalImageUrls = new ArrayList<>(keepImageUrls);
-            finalImageUrls.addAll(newUploadedUrls);
-
-            community.setTitle(title);
-            community.setContent(content);
-            if (department != null) community.setDepartment(department);
-            community.setImageUrls(convertListToJson(finalImageUrls));
-
-            communityRepository.save(community);
-            return convertToDto(community);
-        } catch (Exception e) {
-            log.error("Failed to update community, rolling back newly uploaded images", e);
-            if (useLocal) {
-                fileUploadService.deleteLocalFiles(newUploadedUrls);
-            } else {
-                fileUploadService.deleteFiles(newUploadedUrls);
-            }
-            throw e;
+        if (useLocal) {
+            fileUploadService.deleteLocalFiles(oldFileUrls);
+        } else {
+            fileUploadService.deleteFiles(oldFileUrls);
         }
+
+        // 새 파일 업로드
+        List<String> fileUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue;
+                String url = fileUploadService.uploadCommunityImage(file);
+                fileUrls.add(url);
+                fileNames.add(file.getOriginalFilename());
+            }
+        }
+
+        community.setTitle(title);
+        community.setContent(content);
+        if (department != null) community.setDepartment(department);
+        community.setFileNames(convertListToJson(fileNames));
+        community.setFileUrls(convertListToJson(fileUrls));
+
+        communityRepository.save(community);
+        return convertToDto(community);
     }
 
     @Transactional
@@ -154,9 +153,9 @@ public class CommunityService {
 
         boolean useLocal = "local".equalsIgnoreCase(storageType());
         if (useLocal) {
-            fileUploadService.deleteLocalFiles(convertJsonToList(community.getImageUrls()));
+            fileUploadService.deleteLocalFiles(convertJsonToList(community.getFileNames()));
         } else {
-            fileUploadService.deleteFiles(convertJsonToList(community.getImageUrls()));
+            fileUploadService.deleteFiles(convertJsonToList(community.getFileNames()));
         }
         communityRepository.delete(community);
     }
@@ -188,6 +187,14 @@ public class CommunityService {
     }
 
     private CommunityDto convertToDto(Community community) {
+        List<String> fileUrls = convertJsonToList(community.getFileUrls());
+        List<String> fileNames = convertJsonToList(community.getFileNames());
+        List<FileInfoDto> files = new ArrayList<>();
+        for (int i = 0; i < fileUrls.size(); i++) {
+            String url = fileUrls.get(i);
+            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
+            files.add(new FileInfoDto(url, name));
+        }
         return CommunityDto.builder()
                 .id(community.getId())
                 .title(community.getTitle())
@@ -196,7 +203,7 @@ public class CommunityService {
                 .createdAt(community.getCreatedAt())
                 .viewCount(community.getViewCount())
                 .department(community.getDepartment())
-                .imageUrls(convertJsonToList(community.getImageUrls()))
+                .files(files)
                 .build();
     }
 

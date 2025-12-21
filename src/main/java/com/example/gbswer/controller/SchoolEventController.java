@@ -15,7 +15,8 @@ public class SchoolEventController {
 
     @GetMapping
     public ResponseEntity<?> getMonthlyEvents(@RequestParam int year, @RequestParam int month) {
-        return ResponseEntity.ok(ApiResponseDto.success(schoolEventService.getMonthlyEvents(year, month)));
+        var result = schoolEventService.getMonthlyEvents(year, month);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/refresh")
@@ -25,4 +26,3 @@ public class SchoolEventController {
                 String.format("%d년 %d월 학사일정 데이터가 업데이트되었습니다.", year, month)));
     }
 }
-

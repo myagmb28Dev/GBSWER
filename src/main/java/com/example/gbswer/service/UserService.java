@@ -1,7 +1,7 @@
 package com.example.gbswer.service;
 
-import com.example.gbswer.dto.PasswordChangeDto;
-import com.example.gbswer.dto.ProfileUpdateDto;
+import com.example.gbswer.dto.EmailVerifyDto;
+import com.example.gbswer.dto.RoleUpdateDto;
 import com.example.gbswer.dto.UserDto;
 import com.example.gbswer.entity.User;
 import com.example.gbswer.repository.UserRepository;
@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDto getProfile(Long userId) {
         User user = findUserById(userId);
@@ -31,36 +31,10 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto updateProfile(Long userId, ProfileUpdateDto request) {
-        User user = findUserById(userId);
-
-        if (request.getName() != null) user.setName(request.getName());
-        if (request.getDepartment() != null) user.setDepartment(request.getDepartment());
-        if (request.getGrade() != null) user.setGrade(request.getGrade());
-        if (request.getClassNumber() != null) user.setClassNumber(request.getClassNumber());
-        if (request.getStudentNumber() != null) user.setStudentNumber(request.getStudentNumber());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
-
-        userRepository.save(user);
-        return convertToDto(user);
-    }
-
-    @Transactional
-    public void changePassword(Long userId, PasswordChangeDto request) {
-        User user = findUserById(userId);
-
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "current password is incorrect");
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-    }
-
-    @Transactional
     public void withdraw(Long userId) {
         User user = findUserById(userId);
         userRepository.delete(user);
+        log.info("User withdrawn: {}", userId);
     }
 
     public List<UserDto> getAllUsers() {
@@ -70,9 +44,9 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto updateUserRole(Long userId, String role) {
+    public UserDto updateUserRole(Long userId, RoleUpdateDto request) {
         User user = findUserById(userId);
-        user.setRole(User.Role.valueOf(role));
+        user.setRole(User.Role.valueOf(request.getRole()));
         userRepository.save(user);
         return convertToDto(user);
     }
@@ -96,13 +70,13 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto verifyAndSetEmail(Long userId, String email, String code) {
-        if (!emailService.verifyEmailCode(email, code)) {
+    public UserDto verifyAndSetEmail(Long userId, EmailVerifyDto request) {
+        if (!emailService.verifyEmailCode(request.getEmail(), request.getCode())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "인증 코드가 올바르지 않거나 만료되었습니다.");
         }
 
         User user = findUserById(userId);
-        user.setEmail(email);
+        user.setEmail(request.getEmail());
         userRepository.save(user);
 
         log.info("Email verified and set for user: {}", userId);

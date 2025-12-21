@@ -1,16 +1,14 @@
 package com.example.gbswer.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class PasswordChangeDto {
-    private String currentPassword;
-    private String newPassword;
+public class FileInfoDto {
+    private String url;
+    private String name;
 }
 

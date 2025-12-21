@@ -35,8 +35,13 @@ public class Task {
     @Column(name = "file_path")
     private String filePath;
 
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;
+
+    @Column(name = "file_urls", columnDefinition = "TEXT")
+    private String fileUrls;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private User teacher;
 }
-

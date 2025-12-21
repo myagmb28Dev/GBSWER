@@ -19,6 +19,7 @@ public class MainController {
 
     @GetMapping("/")
     public ResponseEntity<?> getDashboard(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(mainService.getDashboard(userDto.getId())));
+        var result = mainService.getDashboard(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }

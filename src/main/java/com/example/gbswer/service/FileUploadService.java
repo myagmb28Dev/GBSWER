@@ -1,9 +1,10 @@
 package com.example.gbswer.service;
 
 import com.example.gbswer.config.properties.AwsProperties;
-import com.example.gbswer.config.properties.FileProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,12 +29,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUploadService {
 
-    private final S3Client s3Client;
-    private final AwsProperties awsProperties;
-    private final FileProperties fileProperties;
+    @Autowired(required = false)
+    private S3Client s3Client; // optional
 
-    // upload directory and storage type moved to FileProperties
-    private String uploadDir() { return fileProperties.getUploadDir(); }
+    @Autowired(required = false)
+    private AwsProperties awsProperties; // optional
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Value("${file.type}")
+    private String storageType;
+
     private String serverPort() { return System.getProperty("server.port", "8080"); }
 
     private static final Set<String> ALLOWED_IMAGE_MIME_TYPES = Set.of(
@@ -60,17 +67,26 @@ public class FileUploadService {
     // S3 업로드 메소드
     public String uploadCommunityImage(MultipartFile file) {
         validateImageFile(file);
-        return uploadToS3(file, "posts");
+        if ("s3".equalsIgnoreCase(storageType)) {
+            return uploadToS3(file, "posts");
+        }
+        return uploadToLocal(file, "posts");
     }
 
     public String uploadTaskFile(MultipartFile file) {
         validateTaskFile(file);
-        return uploadToS3(file, "tasks");
+        if ("s3".equalsIgnoreCase(storageType)) {
+            return uploadToS3(file, "tasks");
+        }
+        return uploadToLocal(file, "tasks");
     }
 
     public String uploadSubmissionFile(MultipartFile file) {
         validateTaskFile(file);
-        return uploadToS3(file, "submissions");
+        if ("s3".equalsIgnoreCase(storageType)) {
+            return uploadToS3(file, "submissions");
+        }
+        return uploadToLocal(file, "submissions");
     }
 
     // 로컬 저장 메소드 (테스트용)
@@ -96,11 +112,15 @@ public class FileUploadService {
             String s3Key = extractS3Key(imageUrl);
             if (s3Key == null) return;
 
-            s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(awsProperties.getS3Bucket())
-                    .key(s3Key)
-                    .build());
-            log.info("S3 delete success: {}", s3Key);
+            if (s3Client != null && awsProperties != null) {
+                s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(awsProperties.getBucket())
+                        .key(s3Key)
+                        .build());
+                log.info("S3 delete success: {}", s3Key);
+            } else {
+                deleteLocalFile(imageUrl);
+            }
         } catch (Exception e) {
             log.error("S3 delete failed: {}", imageUrl, e);
         }
@@ -112,27 +132,27 @@ public class FileUploadService {
     }
 
     // 로컬 파일 삭제
-    public void deleteLocalFile(String fileUrl) {
-        if (fileUrl == null || fileUrl.isEmpty()) return;
-
+    public void deleteLocalFile(String fileName) {
+        if (fileName == null || fileName.isEmpty()) return;
         try {
-            String relativePath = extractLocalPath(fileUrl);
-            if (relativePath == null) return;
-
-            Path path = Paths.get(uploadDir(), relativePath);
+            String relativePath = extractLocalPath(fileName);
+            Path path = Paths.get(uploadDir, relativePath);
             Files.deleteIfExists(path);
-            log.info("Local file deleted: {}", path);
-        } catch (Exception e) {
-            log.error("Failed to delete local file: {}", fileUrl, e);
+        } catch (IOException e) {
+            log.error("Failed to delete local file: {}", fileName, e);
         }
     }
 
-    public void deleteLocalFiles(List<String> fileUrls) {
-        if (fileUrls == null) return;
-        fileUrls.forEach(this::deleteLocalFile);
+    public void deleteLocalFiles(List<String> fileNames) {
+        if (fileNames == null) return;
+        fileNames.forEach(this::deleteLocalFile);
     }
 
     private String uploadToS3(MultipartFile file, String folder) {
+        if (s3Client == null || awsProperties == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "S3 is not configured on this instance.");
+        }
+
         String extension = getExtension(file.getOriginalFilename());
         String generatedFilename = UUID.randomUUID() + "." + extension;
         LocalDate now = LocalDate.now();
@@ -144,7 +164,7 @@ public class FileUploadService {
         try {
             s3Client.putObject(
                     PutObjectRequest.builder()
-                            .bucket(awsProperties.getS3Bucket())
+                            .bucket(awsProperties.getBucket())
                             .key(s3Key)
                             .contentType(file.getContentType())
                             .build(),
@@ -155,7 +175,7 @@ public class FileUploadService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
 
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProperties.getS3Bucket(), awsProperties.getRegion(), s3Key);
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProperties.getBucket(), awsProperties.getRegion(), s3Key);
     }
 
     private String uploadToLocal(MultipartFile file, String folder) {
@@ -168,10 +188,13 @@ public class FileUploadService {
                 now.format(DateTimeFormatter.ofPattern("MM")),
                 generatedFilename);
 
-        Path fullPath = Paths.get(uploadDir(), relativePath);
-
+        Path fullPath = Paths.get(uploadDir, relativePath);
+        log.info("[DEBUG] uploadDir: {}", uploadDir);
+        log.info("[DEBUG] relativePath: {}", relativePath);
+        log.info("[DEBUG] fullPath: {}", fullPath);
         try {
             Files.createDirectories(fullPath.getParent());
+            log.info("[DEBUG] Directory created or already exists: {}", fullPath.getParent());
             file.transferTo(fullPath.toFile());
             log.info("Local file upload success: {}", fullPath);
 
@@ -216,7 +239,8 @@ public class FileUploadService {
 
     private String extractS3Key(String imageUrl) {
         try {
-            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", awsProperties.getS3Bucket(), awsProperties.getRegion());
+            if (awsProperties == null) return null;
+            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", awsProperties.getBucket(), awsProperties.getRegion());
             if (imageUrl.startsWith(prefix)) {
                 return imageUrl.substring(prefix.length());
             }
@@ -227,15 +251,8 @@ public class FileUploadService {
         }
     }
 
-    private String extractLocalPath(String fileUrl) {
-        try {
-            if (fileUrl.contains("/uploads/")) {
-                return fileUrl.substring(fileUrl.indexOf("/uploads/") + 9);
-            }
-            return fileUrl;
-        } catch (Exception e) {
-            log.error("Failed to extract local path from URL: {}", fileUrl);
-            return null;
-        }
+    private String extractLocalPath(String fileName) {
+        // 파일명에서 경로 추출 로직 필요시 구현
+        return fileName;
     }
 }

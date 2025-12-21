@@ -20,5 +20,5 @@ public class CommunityDto {
     private LocalDateTime createdAt;
     private Long viewCount;
     private String department;
-    private List<String> imageUrls;
+    private List<FileInfoDto> files;
 }

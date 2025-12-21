@@ -15,7 +15,8 @@ public class MealController {
 
     @GetMapping
     public ResponseEntity<?> getMonthlyMeals(@RequestParam int year, @RequestParam int month) {
-        return ResponseEntity.ok(ApiResponseDto.success(mealService.getMonthlyMeals(year, month)));
+        var result = mealService.getMonthlyMeals(year, month);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/refresh")
@@ -25,4 +26,3 @@ public class MealController {
                 String.format("%d년 %d월 급식 데이터가 업데이트되었습니다.", year, month)));
     }
 }
-

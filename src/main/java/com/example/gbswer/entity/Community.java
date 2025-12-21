@@ -49,8 +49,11 @@ public class Community {
     @Column(nullable = false)
     private String department = "ALL";
 
-    @Column(name = "image_urls", columnDefinition = "TEXT")
-    private String imageUrls;
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;
+
+    @Column(name = "file_urls", columnDefinition = "TEXT")
+    private String fileUrls;
 
     @PrePersist
     public void prePersist() {

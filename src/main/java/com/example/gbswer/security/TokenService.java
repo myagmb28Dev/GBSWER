@@ -51,7 +51,7 @@ public class TokenService {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("name", name)
-                .claim("roles", roles)
+                .claim("role", roles)
                 .setIssuedAt(issuedAt)
                 .setExpiration(exp)
                 .signWith(signingKey, SignatureAlgorithm.HS256)
@@ -86,4 +86,3 @@ public class TokenService {
         // Stateless JWT: revoke requires additional store (blacklist) — not implemented here
     }
 }
-

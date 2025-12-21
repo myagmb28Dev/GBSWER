@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "aws")
+@ConfigurationProperties(prefix = "aws.s3")
 public class AwsProperties {
     private String accessKey;
     private String secretKey;
-    private String s3Bucket;
+    private String bucket;
     private String region;
 }
-

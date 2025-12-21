@@ -28,9 +28,6 @@ public class Submission {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
-    @Column(name = "file_url")
-    private String fileUrl;
-
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
@@ -43,6 +40,12 @@ public class Submission {
 
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
+
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;
+
+    @Column(name = "file_urls", columnDefinition = "TEXT")
+    private String fileUrls;
 
     @PrePersist
     public void prePersist() {
@@ -60,4 +63,3 @@ public class Submission {
         APPROVED      // 승인/확인 완료
     }
 }
-

@@ -15,22 +15,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getProfile(userDto.getId())));
-    }
-
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDto userDto, @RequestBody ProfileUpdateDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateProfile(userDto.getId(), request)));
-    }
-
-    @PutMapping("/password")
-    public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDto userDto, @RequestBody PasswordChangeDto request) {
-        userService.changePassword(userDto.getId(), request);
-        return ResponseEntity.ok(ApiResponseDto.success(null));
-    }
-
     @PostMapping("/email/send-code")
     public ResponseEntity<?> sendEmailVerificationCode(@AuthenticationPrincipal UserDto userDto, @RequestBody VerifyCodeSendDto request) {
         userService.sendEmailVerificationCode(userDto.getId(), request.getEmail());
@@ -39,7 +23,8 @@ public class UserController {
 
     @PostMapping("/email/verify")
     public ResponseEntity<?> verifyAndSetEmail(@AuthenticationPrincipal UserDto userDto, @RequestBody EmailVerifyDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.verifyAndSetEmail(userDto.getId(), request.getEmail(), request.getCode())));
+        var result = userService.verifyAndSetEmail(userDto.getId(), request);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/password/reset/send-code")
@@ -63,12 +48,20 @@ public class UserController {
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllUsers()));
+        var result = userService.getAllUsers();
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PutMapping("/role/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUserRole(@PathVariable Long userId, @RequestBody RoleUpdateDto request) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserRole(userId, request.getRole())));
+        var result = userService.updateUserRole(userId, request);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDto userDto) {
+        var result = userService.getProfile(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }

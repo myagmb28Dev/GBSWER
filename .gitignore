@@ -41,7 +41,6 @@ out/
 .env.local
 .env.prod
 .env.*
-!.env.example
 
 ### Mac ###
 .DS_Store
@@ -53,3 +52,5 @@ logs/
 ### Upload Files ###
 uploads/
 
+### Nothing ###
+Iconic.md

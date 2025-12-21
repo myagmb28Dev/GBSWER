@@ -22,53 +22,57 @@ public class CommunityController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAllPosts() {
-        return ResponseEntity.ok(ApiResponseDto.success(communityService.getAllPosts()));
+        var result = communityService.getAllPosts();
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/department/{department}")
     public ResponseEntity<?> getPostsByDepartment(@PathVariable String department) {
-        return ResponseEntity.ok(ApiResponseDto.success(communityService.getPostsByDepartment(department)));
+        var result = communityService.getPostsByDepartment(department);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/department/{department}/only")
     public ResponseEntity<?> getPostsByDepartmentOnly(@PathVariable String department) {
-        return ResponseEntity.ok(ApiResponseDto.success(communityService.getPostsByDepartmentOnly(department)));
+        var result = communityService.getPostsByDepartmentOnly(department);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/my-department")
     public ResponseEntity<?> getPostsByMyDepartment(@AuthenticationPrincipal UserDto userDto) {
-        return ResponseEntity.ok(ApiResponseDto.success(communityService.getPostsByDepartment(userDto.getDepartment())));
+        var result = communityService.getPostsByDepartment(userDto.getDepartment());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponseDto.success(communityService.getPostById(id)));
+        var result = communityService.getPostById(id);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @PostMapping(value = "/write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam String title,
             @RequestParam String content,
             @RequestParam(defaultValue = "ALL") String department,
-            @RequestParam(required = false) List<MultipartFile> images) {
-        return ResponseEntity.ok(ApiResponseDto.success(
-                communityService.createPost(userDto.getId(), title, content, department, images)));
+            @RequestParam(required = false) List<MultipartFile> files) {
+        var result = communityService.createPost(userDto.getId(), title, content, department, files);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
     public ResponseEntity<?> updatePost(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam(value = "department", required = false) String department,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "existingImageUrls", required = false) List<String> existingImageUrls) {
-        return ResponseEntity.ok(ApiResponseDto.success(
-                communityService.updatePost(id, userDto.getId(), title, content, department, images, existingImageUrls)));
+            @RequestParam String title,
+            @RequestParam String content,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) List<MultipartFile> files) {
+        var result = communityService.updatePost(id, userDto.getId(), title, content, department, files);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @DeleteMapping("/{id}")

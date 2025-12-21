@@ -102,31 +102,12 @@ public class AuthService {
         UserDto userDto = userDtoOpt.get();
         User user = userRepository.findById(userDto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
-
         if (!refreshToken.equals(user.getRefreshToken())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "refresh token mismatch");
         }
-
         String newAccessToken = tokenService.createToken(user.getId(), user.getName(), user.getRole().name());
         user.setAccessToken(newAccessToken);
         userRepository.save(user);
-
         return new AuthResponseDto(newAccessToken, refreshToken);
-    }
-
-    public UserDto getCurrentUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
-        return convertToDto(user);
-    }
-
-    private UserDto convertToDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .department(user.getDepartment())
-                .role(user.getRole().name())
-                .build();
     }
 }
