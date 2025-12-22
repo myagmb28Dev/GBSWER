@@ -44,6 +44,11 @@ const ScheduleBox = () => {
       }
       
       return true;
+    }).sort((a, b) => {
+      // 마감일 기준으로 빠른 순서대로 정렬
+      const dateA = new Date(a.endDate);
+      const dateB = new Date(b.endDate);
+      return dateA - dateB;
     });
   };
 

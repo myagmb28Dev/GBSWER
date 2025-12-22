@@ -3,6 +3,7 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import NoticeCard from '../../components/Notice/NoticeCard';
 import Calendar from '../../components/Calendar/Calendar';
+import WeeklySchedule from '../../components/Schedule/WeeklySchedule';
 import './MainBoard.css';
 
 const MainBoard = () => {
@@ -10,8 +11,8 @@ const MainBoard = () => {
     <div className="main-board">
       <Header />
       <div className="content-container">
-        <div className="notice-section">
-          <h2 className="section-title">오늘의 공지사항</h2>
+        <div className="left-section">
+          <WeeklySchedule />
           <NoticeCard />
         </div>
         

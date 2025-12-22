@@ -47,12 +47,15 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
           <>
             <h2 className="event-title-large">{event.title}</h2>
             <div className="modal-header-actions">
-              <button onClick={handleEdit} className="btn-edit">
-                수정
-              </button>
-              <button onClick={handleDelete} className="btn-delete">
-                삭제
-              </button>
+              <div className="category-button">{event.category || '개인'}</div>
+              <div className="action-buttons">
+                <button onClick={handleEdit} className="btn-edit">
+                  수정
+                </button>
+                <button onClick={handleDelete} className="btn-delete">
+                  삭제
+                </button>
+              </div>
             </div>
             <div className="event-detail">
               <div className="detail-section">
@@ -76,6 +79,19 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
           <>
             <h3>일정 수정</h3>
             <form onSubmit={handleSave}>
+              <div className="form-group">
+                <div className="color-picker">
+                  {pastelColors.map((color) => (
+                    <button
+                      type="button"
+                      key={color}
+                      className={`color-option ${editData.color === color ? 'selected' : ''}`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setEditData({ ...editData, color })}
+                    />
+                  ))}
+                </div>
+              </div>
               <div className="form-group">
                 <label>제목</label>
                 <input
@@ -116,20 +132,7 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
                 />
               </div>
               <div className="form-group">
-                <div className="color-picker">
-                  {pastelColors.map((color) => (
-                    <button
-                      type="button"
-                      key={color}
-                      className={`color-option ${editData.color === color ? 'selected' : ''}`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setEditData({ ...editData, color })}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="form-group">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }} onClick={(e) => {
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0', cursor: 'pointer', justifyContent: 'flex-start', width: 'fit-content' }} onClick={(e) => {
                   if (e.target.type !== 'checkbox') {
                     setEditData({ ...editData, showInSchedule: !editData.showInSchedule });
                   }
@@ -138,9 +141,9 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
                     type="checkbox"
                     checked={editData.showInSchedule}
                     onChange={(e) => setEditData({ ...editData, showInSchedule: e.target.checked })}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', margin: '0', marginRight: '0' }}
                   />
-                  <span style={{ fontSize: '14px', color: '#555', fontWeight: '600' }}>일정표에 표시</span>
+                  <span style={{ fontSize: '14px', color: '#555', fontWeight: '600', marginLeft: '0' }}>일정표에 표시</span>
                 </div>
               </div>
               <div className="modal-actions">

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './Calendar.css';
 import AddEventModal from './AddEventModal';
 import ViewEventModal from './ViewEventModal';
+import { useAppContext } from '../../App';
+import { mockSchedule } from '../../mocks/mockSchedule';
 
 const Calendar = () => {
+  const { globalEvents, setGlobalEvents } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -12,20 +14,12 @@ const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  // 전역 일정과 mockSchedule을 합쳐서 사용
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/schedules', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setEvents(res.data.data);
-      } catch (err) {
-        setEvents([]);
-      }
-    };
-    fetchEvents();
-  }, []);
+    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+    const combinedEvents = [...mockSchedule, ...safeGlobalEvents];
+    setEvents(combinedEvents);
+  }, [globalEvents]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -47,7 +41,16 @@ const Calendar = () => {
   };
 
   const handleAddEvent = (eventData) => {
-    setEvents([...events, { ...eventData, id: Date.now() }]);
+    const newEvent = {
+      ...eventData, 
+      id: Date.now(),
+      category: '개인',
+      showInSchedule: eventData.showInSchedule !== undefined ? eventData.showInSchedule : true
+    };
+    
+    // 전역 상태에 추가
+    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+    setGlobalEvents([...safeGlobalEvents, newEvent]);
     setIsModalOpen(false);
   };
 
@@ -58,11 +61,15 @@ const Calendar = () => {
   };
 
   const handleDeleteEvent = (eventId) => {
-    setEvents(events.filter(e => e.id !== eventId));
+    // 전역 상태에서도 삭제
+    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+    setGlobalEvents(safeGlobalEvents.filter(e => e.id !== eventId));
   };
 
   const handleEditEvent = (eventId, updatedData) => {
-    setEvents(events.map(e => e.id === eventId ? { ...e, ...updatedData } : e));
+    // 전역 상태에서도 수정
+    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+    setGlobalEvents(safeGlobalEvents.map(e => e.id === eventId ? { ...e, ...updatedData } : e));
   };
 
   const getEventPosition = (event, day) => {

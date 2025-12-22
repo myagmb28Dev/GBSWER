@@ -1,3 +1,27 @@
+import React, { useState, createContext, useContext } from 'react';
+import MainBoard from "./pages/Main/MainBoard";
+import MyPageBoard from "./pages/MyPage/MyPageBoard";
+import CommunityBoard from "./pages/Community/CommunityBoard";
+import Login from "./pages/Login/Login";
+import EditProfileModal from "./components/ProfileModal/EditProfileModal";
+import axios from "axios";
+
+const AppContext = createContext();
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext must be used within AppProvider');
+  }
+  return context;
+};
+
+function App() {
+  const [currentPage, setCurrentPage] = useState('main');
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [globalEvents, setGlobalEvents] = useState([]);
+
   // 프로필 정보 불러오기
   const fetchProfile = async () => {
     try {
@@ -17,44 +41,6 @@
         data.profileImage = '/profile.png';
       }
       setProfile(data);
-    } catch (err) {
-      setProfile(null);
-    }
-  };
-import React, { useState, createContext, useContext } from 'react';
-import MainBoard from "./pages/Main/MainBoard";
-import MyPageBoard from "./pages/MyPage/MyPageBoard";
-import CommunityBoard from "./pages/Community/CommunityBoard";
-import Login from "./pages/Login/Login";
-import EditProfileModal from "./components/ProfileModal/EditProfileModal";
-import axios from "axios";
-
-// Context 생성
-const AppContext = createContext();
-
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within AppProvider');
-  }
-  return context;
-};
-
-function App() {
-  const [currentPage, setCurrentPage] = useState('main');
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [profile, setProfile] = useState(null);
-
-  // 프로필 정보 불러오기
-  const fetchProfile = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-      const res = await axios.get('/api/user/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setProfile(res.data.data);
     } catch (err) {
       setProfile(null);
     }
@@ -104,7 +90,9 @@ function App() {
     setShowProfileModal,
     profile,
     setProfile,
-    handleLogout
+    handleLogout,
+    globalEvents,
+    setGlobalEvents
   };
 
   if (!isLoggedIn) {
