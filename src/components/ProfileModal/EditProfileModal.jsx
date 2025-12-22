@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import PasswordConfirmModal from './PasswordConfirmModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import { useAppContext } from '../../App';
@@ -14,7 +15,13 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
     grade: profile.grade,
     classNumber: profile.classNumber
   });
-  const [previewImage, setPreviewImage] = useState(profile.profileImage);
+  const getValidProfileImage = (img) => {
+    if (!img || img === '' || img === 'null' || img === 'undefined' || img === '/profile.png' || img === '/profile') {
+      return '/profile-icon.svg';
+    }
+    return img;
+  };
+  const [previewImage, setPreviewImage] = useState(getValidProfileImage(profile.profileImage));
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [pendingData, setPendingData] = useState(null);
@@ -27,71 +34,102 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-        setFormData(prev => ({ ...prev, profileImage: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setPreviewImage(URL.createObjectURL(file));
+      setFormData(prev => ({ ...prev, profileImage: file }));
+    } else {
+      setPreviewImage('/profile-icon.svg');
+      setFormData(prev => ({ ...prev, profileImage: null }));
     }
   };
 
-  const handleDefaultProfile = () => {
-    setPreviewImage('/profile.png');
-    setFormData(prev => ({ ...prev, profileImage: '/profile.png' }));
+  const handleDefaultProfile = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.delete('/api/user/profile-image', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPreviewImage('/profile-icon.svg');
+      setFormData(prev => ({ ...prev, profileImage: null }));
+    } catch (err) {
+      alert('기본 프로필로 변경 실패');
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    const token = localStorage.getItem('accessToken');
     // 변경사항이 없는 경우
-    if (formData.profileImage === profile.profileImage &&
-        formData.name === profile.name &&
-        formData.email === profile.email &&
-        formData.major === profile.major &&
-        formData.grade === profile.grade &&
-        formData.classNumber === profile.classNumber) {
+    const isImageChanged = formData.profileImage && formData.profileImage !== profile.profileImage;
+    const isOtherChanged = formData.name !== profile.name || formData.email !== profile.email || formData.major !== profile.major || formData.grade !== profile.grade || formData.classNumber !== profile.classNumber;
+    if (!isImageChanged && !isOtherChanged) {
       alert('변경된 내용이 없습니다.');
       return;
     }
-    
     // 프로필 사진만 변경된 경우
-    if (formData.profileImage !== profile.profileImage &&
-        formData.name === profile.name &&
-        formData.email === profile.email &&
-        formData.major === profile.major &&
-        formData.grade === profile.grade &&
-        formData.classNumber === profile.classNumber) {
-      onSave(formData);
-      onClose();
+    if (isImageChanged && !isOtherChanged) {
+      try {
+        const form = new FormData();
+        form.append('profileImage', formData.profileImage);
+        await axios.put('/api/user/profile-image', form, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        onSave({ ...profile, profileImage: previewImage });
+        onClose();
+      } catch (err) {
+        alert('프로필 이미지 변경 실패');
+      }
       return;
     }
-    
     // 다른 정보가 변경된 경우 비밀번호 확인 필요
     setPendingData(formData);
     setShowPasswordConfirm(true);
   };
 
-  const handlePasswordConfirmed = () => {
+  const handlePasswordConfirmed = async () => {
     if (pendingData) {
-      onSave(pendingData);
-      onClose();
+      try {
+        const token = localStorage.getItem('accessToken');
+        await axios.put('/api/user/profile', pendingData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        onSave(pendingData);
+        onClose();
+      } catch (err) {
+        alert('프로필 정보 수정 실패');
+      }
     }
   };
 
-  const handlePasswordChange = (newPassword) => {
-    onSave({ password: newPassword });
+  const handlePasswordChange = async (newPassword) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.put('/api/user/profile', { password: newPassword }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      onSave({ password: newPassword });
+    } catch (err) {
+      alert('비밀번호 변경 실패');
+    }
   };
 
   return (
     <>
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content" style={{position:'relative'}} onClick={(e) => e.stopPropagation()}>
+          <button className="close-btn" style={{position:'absolute',top:20,right:20,zIndex:2,fontSize:'2rem',background:'none',border:'none',cursor:'pointer'}} onClick={onClose}>×</button>
           <h2>정보 수정하기</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <div className="profile-image-upload">
-                <img src={previewImage} alt="프로필 미리보기" className="preview-image" />
+                <img
+                  src={getValidProfileImage(previewImage)}
+                  alt="프로필 미리보기"
+                  className="preview-image"
+                  onError={e => { e.target.onerror=null; e.target.src='/profile-icon.svg'; }}
+                />
                 <div className="upload-buttons">
                   <input
                     type="file"

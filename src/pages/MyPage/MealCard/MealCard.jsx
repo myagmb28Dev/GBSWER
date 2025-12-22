@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './MealCard.css';
-import { getTodayMealData } from '../../../mocks/mockMeal';
 
 const MealCard = () => {
   const [selectedMealType, setSelectedMealType] = useState('석식');
@@ -8,8 +8,22 @@ const MealCard = () => {
   const [mealData, setMealData] = useState({});
 
   useEffect(() => {
-    const todayMealData = getTodayMealData();
-    setMealData(todayMealData);
+    const fetchMeals = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const res = await axios.get(`/api/meals?year=${year}&month=${month}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // res.data.data: { [mealType]: { dishes, calorie, ... } }
+        setMealData(res.data.data[today.toISOString().slice(0,10)] || {});
+      } catch (err) {
+        setMealData({});
+      }
+    };
+    fetchMeals();
   }, []);
 
   const handleMealTypeClick = () => {

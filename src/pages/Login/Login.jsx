@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
 
@@ -7,15 +8,24 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [accountType, setAccountType] = useState('student'); // 'student' 또는 'admin'
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('로그인 시도:', { id, password, accountType });
-    
-    // 간단한 로그인 검증 (실제로는 백엔드 API 호출)
-    if (id && password) {
-      onLogin(); // 로그인 성공 시 App.js의 setIsLoggedIn(true) 호출
-    } else {
+    if (!id || !password) {
       alert('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+    try {
+      const response = await axios.post('/api/auth/login', {
+        userId: id,
+        password: password
+      });
+      const { accessToken, refreshToken } = response.data.data;
+      // 토큰 저장 (예: localStorage)
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      onLogin(); // 로그인 성공 시 App.js의 setIsLoggedIn(true) 호출
+    } catch (error) {
+      alert('로그인 실패: ' + (error.response?.data?.message || '서버 오류'));
     }
   };
 

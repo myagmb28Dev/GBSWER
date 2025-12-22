@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 import { Plus } from "lucide-react";
 import WritePostModal from "./WritePostModal";
 import ReadPostModal from "./ReadPostModal";
@@ -10,6 +11,21 @@ import Footer from "../../components/Footer/Footer";
 
 const CommunityBoard = () => {
   const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('/api/community/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPosts(res.data.data);
+      } catch (err) {
+        console.error('게시글 목록 불러오기 실패:', err);
+      }
+    };
+    fetchPosts();
+  }, []);
   const [showWriteModal, setShowWriteModal] = useState(false);
   const [showReadModal, setShowReadModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -19,40 +35,23 @@ const CommunityBoard = () => {
 
   const postsPerPage = 10;
 
-  const handleWritePost = (postData) => {
-    const now = new Date();
-    let author;
-    
-    if (postData.isAnonymous) {
-      const newCount = anonymousCount + 1;
-      author = `익명${newCount}`;
-      setAnonymousCount(newCount);
-    } else {
-      author = "작성자";
+  const handleWritePost = async (newPost) => {
+    // 새 글 작성 후 목록 새로고침
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await axios.get('/api/community/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPosts(res.data.data);
+      setShowWriteModal(false);
+      setCurrentPage(1);
+    } catch (err) {
+      alert('게시글 목록 갱신 실패');
     }
-    
-    const newPost = {
-      id: Date.now(),
-      date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`,
-      title: postData.title,
-      content: postData.content,
-      author: author,
-      isAnonymous: postData.isAnonymous,
-      attachments: postData.attachments,
-      views: 0
-    };
-
-    setPosts([newPost, ...posts]);
-    setShowWriteModal(false);
-    setCurrentPage(1);
   };
   
   const handleReadPost = (post) => {
-    const updatedPosts = posts.map(p => 
-      p.id === post.id ? { ...p, views: p.views + 1 } : p
-    );
-    setPosts(updatedPosts);
-    setSelectedPost({ ...post, views: post.views + 1 });
+    setSelectedPost(post);
     setShowReadModal(true);
   };
 

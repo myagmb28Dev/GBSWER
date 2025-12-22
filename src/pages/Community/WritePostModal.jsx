@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { X, Upload, File, Image } from 'lucide-react';
 
 const WritePostModal = ({ isOpen, onClose, onSubmit }) => {
@@ -19,13 +20,32 @@ const WritePostModal = ({ isOpen, onClose, onSubmit }) => {
             }
             setAttachments(attachments.filter(att => att.id !== id));
         };
-        const handleSubmit = () => { 
+        const handleSubmit = async () => { 
             if (!formData.title || !formData.content) { alert('제목과 내용을 입력해주세요.');
                 return; }
-                onSubmit({ ...formData, attachments });
+            try {
+                const token = localStorage.getItem('accessToken');
+                const form = new FormData();
+                form.append('title', formData.title);
+                form.append('content', formData.content);
+                form.append('major', 'ALL'); // 필요시 major 선택 UI 추가
+                form.append('isAnonymous', formData.isAnonymous);
+                attachments.forEach((att, idx) => {
+                    form.append('files', att.file);
+                });
+                const res = await axios.post('/api/community/write', form, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                onSubmit(res.data.data); // 작성된 게시글 반환
                 setFormData({ title: '', content: '', isAnonymous: false });
                 setAttachments([]);
-            };
+            } catch (err) {
+                alert('게시글 작성 실패');
+            }
+        };
             const handleClose = () => {
                 attachments.forEach(att => {
                     if (att.url) URL.revokeObjectURL(att.url);

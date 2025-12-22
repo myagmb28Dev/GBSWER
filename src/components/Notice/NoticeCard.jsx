@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './NoticeCard.css';
-import { getTodayNoticeData } from '../../mocks/mockNotice';
 
 const NoticeCard = () => {
-  const [noticeData, setNoticeData] = useState({});
+  const [noticeData, setNoticeData] = useState(null);
 
   useEffect(() => {
-    const todayNoticeData = getTodayNoticeData();
-    setNoticeData(todayNoticeData);
+    const fetchTodayNotice = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('/api/notices/today', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setNoticeData(res.data.data);
+      } catch (err) {
+        setNoticeData(null);
+      }
+    };
+    fetchTodayNotice();
   }, []);
 
-  if (!noticeData || Object.keys(noticeData).length === 0) {
+  if (!noticeData) {
     return <div className="notice-card">로딩 중...</div>;
   }
 
@@ -31,7 +41,6 @@ const NoticeCard = () => {
             <span className="notice-title">{noticeData.title}</span>
           </div>
         </div>
-        
         <div className="notice-content">
           <div className="content-text">
             {noticeData.content}

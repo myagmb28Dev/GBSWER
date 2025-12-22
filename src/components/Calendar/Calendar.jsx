@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Calendar.css';
 import AddEventModal from './AddEventModal';
 import ViewEventModal from './ViewEventModal';
@@ -10,6 +11,21 @@ const Calendar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('/api/schedules', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEvents(res.data.data);
+      } catch (err) {
+        setEvents([]);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();

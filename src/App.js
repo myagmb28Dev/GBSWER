@@ -1,10 +1,33 @@
+  // 프로필 정보 불러오기
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      const res = await axios.get('/api/user/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      let data = res.data.data;
+      // 프로필 이미지가 없으면 기본 이미지로 설정
+      if (!data.profileImage) {
+        try {
+          await axios.delete('/api/user/profile-image', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) {}
+        data.profileImage = '/profile.png';
+      }
+      setProfile(data);
+    } catch (err) {
+      setProfile(null);
+    }
+  };
 import React, { useState, createContext, useContext } from 'react';
 import MainBoard from "./pages/Main/MainBoard";
 import MyPageBoard from "./pages/MyPage/MyPageBoard";
 import CommunityBoard from "./pages/Community/CommunityBoard";
 import Login from "./pages/Login/Login";
 import EditProfileModal from "./components/ProfileModal/EditProfileModal";
-import { mockProfile } from "./mocks/mockProfile";
+import axios from "axios";
 
 // Context 생성
 const AppContext = createContext();
@@ -20,7 +43,26 @@ export const useAppContext = () => {
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // 기본값을 true로 설정 (로그인된 상태)
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [profile, setProfile] = useState(null);
+
+  // 프로필 정보 불러오기
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      const res = await axios.get('/api/user/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProfile(res.data.data);
+    } catch (err) {
+      setProfile(null);
+    }
+  };
+
+  React.useEffect(() => {
+    if (isLoggedIn) fetchProfile();
+  }, [isLoggedIn]);
 
   const renderCurrentPage = () => {
     switch(currentPage) {
@@ -37,10 +79,22 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        await fetch('/api/user/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      }
+    } catch (err) {}
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     setIsLoggedIn(false);
     setShowProfileModal(false);
     setCurrentPage('main');
+    setProfile(null);
   };
 
   const contextValue = {
@@ -48,11 +102,11 @@ function App() {
     setCurrentPage,
     showProfileModal,
     setShowProfileModal,
-    profile: mockProfile,
+    profile,
+    setProfile,
     handleLogout
   };
 
-  // 로그인되지 않은 경우 로그인 페이지 표시
   if (!isLoggedIn) {
     return <Login onLogin={() => setIsLoggedIn(true)} />;
   }
@@ -61,12 +115,12 @@ function App() {
     <AppContext.Provider value={contextValue}>
       <div className="App">
         {renderCurrentPage()}
-        {showProfileModal && (
+        {showProfileModal && profile && (
           <EditProfileModal 
-            profile={mockProfile}
+            profile={profile}
             onClose={() => setShowProfileModal(false)} 
             onSave={(updatedProfile) => {
-              console.log('프로필 업데이트:', updatedProfile);
+              setProfile(updatedProfile);
               setShowProfileModal(false);
             }}
           />

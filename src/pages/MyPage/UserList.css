@@ -1,0 +1,16 @@
+.user-list-container {
+  padding: 2rem;
+}
+.user-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.user-list-table th, .user-list-table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+.user-list-table th {
+  background: #f3f4f6;
+}

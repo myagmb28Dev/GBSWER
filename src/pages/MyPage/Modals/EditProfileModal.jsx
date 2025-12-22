@@ -31,12 +31,15 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
         setFormData(prev => ({ ...prev, profileImage: reader.result }));
       };
       reader.readAsDataURL(file);
+    } else {
+      setPreviewImage('/profile-icon.svg');
+      setFormData(prev => ({ ...prev, profileImage: '/profile-icon.svg' }));
     }
   };
 
   const handleDefaultProfile = () => {
-    setPreviewImage('/profile.png');
-    setFormData(prev => ({ ...prev, profileImage: '/profile.png' }));
+    setPreviewImage('/profile-icon.svg');
+    setFormData(prev => ({ ...prev, profileImage: '/profile-icon.svg' }));
   };
 
   const handleSubmit = (e) => {
@@ -90,7 +93,12 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
             <div className="form-group">
               <label>프로필 사진</label>
               <div className="profile-image-upload">
-                <img src={previewImage} alt="프로필 미리보기" className="preview-image" />
+                <img
+                  src={(!previewImage || previewImage === '' || previewImage === 'null' || previewImage === 'undefined' || previewImage === '/profile.png' || previewImage === '/profile' || previewImage === null) ? '/profile-icon.svg' : previewImage}
+                  alt="프로필 미리보기"
+                  className="preview-image"
+                  onError={e => { e.target.onerror=null; e.target.src='/profile-icon.svg'; }}
+                />
                 <div className="upload-buttons">
                   <input
                     type="file"

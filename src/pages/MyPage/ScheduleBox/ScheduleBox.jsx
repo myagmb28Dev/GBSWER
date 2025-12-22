@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
-import { mockSchedule } from '../../../mocks/mockSchedule';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import AddEventModal from '../../../components/Calendar/AddEventModal';
 import ViewEventModal from '../../../components/Calendar/ViewEventModal';
 import './ScheduleBox.css';
 
 const ScheduleBox = () => {
-  const [schedules, setSchedules] = useState(mockSchedule);
+  const [schedules, setSchedules] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('/api/schedules', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSchedules(res.data.data);
+      } catch (err) {
+        setSchedules([]);
+      }
+    };
+    fetchSchedules();
+  }, []);
 
   const getFilteredSchedules = () => {
     const today = new Date();
