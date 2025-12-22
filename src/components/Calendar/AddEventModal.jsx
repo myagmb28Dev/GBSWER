@@ -100,7 +100,7 @@ const AddEventModal = ({ selectedDate, onClose, onAddEvent }) => {
           </div>
 
           <div className="form-group">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }} onClick={(e) => {
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0', cursor: 'pointer', justifyContent: 'flex-start', width: 'fit-content' }} onClick={(e) => {
               if (e.target.type !== 'checkbox') {
                 setFormData({ ...formData, showInSchedule: !formData.showInSchedule });
               }
@@ -109,9 +109,9 @@ const AddEventModal = ({ selectedDate, onClose, onAddEvent }) => {
                 type="checkbox"
                 checked={formData.showInSchedule}
                 onChange={(e) => setFormData({ ...formData, showInSchedule: e.target.checked })}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', margin: '0', marginRight: '0' }}
               />
-              <span style={{ fontSize: '14px', color: '#555', fontWeight: '600' }}>일정표에 표시</span>
+              <span style={{ fontSize: '14px', color: '#555', fontWeight: '600', marginLeft: '0' }}>일정표에 표시</span>
             </div>
           </div>
 

@@ -6,7 +6,6 @@ import Login from "./pages/Login/Login";
 import EditProfileModal from "./components/ProfileModal/EditProfileModal";
 import { mockProfile } from "./mocks/mockProfile";
 
-// Context 생성
 const AppContext = createContext();
 
 export const useAppContext = () => {
@@ -21,6 +20,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState('main');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // 기본값을 true로 설정 (로그인된 상태)
+  const [globalEvents, setGlobalEvents] = useState([]); // 전역 일정 상태
 
   const renderCurrentPage = () => {
     switch(currentPage) {
@@ -49,7 +49,9 @@ function App() {
     showProfileModal,
     setShowProfileModal,
     profile: mockProfile,
-    handleLogout
+    handleLogout,
+    globalEvents,
+    setGlobalEvents
   };
 
   // 로그인되지 않은 경우 로그인 페이지 표시

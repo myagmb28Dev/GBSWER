@@ -6,11 +6,18 @@
 }
 
 .content-container {
-  height: 500px;
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 30px;
-  padding: 20px;
+  grid-template-columns: 350px 870px;
+  gap: 40px;
+  padding: 15px 30px;
+  justify-content: center;
+}
+
+.left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .notice-section {
@@ -22,8 +29,8 @@
 }
 
 .section-title {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 600;
   color: #333;
   margin: 0 0 20px 0;
   text-align: center;
@@ -38,7 +45,7 @@
   }
   
   .notice-section {
-    padding: 20px;
+    padding: 1-20px;
   }
   
   .section-title {

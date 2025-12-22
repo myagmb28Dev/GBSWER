@@ -1,0 +1,165 @@
+.weekly-schedule {
+  background: transparent;
+  border-radius: 20px;
+  padding: 20px;
+  height: 230px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.date-section {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.year-text {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 0px;
+}
+
+.date-main {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0px;
+}
+
+.meister-character {
+  position: absolute;
+  top: 100%;
+  right: 35px;
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.schedule-box {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  max-height: 150px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.schedule-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.add-schedule-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #4DC4AB;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.add-schedule-btn:hover {
+  background: #45b399;
+  transform: scale(1.05);
+}
+
+.schedule-content {
+  height: 130px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  padding-left: 8px;
+}
+
+.schedule-item:hover {
+  background: #f8f9fa;
+}
+
+.schedule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.schedule-text {
+  font-size: 14px;
+  color: #555;
+  flex: 1;
+}
+
+.schedule-dday {
+  font-size: 12px;
+  color: #4DC4AB;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.empty-schedule-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .weekly-schedule {
+    padding: 15px;
+    width: 320px;
+  }
+  
+  .date-main {
+    font-size: 24px;
+  }
+  
+  .meister-character {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .schedule-box {
+    padding: 12px;
+  }
+  
+  .schedule-title {
+    font-size: 14px;
+  }
+  
+  .add-schedule-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
