@@ -1,17 +1,20 @@
 package com.example.gbswer.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NeisTimetableApiResponse {
 
     @JsonProperty("hisTimetable")
     private List<TimetableBlock> hisTimetable;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TimetableBlock {
         @JsonProperty("head")
         private List<Head> head;
@@ -21,6 +24,7 @@ public class NeisTimetableApiResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Head {
         @JsonProperty("list_total_count")
         private Integer listTotalCount;
@@ -30,6 +34,7 @@ public class NeisTimetableApiResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
         @JsonProperty("CODE")
         private String code;
@@ -39,6 +44,7 @@ public class NeisTimetableApiResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TimetableRow {
         @JsonProperty("ATPT_OFCDC_SC_CODE")
         private String atptOfcdcScCode;
