@@ -37,14 +37,8 @@ public class SchoolEventService {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
+        // 오직 DB에서만 조회, NEIS API 호출 제거
         List<SchoolEvent> events = schoolEventRepository.findByEventDateBetweenOrderByEventDateAsc(startDate, endDate);
-
-        if (events.isEmpty()) {
-            log.info("DB에 학사일정 데이터가 없어 NEIS API 호출: {}-{}", year, month);
-            fetchAndSaveEventsFromNeis(year, month);
-            events = schoolEventRepository.findByEventDateBetweenOrderByEventDateAsc(startDate, endDate);
-        }
-
         return convertToEventDtoList(events);
     }
 

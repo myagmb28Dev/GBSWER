@@ -39,12 +39,7 @@ public class MealService {
 
         List<Meal> meals = mealRepository.findByMealDateBetweenOrderByMealDateAscMealTypeAsc(startDate, endDate);
 
-        if (meals.isEmpty()) {
-            log.info("DB에 급식 데이터가 없어 NEIS API 호출: {}-{}", year, month);
-            fetchAndSaveMealsFromNeis(year, month);
-            meals = mealRepository.findByMealDateBetweenOrderByMealDateAscMealTypeAsc(startDate, endDate);
-        }
-
+        // NEIS API 호출 제거: 값이 없으면 빈 결과만 반환
         return convertToMonthlyResponse(meals);
     }
 

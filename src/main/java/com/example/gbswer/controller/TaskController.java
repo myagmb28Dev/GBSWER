@@ -65,9 +65,8 @@ public class TaskController {
     public ResponseEntity<?> updateTask(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
-            @RequestPart TaskCreateDto request,
-            @RequestPart(required = false) List<MultipartFile> files) {
-        var result = taskService.updateTask(id, userDto.getId(), request, files);
+            @RequestPart TaskCreateDto request) {
+        var result = taskService.updateTask(id, userDto.getId(), request);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 

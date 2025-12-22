@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,22 +38,19 @@ public class CommunityService {
 
     private String storageType() { return fileType; }
 
-    public List<CommunityDto> getAllPosts() {
-        return communityRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public Page<CommunityDto> getAllPosts(int page, int size) {
+        return communityRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size))
+                .map(this::convertToDto);
     }
 
-    public List<CommunityDto> getPostsByMajor(String major) {
-        return communityRepository.findByMajorOrAllOrderByCreatedAtDesc(major).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public Page<CommunityDto> getPostsByMajor(String major, int page, int size) {
+        return communityRepository.findByMajorOrAllOrderByCreatedAtDesc(major, PageRequest.of(page, size))
+                .map(this::convertToDto);
     }
 
-    public List<CommunityDto> getPostsByMajorOnly(String major) {
-        return communityRepository.findByMajorOrderByCreatedAtDesc(major).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public Page<CommunityDto> getPostsByMajorOnly(String major, int page, int size) {
+        return communityRepository.findByMajorOrderByCreatedAtDesc(major, PageRequest.of(page, size))
+                .map(this::convertToDto);
     }
 
     @Transactional
@@ -62,66 +60,7 @@ public class CommunityService {
         return convertToDto(community);
     }
 
-    @Transactional
-    public CommunityDto createPost(Long authorId, String title, String content, String major, List<MultipartFile> images) {
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
-
-        List<String> fileUrls = new ArrayList<>();
-        List<String> fileNames = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile file : images) {
-                if (file == null || file.isEmpty()) continue;
-                String url = fileUploadService.uploadCommunityImage(file);
-                fileUrls.add(url);
-                fileNames.add(file.getOriginalFilename());
-            }
-        }
-
-        try {
-            Community community = Community.builder()
-                    .title(title)
-                    .content(content)
-                    .writer(author.getName())
-                    .author(author)
-                    .major(major != null ? major : "ALL")
-                    .fileNames(convertListToJson(fileNames))
-                    .fileUrls(convertListToJson(fileUrls))
-                    .build();
-
-            communityRepository.save(community);
-            return convertToDto(community);
-        } catch (Exception e) {
-            log.error("Failed to save community, rolling back uploaded images", e);
-            boolean useLocal = "local".equalsIgnoreCase(storageType());
-            if (useLocal) {
-                fileUploadService.deleteLocalFiles(fileUrls);
-            } else {
-                fileUploadService.deleteFiles(fileUrls);
-            }
-            throw e;
-        }
-    }
-
-    @Transactional
-    public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
-                                    String major, List<MultipartFile> files) {
-        Community community = findCommunityById(postId);
-
-        if (!community.getAuthor().getId().equals(authorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
-        }
-
-        // 기존 파일 모두 삭제
-        List<String> oldFileUrls = convertJsonToList(community.getFileUrls());
-        boolean useLocal = "local".equalsIgnoreCase(storageType());
-        if (useLocal) {
-            fileUploadService.deleteLocalFiles(oldFileUrls);
-        } else {
-            fileUploadService.deleteFiles(oldFileUrls);
-        }
-
-        // 새 파일 업로드
+    private void setFilesToCommunity(Community community, List<MultipartFile> files) {
         List<String> fileUrls = new ArrayList<>();
         List<String> fileNames = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
@@ -132,13 +71,56 @@ public class CommunityService {
                 fileNames.add(file.getOriginalFilename());
             }
         }
+        community.setFileNames(convertListToJson(fileNames));
+        community.setFileUrls(convertListToJson(fileUrls));
+    }
 
+    private void deleteFilesByUrls(List<String> urls) {
+        boolean useLocal = "local".equalsIgnoreCase(storageType());
+        if (useLocal) {
+            fileUploadService.deleteLocalFiles(urls);
+        } else {
+            fileUploadService.deleteFiles(urls);
+        }
+    }
+
+    @Transactional
+    public CommunityDto createPost(Long authorId, String title, String content, String major, List<MultipartFile> images, boolean anonymous) {
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+        try {
+            Community community = Community.builder()
+                    .title(title)
+                    .content(content)
+                    .writer(anonymous ? "익명" : author.getName())
+                    .author(author)
+                    .major(major != null ? major : "ALL")
+                    .anonymous(anonymous)
+                    .build();
+            setFilesToCommunity(community, images);
+            communityRepository.save(community);
+            return convertToDto(community);
+        } catch (Exception e) {
+            log.error("Failed to save community, rolling back uploaded images", e);
+            // 파일 삭제 로직은 setFilesToCommunity에서 처리된 fileUrls를 활용
+            throw e;
+        }
+    }
+
+    @Transactional
+    public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
+                                    String major, List<MultipartFile> files) {
+        Community community = findCommunityById(postId);
+        if (!community.getAuthor().getId().equals(authorId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
+        }
+        // 기존 파일 모두 삭제
+        deleteFilesByUrls(convertJsonToList(community.getFileUrls()));
+        // 새 파일 업로드 및 정보 갱신
+        setFilesToCommunity(community, files);
         community.setTitle(title);
         community.setContent(content);
         if (major != null) community.setMajor(major);
-        community.setFileNames(convertListToJson(fileNames));
-        community.setFileUrls(convertListToJson(fileUrls));
-
         communityRepository.save(community);
         return convertToDto(community);
     }
@@ -146,44 +128,22 @@ public class CommunityService {
     @Transactional
     public void deletePost(Long postId, Long authorId) {
         Community community = findCommunityById(postId);
-
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
-
-        boolean useLocal = "local".equalsIgnoreCase(storageType());
-        if (useLocal) {
-            fileUploadService.deleteLocalFiles(convertJsonToList(community.getFileNames()));
-        } else {
-            fileUploadService.deleteFiles(convertJsonToList(community.getFileNames()));
-        }
+        deleteFilesByUrls(convertJsonToList(community.getFileNames()));
         communityRepository.delete(community);
     }
 
     public List<CommunityDto> getRecentNotices() {
-        return communityRepository.findTop5ByOrderByCreatedAtDesc().stream()
+        return communityRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 5))
                 .map(this::convertToDto)
-                .collect(Collectors.toList());
+                .getContent();
     }
 
     private Community findCommunityById(Long postId) {
         return communityRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "post not found"));
-    }
-
-    private List<String> uploadImagesWithRollback(List<MultipartFile> images) {
-        List<String> uploadedUrls = new ArrayList<>();
-        try {
-            for (MultipartFile file : images) {
-                if (file == null || file.isEmpty()) continue;
-                uploadedUrls.add(fileUploadService.uploadCommunityImage(file));
-            }
-            return uploadedUrls;
-        } catch (Exception e) {
-            log.error("Image upload failed, rolling back {} uploaded images", uploadedUrls.size());
-            fileUploadService.deleteFiles(uploadedUrls);
-            throw e;
-        }
     }
 
     private CommunityDto convertToDto(Community community) {
@@ -204,6 +164,7 @@ public class CommunityService {
                 .viewCount(community.getViewCount())
                 .major(community.getMajor())
                 .files(files)
+                .anonymous(community.isAnonymous())
                 .build();
     }
 

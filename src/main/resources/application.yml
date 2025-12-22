@@ -12,6 +12,7 @@ spring:
         - prod
 
 ---
+
 # Common settings
 spring:
   config:
@@ -33,6 +34,9 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
   servlet:
+    encoding:
+      charset: UTF-8
+      force: true
     multipart:
       enabled: true
       max-file-size: 10MB
@@ -97,6 +101,7 @@ management:
       show-details: when-authorized
 
 ---
+
 # Local Settings
 spring:
   config:
@@ -109,6 +114,7 @@ file:
   type: local
 
 ---
+
 # Prod settings
 spring:
   config:

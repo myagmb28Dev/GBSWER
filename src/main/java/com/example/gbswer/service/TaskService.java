@@ -73,7 +73,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long taskId, Long teacherId, TaskCreateDto request, List<MultipartFile> files) {
+    public TaskDto updateTask(Long taskId, Long teacherId, TaskCreateDto request) {
         Task task = findTaskById(taskId);
 
         if (!task.getTeacher().getId().equals(teacherId)) {
@@ -197,15 +197,20 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "task not found"));
     }
 
-    private TaskDto convertToDto(Task task) {
-        List<String> fileUrls = convertJsonToList(task.getFileUrls());
-        List<String> fileNames = convertJsonToList(task.getFileNames());
+    private List<FileInfoDto> buildFileInfoList(String fileUrlsJson, String fileNamesJson) {
+        List<String> fileUrls = convertJsonToList(fileUrlsJson);
+        List<String> fileNames = convertJsonToList(fileNamesJson);
         List<FileInfoDto> files = new ArrayList<>();
         for (int i = 0; i < fileUrls.size(); i++) {
             String url = fileUrls.get(i);
             String name = (i < fileNames.size()) ? fileNames.get(i) : null;
             files.add(new FileInfoDto(url, name));
         }
+        return files;
+    }
+
+    private TaskDto convertToDto(Task task) {
+        List<FileInfoDto> files = buildFileInfoList(task.getFileUrls(), task.getFileNames());
         return TaskDto.builder()
                 .id(task.getId())
                 .title(task.getTitle())
@@ -217,14 +222,7 @@ public class TaskService {
     }
 
     private SubmissionDto convertSubmissionToDto(Submission submission) {
-        List<String> fileUrls = convertJsonToList(submission.getFileUrls());
-        List<String> fileNames = convertJsonToList(submission.getFileNames());
-        List<FileInfoDto> files = new ArrayList<>();
-        for (int i = 0; i < fileUrls.size(); i++) {
-            String url = fileUrls.get(i);
-            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
-            files.add(new FileInfoDto(url, name));
-        }
+        List<FileInfoDto> files = buildFileInfoList(submission.getFileUrls(), submission.getFileNames());
         return SubmissionDto.builder()
                 .id(submission.getId())
                 .taskId(submission.getTask().getId())
@@ -251,7 +249,7 @@ public class TaskService {
     private List<String> convertJsonToList(String json) {
         if (json == null || json.isEmpty()) return new ArrayList<>();
         try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {});
         } catch (Exception e) {
             return new ArrayList<>();
         }

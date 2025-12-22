@@ -21,26 +21,33 @@ public class CommunityController {
     private final CommunityService communityService;
 
     @GetMapping("/")
-    public ResponseEntity<?> getAllPosts() {
-        var result = communityService.getAllPosts();
+    public ResponseEntity<?> getAllPosts(@RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size) {
+        var result = communityService.getAllPosts(page, size);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/major/{major}")
-    public ResponseEntity<?> getPostsByMajor(@PathVariable String major) {
-        var result = communityService.getPostsByMajor(major);
+    public ResponseEntity<?> getPostsByMajor(@PathVariable String major,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size) {
+        var result = communityService.getPostsByMajor(major, page, size);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/major/{major}/only")
-    public ResponseEntity<?> getPostsByMajorOnly(@PathVariable String major) {
-        var result = communityService.getPostsByMajorOnly(major);
+    public ResponseEntity<?> getPostsByMajorOnly(@PathVariable String major,
+                                                 @RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "10") int size) {
+        var result = communityService.getPostsByMajorOnly(major, page, size);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/my-major")
-    public ResponseEntity<?> getPostsByMyMajor(@AuthenticationPrincipal UserDto userDto) {
-        var result = communityService.getPostsByMajor(userDto.getMajor());
+    public ResponseEntity<?> getPostsByMyMajor(@AuthenticationPrincipal UserDto userDto,
+                                               @RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "10") int size) {
+        var result = communityService.getPostsByMajor(userDto.getMajor(), page, size);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
@@ -57,8 +64,9 @@ public class CommunityController {
             @RequestParam String title,
             @RequestParam String content,
             @RequestParam(defaultValue = "ALL") String major,
-            @RequestParam(required = false) List<MultipartFile> files) {
-        var result = communityService.createPost(userDto.getId(), title, content, major, files);
+            @RequestParam(required = false) List<MultipartFile> files,
+            @RequestParam(defaultValue = "false") boolean anonymous) {
+        var result = communityService.createPost(userDto.getId(), title, content, major, files, anonymous);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
