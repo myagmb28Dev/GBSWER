@@ -29,9 +29,17 @@ public class User {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false, unique = true)
+    private String userId;
+
+    @Column(name = "profile_image")
+    private String profileImage;
+
+    @Column(name = "bio")
+    private String bio;
 
     @Column(nullable = false)
-    private String department;
+    private String major;
 
     @Column(nullable = false)
     private Integer grade;

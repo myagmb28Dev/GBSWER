@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "community", indexes = {
-    @Index(name = "idx_community_department", columnList = "department")
+    @Index(name = "idx_community_major", columnList = "major")
 })
 @Data
 @NoArgsConstructor
@@ -47,7 +47,7 @@ public class Community {
 
     @Builder.Default
     @Column(nullable = false)
-    private String department = "ALL";
+    private String major = "ALL";
 
     @Column(name = "file_names", columnDefinition = "TEXT")
     private String fileNames;
@@ -59,7 +59,7 @@ public class Community {
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (viewCount == null) viewCount = 0L;
-        if (department == null) department = "ALL";
+        if (major == null) major = "ALL";
     }
 
     @PreUpdate

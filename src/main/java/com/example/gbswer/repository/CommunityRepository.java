@@ -14,14 +14,13 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
     List<Community> findTop5ByOrderByCreatedAtDesc();
 
     // 학과별 게시글 조회 (해당 학과 + 전체 공개 게시글)
-    @Query("SELECT c FROM Community c WHERE c.department = :department OR c.department = 'ALL' ORDER BY c.createdAt DESC")
-    List<Community> findByDepartmentOrAllOrderByCreatedAtDesc(@Param("department") String department);
+    @Query("SELECT c FROM Community c WHERE c.major = :major OR c.major = 'ALL' ORDER BY c.createdAt DESC")
+    List<Community> findByMajorOrAllOrderByCreatedAtDesc(@Param("major") String major);
 
     // 특정 학과만 조회
-    List<Community> findByDepartmentOrderByCreatedAtDesc(String department);
+    List<Community> findByMajorOrderByCreatedAtDesc(String major);
 
     // 학과별 최근 게시글 5개
-    @Query("SELECT c FROM Community c WHERE c.department = :department OR c.department = 'ALL' ORDER BY c.createdAt DESC LIMIT 5")
-    List<Community> findTop5ByDepartmentOrAllOrderByCreatedAtDesc(@Param("department") String department);
+    @Query("SELECT c FROM Community c WHERE c.major = :major OR c.major = 'ALL' ORDER BY c.createdAt DESC LIMIT 5")
+    List<Community> findTop5ByMajorOrAllOrderByCreatedAtDesc(@Param("major") String major);
 }
-

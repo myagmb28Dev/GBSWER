@@ -43,14 +43,14 @@ public class CommunityService {
                 .collect(Collectors.toList());
     }
 
-    public List<CommunityDto> getPostsByDepartment(String department) {
-        return communityRepository.findByDepartmentOrAllOrderByCreatedAtDesc(department).stream()
+    public List<CommunityDto> getPostsByMajor(String major) {
+        return communityRepository.findByMajorOrAllOrderByCreatedAtDesc(major).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    public List<CommunityDto> getPostsByDepartmentOnly(String department) {
-        return communityRepository.findByDepartmentOrderByCreatedAtDesc(department).stream()
+    public List<CommunityDto> getPostsByMajorOnly(String major) {
+        return communityRepository.findByMajorOrderByCreatedAtDesc(major).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -63,7 +63,7 @@ public class CommunityService {
     }
 
     @Transactional
-    public CommunityDto createPost(Long authorId, String title, String content, String department, List<MultipartFile> images) {
+    public CommunityDto createPost(Long authorId, String title, String content, String major, List<MultipartFile> images) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
@@ -84,7 +84,7 @@ public class CommunityService {
                     .content(content)
                     .writer(author.getName())
                     .author(author)
-                    .department(department != null ? department : "ALL")
+                    .major(major != null ? major : "ALL")
                     .fileNames(convertListToJson(fileNames))
                     .fileUrls(convertListToJson(fileUrls))
                     .build();
@@ -105,7 +105,7 @@ public class CommunityService {
 
     @Transactional
     public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
-                                    String department, List<MultipartFile> files) {
+                                    String major, List<MultipartFile> files) {
         Community community = findCommunityById(postId);
 
         if (!community.getAuthor().getId().equals(authorId)) {
@@ -135,7 +135,7 @@ public class CommunityService {
 
         community.setTitle(title);
         community.setContent(content);
-        if (department != null) community.setDepartment(department);
+        if (major != null) community.setMajor(major);
         community.setFileNames(convertListToJson(fileNames));
         community.setFileUrls(convertListToJson(fileUrls));
 
@@ -202,7 +202,7 @@ public class CommunityService {
                 .writer(community.getWriter())
                 .createdAt(community.getCreatedAt())
                 .viewCount(community.getViewCount())
-                .department(community.getDepartment())
+                .major(community.getMajor())
                 .files(files)
                 .build();
     }

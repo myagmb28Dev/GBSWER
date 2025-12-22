@@ -19,6 +19,6 @@ public class CommunityDto {
     private String writer;
     private LocalDateTime createdAt;
     private Long viewCount;
-    private String department;
+    private String major;
     private List<FileInfoDto> files;
 }

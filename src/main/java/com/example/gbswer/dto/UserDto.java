@@ -13,10 +13,12 @@ public class UserDto {
     private Long id;
     private String name;
     private String email;
-    private String department;
+    private String major;
     private Integer grade;
     private Integer classNumber;
     private Integer studentNumber;
     private String role;
-    private String displayInfo;
+    private String userId;
+    private String profileImage;
+    private String bio;
 }

@@ -5,13 +5,16 @@ import com.example.gbswer.dto.RoleUpdateDto;
 import com.example.gbswer.dto.UserDto;
 import com.example.gbswer.entity.User;
 import com.example.gbswer.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +22,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Getter
+@Setter
 public class UserService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final FileUploadService fileUploadService;
+
+    private static final String DEFAULT_PROFILE_IMAGE = "/static/images/default-profile.png";
 
     public UserDto getProfile(Long userId) {
         User user = findUserById(userId);
@@ -106,30 +114,61 @@ public class UserService {
         log.info("Password reset for user: {}", user.getId());
     }
 
+    @Transactional
+    public UserDto updateProfileImage(Long userId, MultipartFile profileImage) {
+        User user = findUserById(userId);
+        String imageUrl = fileUploadService.uploadCommunityImageLocal(profileImage);
+        user.setProfileImage(imageUrl);
+        userRepository.save(user);
+        return convertToDto(user);
+    }
+
+    @Transactional
+    public UserDto setDefaultProfileImage(Long userId) {
+        User user = findUserById(userId);
+        user.setProfileImage(null);
+        userRepository.save(user);
+        return convertToDto(user);
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        User user = findUserById(userId);
+        user.setAccessToken(null);
+        user.setRefreshToken(null);
+        userRepository.save(user);
+    }
+
+    public UserDto updateProfile(Long userId, UserDto request) {
+        User user = findUserById(userId);
+        if (request.getName() != null) user.setName(request.getName());
+        if (request.getMajor() != null) user.setMajor(request.getMajor());
+        if (request.getGrade() != null) user.setGrade(request.getGrade());
+        if (request.getClassNumber() != null) user.setClassNumber(request.getClassNumber());
+        if (request.getBio() != null) user.setBio(request.getBio());
+        if (request.getProfileImage() != null) user.setProfileImage(request.getProfileImage());
+        userRepository.save(user);
+        return convertToDto(user);
+    }
+
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 
     private UserDto convertToDto(User user) {
-        String displayInfo = null;
-        if (user.getDepartment() != null && user.getGrade() != null && user.getClassNumber() != null) {
-            displayInfo = String.format("%s %d학년 %d반", user.getDepartment(), user.getGrade(), user.getClassNumber());
-            if (user.getStudentNumber() != null) {
-                displayInfo += String.format(" %d번", user.getStudentNumber());
-            }
-        }
-
         return UserDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .department(user.getDepartment())
+                .major(user.getMajor())
                 .grade(user.getGrade())
                 .classNumber(user.getClassNumber())
                 .studentNumber(user.getStudentNumber())
                 .role(user.getRole().name())
-                .displayInfo(displayInfo)
+                .userId(user.getUserId())
+                .profileImage(user.getProfileImage())
+                .bio(user.getBio())
                 .build();
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/user")
@@ -63,5 +64,31 @@ public class UserController {
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDto userDto) {
         var result = userService.getProfile(userDto.getId());
         return ResponseEntity.ok(ApiResponseDto.success(result));
+    }
+
+    @PutMapping("/profile-image")
+    public ResponseEntity<?> uploadProfileImage(@AuthenticationPrincipal UserDto userDto,
+                                                @RequestParam("profileImage") MultipartFile profileImage) {
+        var result = userService.updateProfileImage(userDto.getId(), profileImage);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDto userDto,
+                                           @RequestBody UserDto request) {
+        var result = userService.updateProfile(userDto.getId(), request);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
+    }
+
+    @DeleteMapping("/profile-image")
+    public ResponseEntity<?> deleteProfileImage(@AuthenticationPrincipal UserDto userDto) {
+        var result = userService.setDefaultProfileImage(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(result));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal UserDto userDto) {
+        userService.logout(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(null));
     }
 }

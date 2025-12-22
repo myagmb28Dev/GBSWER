@@ -74,7 +74,7 @@ public class TokenService {
                     .name(name)
                     .role(role)
                     .email(null)
-                    .department(null)
+                    .major(null)
                     .build();
             return Optional.of(dto);
         } catch (Exception e) {

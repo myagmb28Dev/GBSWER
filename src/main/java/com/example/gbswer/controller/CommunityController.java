@@ -26,21 +26,21 @@ public class CommunityController {
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @GetMapping("/department/{department}")
-    public ResponseEntity<?> getPostsByDepartment(@PathVariable String department) {
-        var result = communityService.getPostsByDepartment(department);
+    @GetMapping("/major/{major}")
+    public ResponseEntity<?> getPostsByMajor(@PathVariable String major) {
+        var result = communityService.getPostsByMajor(major);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @GetMapping("/department/{department}/only")
-    public ResponseEntity<?> getPostsByDepartmentOnly(@PathVariable String department) {
-        var result = communityService.getPostsByDepartmentOnly(department);
+    @GetMapping("/major/{major}/only")
+    public ResponseEntity<?> getPostsByMajorOnly(@PathVariable String major) {
+        var result = communityService.getPostsByMajorOnly(major);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @GetMapping("/my-department")
-    public ResponseEntity<?> getPostsByMyDepartment(@AuthenticationPrincipal UserDto userDto) {
-        var result = communityService.getPostsByDepartment(userDto.getDepartment());
+    @GetMapping("/my-major")
+    public ResponseEntity<?> getPostsByMyMajor(@AuthenticationPrincipal UserDto userDto) {
+        var result = communityService.getPostsByMajor(userDto.getMajor());
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
@@ -56,9 +56,9 @@ public class CommunityController {
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam String title,
             @RequestParam String content,
-            @RequestParam(defaultValue = "ALL") String department,
+            @RequestParam(defaultValue = "ALL") String major,
             @RequestParam(required = false) List<MultipartFile> files) {
-        var result = communityService.createPost(userDto.getId(), title, content, department, files);
+        var result = communityService.createPost(userDto.getId(), title, content, major, files);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
@@ -69,9 +69,9 @@ public class CommunityController {
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam String title,
             @RequestParam String content,
-            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String major,
             @RequestParam(required = false) List<MultipartFile> files) {
-        var result = communityService.updatePost(id, userDto.getId(), title, content, department, files);
+        var result = communityService.updatePost(id, userDto.getId(), title, content, major, files);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
