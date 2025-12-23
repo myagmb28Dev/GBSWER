@@ -1,10 +1,10 @@
 import React from 'react';
-import Header from '../../components/Header/Header';
-import Footer from '../../components/Footer/Footer';
-import UserProfileCard from '../../components/UserProfileCard/UserProfileCard';
-import PersonalScheduleBox from '../../components/PersonalScheduleBox/PersonalScheduleBox';
-import SchoolMealCard from '../../components/SchoolMealCard/SchoolMealCard';
-import ClassTimetable from '../../components/ClassTimetable/ClassTimetable';
+import Header from '../../../components/Header/Header';
+import Footer from '../../../components/Footer/Footer';
+import UserProfileCard from '../../../components/UserProfileCard/UserProfileCard';
+import PersonalScheduleBox from '../../../components/PersonalScheduleBox/PersonalScheduleBox';
+import SchoolMealCard from '../../../components/SchoolMealCard/SchoolMealCard';
+import ClassTimetable from '../../../components/ClassTimetable/ClassTimetable';
 import './MyPageBoard.css';
 
 const MyPageBoard = () => {

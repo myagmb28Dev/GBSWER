@@ -10,7 +10,16 @@ const Login = ({ onLogin }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (!id || !password) {
+=======
+    console.log('로그인 시도:', { id, password, accountType });
+    
+    // 간단한 로그인 검증 (실제로는 백엔드 API 호출)
+    if (id && password) {
+      onLogin(accountType); // 계정 타입을 함께 전달
+    } else {
+>>>>>>> 3abdeff (feat: enhance assignment page features)
       alert('아이디와 비밀번호를 입력해주세요.');
       return;
     }

@@ -1,0 +1,96 @@
+.class-card {
+  width: 250px;
+  height: 70px;
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.class-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: #4DC4AB;
+}
+
+.class-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.class-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.class-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+
+.teacher-name {
+  font-size: 11px;
+  color: #666;
+  font-weight: 400;
+  margin: 0;
+}
+
+.d-day-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.d-day-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ccc;
+}
+
+.d-day-text.has-deadline {
+  color: #4DC4AB;
+}
+
+.d-day-text.today {
+  color: #ff6b35;
+}
+
+.d-day-text.overdue {
+  color: #dc3545;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .class-card {
+    width: 220px;
+    height: 70px;
+    padding: 10px;
+  }
+  
+  .class-name {
+    font-size: 13px;
+  }
+  
+  .teacher-name {
+    font-size: 10px;
+  }
+  
+  .d-day-text {
+    font-size: 14px;
+  }
+}
+

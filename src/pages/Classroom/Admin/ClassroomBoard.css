@@ -1,0 +1,182 @@
+.classroom-board {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: white;
+}
+
+.classroom-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.date-display {
+  width: 250px;
+  background: transparent;
+  padding: 15px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.year-text {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 5px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.date-text {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.admin-notice {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.admin-notice h3 {
+  margin: 0 0 5px 0;
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.admin-notice p {
+  margin: 0;
+  color: #1976d2;
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.classroom-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.welcome-section {
+  text-align: center;
+  max-width: 600px;
+}
+
+.welcome-section h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 15px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.welcome-section p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.class-button-container {
+  margin-top: 25px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.class-detail-container {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.class-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  width: 270px;
+  height: 410px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  box-sizing: border-box;
+  direction: rtl; /* 스크롤바를 왼쪽으로 이동 */
+}
+
+.class-grid > * {
+  direction: ltr; /* 내부 콘텐츠는 다시 왼쪽 정렬 */
+}
+
+/* 스크롤바 스타일링 */
+.class-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.class-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.class-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.class-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.empty-class-list {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 15px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-class-list p {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 10px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.empty-class-list p:last-child {
+  margin: 0;
+  font-size: 14px;
+  color: #999;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .classroom-content {
+    padding: 15px;
+  }
+  
+  .date-text {
+    font-size: 24px;
+  }
+  
+  .welcome-section h3 {
+    font-size: 20px;
+  }
+  
+  .welcome-section p {
+    font-size: 14px;
+  }
+  
+  .empty-class-list {
+    padding: 30px 15px;
+  }
+}

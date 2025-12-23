@@ -1,0 +1,23 @@
+.class-create-button {
+  width: 270px;
+  height: 40px;
+  background: white;
+  border: 2px solid #4DC4AB;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.class-create-button:hover {
+  background: #f0fffe;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(77, 196, 171, 0.2);
+}
+
+.plus-icon {
+  color: #4DC4AB;
+}

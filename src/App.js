@@ -1,10 +1,20 @@
 import React, { useState, createContext, useContext } from 'react';
-import MainBoard from "./pages/Main/MainBoard";
-import MyPageBoard from "./pages/MyPage/MyPageBoard";
-import CommunityBoard from "./pages/Community/CommunityBoard";
+import MainBoardStudent from "./pages/Main/Student/MainBoard";
+import MyPageBoardStudent from "./pages/MyPage/Student/MyPageBoard";
+import CommunityBoardStudent from "./pages/Community/Student/CommunityBoard";
+import ClassroomBoardStudent from "./pages/Classroom/Student/ClassroomBoard";
+import MainBoardAdmin from "./pages/Main/Admin/MainBoard";
+import MyPageBoardAdmin from "./pages/MyPage/Admin/MyPageBoard";
+import CommunityBoardAdmin from "./pages/Community/Admin/CommunityBoard";
+import ClassroomBoardAdmin from "./pages/Classroom/Admin/ClassroomBoard";
 import Login from "./pages/Login/Login";
+<<<<<<< HEAD
 import EditProfileModal from "./components/ProfileModal/EditProfileModal";
 import axios from "axios";
+=======
+import EditProfileModal from "./components/UserProfileModal/EditProfileModal";
+import { mockProfile } from "./mocks/mockProfile";
+>>>>>>> 3abdeff (feat: enhance assignment page features)
 
 const AppContext = createContext();
 export const useAppContext = () => {
@@ -18,6 +28,7 @@ export const useAppContext = () => {
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
   const [showProfileModal, setShowProfileModal] = useState(false);
+<<<<<<< HEAD
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [profile, setProfile] = useState(null);
   const [globalEvents, setGlobalEvents] = useState([]);
@@ -49,19 +60,26 @@ function App() {
   React.useEffect(() => {
     if (isLoggedIn) fetchProfile();
   }, [isLoggedIn]);
+=======
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // 기본값을 true로 설정 (로그인된 상태)
+  const [userRole, setUserRole] = useState('student'); // 'student' 또는 'admin'
+  const [globalEvents, setGlobalEvents] = useState([]); // 전역 일정 상태
+>>>>>>> 3abdeff (feat: enhance assignment page features)
 
   const renderCurrentPage = () => {
+    const isAdmin = userRole === 'admin';
+    
     switch(currentPage) {
       case 'main':
-        return <MainBoard />;
+        return isAdmin ? <MainBoardAdmin /> : <MainBoardStudent />;
       case 'mypage':
-        return <MyPageBoard />;
+        return isAdmin ? <MyPageBoardAdmin /> : <MyPageBoardStudent />;
       case 'community':
-        return <CommunityBoard />;
-      case 'assignments':
-        return <div style={{padding: '50px', textAlign: 'center', fontSize: '24px'}}>과제제출 페이지</div>;
+        return isAdmin ? <CommunityBoardAdmin /> : <CommunityBoardStudent />;
+      case 'classroom':
+        return isAdmin ? <ClassroomBoardAdmin /> : <ClassroomBoardStudent />;
       default:
-        return <MainBoard />;
+        return isAdmin ? <MainBoardAdmin /> : <MainBoardStudent />;
     }
   };
 
@@ -80,7 +98,16 @@ function App() {
     setIsLoggedIn(false);
     setShowProfileModal(false);
     setCurrentPage('main');
+<<<<<<< HEAD
     setProfile(null);
+=======
+    setUserRole('student'); // 로그아웃 시 기본값으로 리셋
+  };
+
+  const handleLogin = (role = 'student') => {
+    setIsLoggedIn(true);
+    setUserRole(role);
+>>>>>>> 3abdeff (feat: enhance assignment page features)
   };
 
   const contextValue = {
@@ -92,11 +119,13 @@ function App() {
     setProfile,
     handleLogout,
     globalEvents,
-    setGlobalEvents
+    setGlobalEvents,
+    userRole,
+    setUserRole
   };
 
   if (!isLoggedIn) {
-    return <Login onLogin={() => setIsLoggedIn(true)} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   return (

@@ -1,0 +1,237 @@
+.class-detail-card {
+  width: 650px;
+  height: 580px;
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+/* 왼쪽: 제목과 선생님 이름 */
+.class-info-left {
+  text-align: left;
+}
+
+.class-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 5px 0;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+
+.teacher-name {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* 오른쪽: 반 코드와 참가 인원을 세로로 배치 */
+.class-info-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.class-code-box {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.participant-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.participant-info:hover {
+  background: rgba(77, 196, 171, 0.1);
+}
+
+.participant-icon {
+  color: #666;
+}
+
+.participant-count {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 구분선 */
+.divider-line {
+  width: 100%;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 5px 0 10px 0;
+}
+
+/* 필터 섹션 */
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-button {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.filter-button:hover {
+  background: #f5f5f5;
+}
+
+.filter-button.active {
+  background: #4DC4AB;
+  border-color: #4DC4AB;
+  color: white;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* 게시물 목록 */
+.posts-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.post-item:hover {
+  background: #e9ecef;
+}
+
+.post-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.post-tag.assignment {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.post-tag.notice {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.post-title {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.post-date {
+  font-size: 12px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+/* 스크롤바 스타일링 */
+.posts-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.posts-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.posts-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.posts-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .class-detail-card {
+    width: 90%;
+    height: 200px;
+    padding: 25px;
+  }
+  
+  .class-title {
+    font-size: 28px;
+  }
+  
+  .teacher-name {
+    font-size: 14px;
+  }
+  
+  .card-top-row {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .class-info-right {
+    align-self: flex-end;
+  }
+}
+

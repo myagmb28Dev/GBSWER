@@ -1,0 +1,179 @@
+.classroom-board {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: white;
+}
+
+.classroom-main-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  gap: 30px;
+}
+
+.classroom-left-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  height: 580px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.date-display {
+  width: 270px;
+  height: 60px;
+  background: transparent;
+  padding: 15px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.class-button-container {
+  display: flex;
+  justify-content: center;
+  width: 270px;
+}
+
+.class-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  width: 270px;
+  height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  box-sizing: border-box;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.class-detail-wrapper {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.sidebar-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.no-class-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 650px;
+  height: 580px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0 auto;
+}
+
+.no-class-selected p {
+  font-size: 18px;
+  color: #999;
+  margin: 0;
+}
+
+.year-text {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 5px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.date-text {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.class-grid > * {
+  width: 250px;
+}
+
+.empty-class-list {
+  background: #f8f9fa;
+  border: 1px dashed #d0d0d0;
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  width: 270px;
+}
+
+/* 스크롤바 스타일링 */
+.class-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.class-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.class-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.class-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.empty-class-list p {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 10px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.empty-class-list p:last-child {
+  margin: 0;
+  font-size: 14px;
+  color: #999;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .classroom-content {
+    padding: 15px;
+  }
+  
+  .date-text {
+    font-size: 24px;
+  }
+  
+  .welcome-section h3 {
+    font-size: 20px;
+  }
+  
+  .welcome-section p {
+    font-size: 14px;
+  }
+  
+  .empty-class-list {
+    padding: 30px 15px;
+  }
+}

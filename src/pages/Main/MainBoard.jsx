@@ -4,6 +4,7 @@ import Footer from '../../components/Footer/Footer';
 import NoticeCard from '../../components/Notice/NoticeCard';
 import Calendar from '../../components/Calendar/Calendar';
 import WeeklySchedule from '../../components/Schedule/WeeklySchedule';
+import ClassCreateButton from '../../components/ClassCreateButton/ClassCreateButton';
 import './MainBoard.css';
 
 const MainBoard = () => {
@@ -18,6 +19,12 @@ const MainBoard = () => {
         
         <Calendar />
       </div>
+      
+      {/* 클래스 생성/참여 버튼 */}
+      <div className="class-button-container">
+        <ClassCreateButton userRole="student" />
+      </div>
+      
       <Footer />
     </div>
   );

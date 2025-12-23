@@ -1,0 +1,189 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-class-modal {
+  background: white;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+.close-button:hover {
+  background: #f5f5f5;
+}
+
+.modal-content {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.class-name-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.class-name-input:focus {
+  outline: none;
+  border-color: #4DC4AB;
+}
+
+.code-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.code-display {
+  padding: 15px;
+  background: #f8f9fa;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generated-code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4DC4AB;
+  letter-spacing: 2px;
+}
+
+.copy-button {
+  background: #4DC4AB;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.copy-button:hover {
+  background: #3DB599;
+}
+
+.no-code {
+  color: #999;
+  font-size: 14px;
+}
+
+.generate-button {
+  background: #4DC4AB;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.generate-button:hover {
+  background: #3DB599;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.cancel-button,
+.create-button {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button {
+  background: #f8f9fa;
+  border: 2px solid #e5e5e5;
+  color: #666;
+}
+
+.cancel-button:hover {
+  background: #e9ecef;
+}
+
+.create-button {
+  background: #4DC4AB;
+  border: 2px solid #4DC4AB;
+  color: white;
+}
+
+.create-button:hover {
+  background: #3DB599;
+  border-color: #3DB599;
+}

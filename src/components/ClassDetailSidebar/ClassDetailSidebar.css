@@ -1,0 +1,405 @@
+.class-detail-sidebar {
+  width: 300px;
+  height: 580px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-left: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 15px 20px 0 20px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.sidebar-content {
+  flex: 1;
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 공통 스타일 (과제와 공지 동일) */
+.post-header {
+  margin-bottom: 20px;
+}
+
+.post-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.post-content {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* 과제 기간 */
+.assignment-period {
+  margin: 8px 0;
+}
+
+.period-text {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* 일정표 추가 체크박스 */
+.schedule-checkbox {
+  margin: 10px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  font-weight: 400;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #4DC4AB;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 400;
+}
+
+/* 제출된 과제 표기 박스 (캐릭터 바로 위) */
+.submitted-files-container {
+  margin-bottom: 10px;
+}
+
+.submitted-files-box {
+  width: 280px;
+  max-height: 90px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.submitted-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #333;
+  padding: 2px 0;
+}
+
+.submitted-file-item .file-icon {
+  color: #4DC4AB;
+  flex-shrink: 0;
+}
+
+.submitted-file-item .file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-submitted-file {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.remove-submitted-file:hover {
+  background: #e9ecef;
+  color: #666;
+}
+
+/* 캐릭터와 버튼 섹션 */
+.character-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: auto;
+  padding-top: 15px;
+  position: relative;
+}
+
+.sidebar-character {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.button-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-file-section {
+  display: flex;
+  justify-content: center;
+}
+
+/* 동그라미 추가 버튼 */
+.circle-add-button {
+  width: 32px;
+  height: 32px;
+  background: #4DC4AB;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(77, 196, 171, 0.3);
+}
+
+.circle-add-button:hover {
+  background: #45b399;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(77, 196, 171, 0.4);
+}
+
+/* 제출하기 버튼 */
+.submit-button {
+  background: #4DC4AB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+  height: 32px;
+}
+
+.submit-button:hover {
+  background: #45b399;
+}
+
+.upload-confirm-button {
+  position: absolute;
+  bottom: 120px;
+  right: 20px;
+  background: #4DC4AB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.upload-confirm-button:hover {
+  background: #45b399;
+}
+
+/* 임시 첨부 파일 목록 */
+.temp-attachment-list {
+  position: absolute;
+  bottom: 150px;
+  right: 20px;
+  width: 200px;
+  max-height: 100px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.temp-attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.temp-attachment-item .file-icon {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.temp-attachment-item .file-name {
+  flex: 1;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-temp-file {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.remove-temp-file:hover {
+  background: #e9ecef;
+  color: #666;
+}
+
+/* 빈 상태 */
+.sidebar-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 16px;
+  position: relative;
+}
+
+.empty-character {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+
+.sidebar-empty p {
+  margin: 0;
+  color: #4DC4AB;
+  font-weight: 600;
+  position: absolute;
+  top: 350px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* 공통 스타일 */
+.hidden {
+  display: none;
+}
+
+/* 스크롤바 스타일링 */
+.submitted-files-box::-webkit-scrollbar,
+.temp-attachment-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.submitted-files-box::-webkit-scrollbar-track,
+.temp-attachment-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.submitted-files-box::-webkit-scrollbar-thumb,
+.temp-attachment-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.submitted-files-box::-webkit-scrollbar-thumb:hover,
+.temp-attachment-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .class-detail-sidebar {
+    width: 100%;
+    height: 400px;
+  }
+  
+  .assignment-title, .notice-title {
+    font-size: 18px;
+  }
+  
+  .sidebar-content {
+    padding: 15px;
+  }
+  
+  .sidebar-header {
+    padding: 15px;
+  }
+  
+  .sidebar-character, .empty-character {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .file-upload-box {
+    width: 100%;
+    height: 45px;
+  }
+}

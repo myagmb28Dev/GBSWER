@@ -1,0 +1,113 @@
+.mypage-board {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: white;
+}
+
+.mypage-content {
+  flex: 1;
+  padding: 20px;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.admin-notice {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.admin-notice h3 {
+  margin: 0 0 5px 0;
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.admin-notice p {
+  margin: 0;
+  color: #1976d2;
+  font-size: 14px;
+}
+
+.section-a {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.section-b {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  flex: 1;
+  align-items: flex-start;
+}
+
+.schedule-section {
+  flex-shrink: 0;
+  width: 315px;
+  height: 530px;
+}
+
+.timetable-section {
+  flex: 1;
+  min-width: 600px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .section-b {
+    flex-direction: column;
+  }
+  
+  .timetable-section {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .mypage-content {
+    padding: 15px;
+  }
+  
+  .section-a {
+    order: 1;
+  }
+  
+  .section-b {
+    order: 2;
+    flex-direction: column;
+  }
+  
+  .schedule-section {
+    width: 100%;
+  }
+}
