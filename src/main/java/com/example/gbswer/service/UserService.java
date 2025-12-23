@@ -8,7 +8,6 @@ import com.example.gbswer.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Getter
@@ -31,8 +29,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileUploadService fileUploadService;
 
-    private static final String DEFAULT_PROFILE_IMAGE = "/static/images/default-profile.png";
-
     public UserDto getProfile(Long userId) {
         User user = findUserById(userId);
         return convertToDto(user);
@@ -42,7 +38,6 @@ public class UserService {
     public void withdraw(Long userId) {
         User user = findUserById(userId);
         userRepository.delete(user);
-        log.info("User withdrawn: {}", userId);
     }
 
     public List<UserDto> getAllUsers() {
@@ -74,7 +69,6 @@ public class UserService {
         }
 
         emailService.sendVerificationCode(email);
-        log.info("Verification code sent to email: {} for user: {}", email, userId);
     }
 
     @Transactional
@@ -87,7 +81,6 @@ public class UserService {
         user.setEmail(request.getEmail());
         userRepository.save(user);
 
-        log.info("Email verified and set for user: {}", userId);
         return convertToDto(user);
     }
 
@@ -96,7 +89,6 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 이메일로 등록된 사용자가 없습니다."));
 
         emailService.sendPasswordResetCode(email);
-        log.info("Password reset code sent to email: {}", email);
     }
 
     @Transactional
@@ -110,8 +102,16 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
 
-        log.info("Password reset for user: {}", user.getId());
+    @Transactional
+    public void changePassword(long userId, String oldPassword, String newPassword) {
+        User user = findUserById(userId);
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "기존 비밀번호가 일치하지 않습니다.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     @Transactional
@@ -139,6 +139,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public boolean confirmPassword(Long userId, String password) {
+        User user = findUserById(userId);
+        if (user.getPassword() == null) return false;
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    @Transactional
     public UserDto updateProfile(Long userId, UserDto request) {
         User user = findUserById(userId);
         if (request.getName() != null) user.setName(request.getName());
@@ -147,6 +154,7 @@ public class UserService {
         if (request.getClassNumber() != null) user.setClassNumber(request.getClassNumber());
         if (request.getBio() != null) user.setBio(request.getBio());
         if (request.getProfileImage() != null) user.setProfileImage(request.getProfileImage());
+        if (request.getAdmissionYear() != null) user.setAdmissionYear(request.getAdmissionYear());
         userRepository.save(user);
         return convertToDto(user);
     }
@@ -169,6 +177,7 @@ public class UserService {
                 .userId(user.getUserId())
                 .profileImage(user.getProfileImage())
                 .bio(user.getBio())
+                .admissionYear(user.getAdmissionYear())
                 .build();
     }
 }

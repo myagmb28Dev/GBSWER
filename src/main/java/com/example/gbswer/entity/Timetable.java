@@ -10,18 +10,21 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "timetable")
+@Table(name = "timetable", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_timetable_unique", columnNames = {"date", "major", "grade", "class_number", "period"})
+})
 public class Timetable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private LocalDate date;
-    private String department;
+    private String major;
     private int grade;
+
+    @Column(name = "class_number")
     private int classNumber;
+
     private int period;
     private String subjectName;
-    private String teacherName;
-    private String classroomName;
 }

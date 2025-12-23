@@ -16,13 +16,16 @@ public class MealController {
     @GetMapping
     public ResponseEntity<?> getMonthlyMeals(@RequestParam int year, @RequestParam int month) {
         var result = mealService.getMonthlyMeals(year, month);
+        if (result == null || result.isEmpty()) {
+            return ResponseEntity.status(404).body(ApiResponseDto.error("DB에 급식 데이터가 없습니다."));
+        }
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshMeals(@RequestParam int year, @RequestParam int month) {
-        mealService.fetchAndSaveMealsFromNeis(year, month);
-        return ResponseEntity.ok(ApiResponseDto.success(
-                String.format("%d년 %d월 급식 데이터가 업데이트되었습니다.", year, month)));
+    public ResponseEntity<?> refreshMonthlyMeals(@RequestParam int year, @RequestParam int month) {
+        var result = mealService.refreshMonthlyMeals(year, month);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
+
 }

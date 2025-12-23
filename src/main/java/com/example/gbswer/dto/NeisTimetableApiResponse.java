@@ -55,9 +55,6 @@ public class NeisTimetableApiResponse {
         @JsonProperty("AY")
         private String ay;
 
-        @JsonProperty("SEM")
-        private String sem;
-
         @JsonProperty("ALL_TI_YMD")
         private String allTiYmd;
 
@@ -80,4 +77,3 @@ public class NeisTimetableApiResponse {
         private String loadDtm;
     }
 }
-

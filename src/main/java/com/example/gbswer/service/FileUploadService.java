@@ -2,7 +2,6 @@ package com.example.gbswer.service;
 
 import com.example.gbswer.config.properties.AwsProperties;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileUploadService {
@@ -117,12 +116,10 @@ public class FileUploadService {
                         .bucket(awsProperties.getBucket())
                         .key(s3Key)
                         .build());
-                log.info("S3 delete success: {}", s3Key);
             } else {
                 deleteLocalFile(imageUrl);
             }
         } catch (Exception e) {
-            log.error("S3 delete failed: {}", imageUrl, e);
         }
     }
 
@@ -139,7 +136,6 @@ public class FileUploadService {
             Path path = Paths.get(uploadDir, relativePath);
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            log.error("Failed to delete local file: {}", fileName, e);
         }
     }
 
@@ -169,9 +165,7 @@ public class FileUploadService {
                             .contentType(file.getContentType())
                             .build(),
                     RequestBody.fromBytes(file.getBytes()));
-            log.info("S3 upload success: {}", s3Key);
         } catch (IOException e) {
-            log.error("S3 upload failed: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
 
@@ -189,19 +183,13 @@ public class FileUploadService {
                 generatedFilename);
 
         Path fullPath = Paths.get(uploadDir, relativePath);
-        log.info("[DEBUG] uploadDir: {}", uploadDir);
-        log.info("[DEBUG] relativePath: {}", relativePath);
-        log.info("[DEBUG] fullPath: {}", fullPath);
         try {
             Files.createDirectories(fullPath.getParent());
-            log.info("[DEBUG] Directory created or already exists: {}", fullPath.getParent());
             file.transferTo(fullPath.toFile());
-            log.info("Local file upload success: {}", fullPath);
 
             // 프론트가 접근할 수 있는 URL 반환
             return String.format("http://localhost:%s/uploads/%s", serverPort(), relativePath);
         } catch (IOException e) {
-            log.error("Local file upload failed: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
     }
@@ -246,13 +234,37 @@ public class FileUploadService {
             }
             return null;
         } catch (Exception e) {
-            log.error("Failed to extract S3 key from URL: {}", imageUrl);
             return null;
         }
     }
 
     private String extractLocalPath(String fileName) {
-        // 파일명에서 경로 추출 로직 필요시 구현
-        return fileName;
+        if (fileName == null || fileName.isEmpty()) return null;
+        try {
+            // If fileName is a full URL like http://localhost:8080/uploads/posts/2025/12/uuid.png
+            // extract the part after /uploads/
+            int idx = fileName.indexOf("/uploads/");
+            if (idx != -1) {
+                return fileName.substring(idx + 9); // length of "/uploads/"
+            }
+            // If it's already a relative path like posts/2025/12/uuid.png, return as-is
+            return fileName.replaceFirst("^/+", "");
+        } catch (Exception e) {
+            return fileName;
+        }
+    }
+
+    @PostConstruct
+    public void initUploadDir() {
+        try {
+            if (uploadDir == null || uploadDir.isEmpty()) {
+                return;
+            }
+            Path base = Paths.get(uploadDir);
+            if (!Files.exists(base)) {
+                Files.createDirectories(base);
+            }
+        } catch (Exception e) {
+        }
     }
 }

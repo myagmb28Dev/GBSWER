@@ -7,7 +7,6 @@ import com.example.gbswer.entity.SchoolEvent;
 import com.example.gbswer.repository.SchoolEventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchoolEventService {
@@ -53,7 +51,6 @@ public class SchoolEventService {
             startDate.format(NEIS_DATE_FORMAT), endDate.format(NEIS_DATE_FORMAT)
         );
 
-        log.info("NEIS Schedule API 호출: {}", url.replace(neisProperties.getKey(), "***"));
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -61,13 +58,11 @@ public class SchoolEventService {
 
             if (responseBody == null || responseBody.isEmpty() ||
                 responseBody.trim().startsWith("<!DOCTYPE") || responseBody.trim().startsWith("<HTML")) {
-                log.warn("NEIS Schedule API 응답이 유효하지 않습니다.");
                 return;
             }
 
             NeisScheduleApiResponse body = objectMapper.readValue(responseBody, NeisScheduleApiResponse.class);
             if (body == null || body.getSchoolSchedule() == null || body.getSchoolSchedule().isEmpty()) {
-                log.warn("NEIS Schedule API 응답에 schoolSchedule이 없습니다.");
                 return;
             }
 
@@ -79,7 +74,6 @@ public class SchoolEventService {
             }
 
             if (rows.isEmpty()) {
-                log.info("해당 기간({}-{})에 학사일정 데이터가 없습니다.", year, month);
                 return;
             }
 
@@ -87,10 +81,9 @@ public class SchoolEventService {
                 saveEventFromRow(row);
             }
 
-            log.info("학사일정 데이터 저장 완료: {}-{}", year, month);
 
         } catch (Exception e) {
-            log.error("NEIS Schedule API 호출 중 오류 발생: {}", e.getMessage(), e);
+
         }
     }
 
@@ -115,7 +108,6 @@ public class SchoolEventService {
 
             schoolEventRepository.save(event);
         } catch (Exception e) {
-            log.error("학사일정 저장 중 오류: {}", e.getMessage());
         }
     }
 

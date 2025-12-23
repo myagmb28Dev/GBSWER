@@ -23,7 +23,5 @@ public class TimetableDto {
     public static class PeriodInfo {
         private Integer period;
         private String subjectName;
-        private String teacherName;
-        private String classroomName;
     }
 }

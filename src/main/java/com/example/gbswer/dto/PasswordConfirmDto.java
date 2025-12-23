@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PasswordResetDto {
-    private String email;
-    private String tempPassword;
-    private String newPassword;
-    private String confirmPassword;
+public class PasswordConfirmDto {
+    private String password;
 }
+

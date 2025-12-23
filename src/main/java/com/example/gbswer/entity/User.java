@@ -56,6 +56,9 @@ public class User {
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 
+    @Column(name = "admission_year")
+    private Integer admissionYear;
+
     public enum Role {
         STUDENT, TEACHER, ADMIN
     }

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
@@ -60,34 +58,11 @@ public class CommunityService {
         return convertToDto(community);
     }
 
-    private void setFilesToCommunity(Community community, List<MultipartFile> files) {
-        List<String> fileUrls = new ArrayList<>();
-        List<String> fileNames = new ArrayList<>();
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                if (file == null || file.isEmpty()) continue;
-                String url = fileUploadService.uploadCommunityImage(file);
-                fileUrls.add(url);
-                fileNames.add(file.getOriginalFilename());
-            }
-        }
-        community.setFileNames(convertListToJson(fileNames));
-        community.setFileUrls(convertListToJson(fileUrls));
-    }
-
-    private void deleteFilesByUrls(List<String> urls) {
-        boolean useLocal = "local".equalsIgnoreCase(storageType());
-        if (useLocal) {
-            fileUploadService.deleteLocalFiles(urls);
-        } else {
-            fileUploadService.deleteFiles(urls);
-        }
-    }
-
     @Transactional
     public CommunityDto createPost(Long authorId, String title, String content, String major, List<MultipartFile> images, boolean anonymous) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+        List<String> uploadedUrls = new ArrayList<>();
         try {
             Community community = Community.builder()
                     .title(title)
@@ -97,13 +72,40 @@ public class CommunityService {
                     .major(major != null ? major : "ALL")
                     .anonymous(anonymous)
                     .build();
-            setFilesToCommunity(community, images);
+
+            if (images != null && !images.isEmpty()) {
+                for (MultipartFile file : images) {
+                    if (file == null || file.isEmpty()) continue;
+                    try {
+                        String url = fileUploadService.uploadCommunityImage(file);
+                        uploadedUrls.add(url);
+                    } catch (Exception fe) {
+                        // 롤백: 업로드된 url 삭제
+                        if (!uploadedUrls.isEmpty()) {
+                            try {
+                                deleteFilesByUrls(uploadedUrls);
+                            } catch (Exception de) {
+                            }
+                        }
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "file upload failed");
+                    }
+                }
+                community.setFileNames(convertListToJson(new ArrayList<>())); 
+                community.setFileUrls(convertListToJson(uploadedUrls));
+            }
+
             communityRepository.save(community);
             return convertToDto(community);
+        } catch (ResponseStatusException rse) {
+            throw rse;
         } catch (Exception e) {
-            log.error("Failed to save community, rolling back uploaded images", e);
-            // 파일 삭제 로직은 setFilesToCommunity에서 처리된 fileUrls를 활용
-            throw e;
+            if (!uploadedUrls.isEmpty()) {
+                try {
+                    deleteFilesByUrls(uploadedUrls);
+                } catch (Exception de) {
+                }
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to create post");
         }
     }
 
@@ -114,13 +116,56 @@ public class CommunityService {
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
-        // 기존 파일 모두 삭제
-        deleteFilesByUrls(convertJsonToList(community.getFileUrls()));
-        // 새 파일 업로드 및 정보 갱신
-        setFilesToCommunity(community, files);
+
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+
+
+        List<String> newFileUrls = new ArrayList<>();
+        List<String> newFileNames = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue;
+                try {
+                    String url = fileUploadService.uploadCommunityImage(file);
+                    newFileUrls.add(url);
+                    newFileNames.add(file.getOriginalFilename());
+                } catch (Exception e) {
+                    try {
+                        deleteFilesByUrls(newFileUrls);
+                    } catch (Exception ex) {
+                    }
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+                }
+            }
+        }
+
+        try {
+            List<String> oldUrls = convertJsonToList(community.getFileUrls());
+            deleteFilesByUrls(oldUrls);
+        } catch (Exception e) {
+        }
+
+        if (!newFileUrls.isEmpty()) {
+            community.setFileNames(convertListToJson(newFileNames));
+            community.setFileUrls(convertListToJson(newFileUrls));
+        } else {
+            community.setFileNames(null);
+            community.setFileUrls(null);
+        }
+
         community.setTitle(title);
         community.setContent(content);
-        if (major != null) community.setMajor(major);
+        if (major != null) {
+            if (author.getRole() == User.Role.TEACHER) {
+                community.setMajor(normalizeMajor(major));
+            } else {
+                // 학생이면 major 변경 시도 자체를 금지
+                if (!normalizeMajor(major).equalsIgnoreCase(normalizeMajor(community.getMajor()))) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "학생은 게시글의 major를 변경할 수 없습니다.");
+                }
+            }
+        }
         communityRepository.save(community);
         return convertToDto(community);
     }
@@ -168,12 +213,16 @@ public class CommunityService {
                 .build();
     }
 
+    private String normalizeMajor(String major) {
+        if (major == null) return "ALL";
+        return major.trim();
+    }
+
     private String convertListToJson(List<String> list) {
         if (list == null || list.isEmpty()) return null;
         try {
             return objectMapper.writeValueAsString(list);
         } catch (JsonProcessingException e) {
-            log.error("Failed to convert list to JSON", e);
             return null;
         }
     }
@@ -182,9 +231,17 @@ public class CommunityService {
         if (json == null || json.isEmpty()) return new ArrayList<>();
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            log.error("Failed to convert JSON to list", e);
+        } catch (Exception e) {
             return new ArrayList<>();
+        }
+    }
+
+    private void deleteFilesByUrls(List<String> urls) {
+        boolean useLocal = "local".equalsIgnoreCase(storageType());
+        if (useLocal) {
+            fileUploadService.deleteLocalFiles(urls);
+        } else {
+            fileUploadService.deleteFiles(urls);
         }
     }
 }

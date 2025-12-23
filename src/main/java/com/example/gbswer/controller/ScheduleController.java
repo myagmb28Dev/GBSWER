@@ -56,4 +56,3 @@ public class ScheduleController {
         return ResponseEntity.ok(ApiResponseDto.success(null));
     }
 }
-

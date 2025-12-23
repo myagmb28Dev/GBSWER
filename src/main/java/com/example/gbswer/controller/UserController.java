@@ -36,7 +36,19 @@ public class UserController {
 
     @PostMapping("/password/reset/verify")
     public ResponseEntity<?> verifyAndResetPassword(@RequestBody PasswordResetDto request) {
-        userService.verifyAndResetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
+        if (request.getNewPassword() == null || request.getConfirmPassword() == null || !request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponseDto.error("새 비밀번호와 확인이 일치하지 않습니다."));
+        }
+        userService.verifyAndResetPassword(request.getEmail(), request.getTempPassword(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponseDto.success(null));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDto userDto, @RequestBody ChangePasswordDto request) {
+        if (request.getNewPassword() == null || request.getConfirmPassword() == null || !request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponseDto.error("새 비밀번호와 확인이 일치하지 않습니다."));
+        }
+        userService.changePassword(userDto.getId(), request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponseDto.success(null));
     }
 
@@ -89,6 +101,13 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal UserDto userDto) {
         userService.logout(userDto.getId());
+        return ResponseEntity.ok(ApiResponseDto.success(null));
+    }
+
+    @PostMapping("/confirm-password")
+    public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserDto userDto, @RequestBody PasswordConfirmDto request) {
+        boolean ok = userService.confirmPassword(userDto.getId(), request.getPassword());
+        if (!ok) return ResponseEntity.status(401).body(ApiResponseDto.error("비밀번호가 일치하지 않습니다."));
         return ResponseEntity.ok(ApiResponseDto.success(null));
     }
 }

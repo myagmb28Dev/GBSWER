@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface TimetableRepository extends JpaRepository<Timetable, Long> {
-    List<Timetable> findByDateAndDepartmentAndGradeAndClassNumber(LocalDate date, String department, int grade, int classNumber);
-    List<Timetable> findByDateBetweenAndDepartmentAndGradeAndClassNumber(LocalDate start, LocalDate end, String department, int grade, int classNumber);
+    List<Timetable> findByDateAndMajorAndGradeAndClassNumber(LocalDate date, String major, int grade, int classNumber);
+    List<Timetable> findByDateBetweenAndMajorAndGradeAndClassNumber(LocalDate start, LocalDate end, String major, int grade, int classNumber);
 }
-

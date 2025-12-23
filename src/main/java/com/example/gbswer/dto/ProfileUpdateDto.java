@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProfileUpdateDto {
     private String name;
-    private String department;
+    private String major;
     private Integer grade;
     private Integer classNumber;
     private Integer studentNumber;
     private String email;
 }
-

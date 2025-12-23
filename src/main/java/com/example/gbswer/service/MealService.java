@@ -3,12 +3,11 @@ package com.example.gbswer.service;
 import com.example.gbswer.config.properties.NeisProperties;
 import com.example.gbswer.dto.DayMealsDto;
 import com.example.gbswer.dto.MealDto;
-import com.example.gbswer.dto.NeisApiResponse;
 import com.example.gbswer.entity.Meal;
 import com.example.gbswer.repository.MealRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MealService {
@@ -33,13 +31,25 @@ public class MealService {
     private static final DateTimeFormatter NEIS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter RESPONSE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    @Transactional(readOnly = true)
     public Map<String, DayMealsDto> getMonthlyMeals(int year, int month) {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
         List<Meal> meals = mealRepository.findByMealDateBetweenOrderByMealDateAscMealTypeAsc(startDate, endDate);
 
-        // NEIS API 호출 제거: 값이 없으면 빈 결과만 반환
+        return convertToMonthlyResponse(meals);
+    }
+
+    @Transactional
+    public Map<String, DayMealsDto> refreshMonthlyMeals(int year, int month) {
+        // NEIS에서 받아와 저장
+        fetchAndSaveMealsFromNeis(year, month);
+
+        // 저장 후 재조회하여 반환
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+        List<Meal> meals = mealRepository.findByMealDateBetweenOrderByMealDateAscMealTypeAsc(startDate, endDate);
         return convertToMonthlyResponse(meals);
     }
 
@@ -54,7 +64,6 @@ public class MealService {
             startDate.format(NEIS_DATE_FORMAT), endDate.format(NEIS_DATE_FORMAT)
         );
 
-        log.info("NEIS API 호출: {}", url.replace(neisProperties.getKey(), "***"));
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -62,75 +71,84 @@ public class MealService {
 
             if (responseBody == null || responseBody.isEmpty() ||
                 responseBody.trim().startsWith("<!DOCTYPE") || responseBody.trim().startsWith("<HTML")) {
-                log.warn("NEIS API 응답이 유효하지 않습니다.");
                 return;
             }
 
-            NeisApiResponse body = objectMapper.readValue(responseBody, NeisApiResponse.class);
-            if (body == null || body.getMealServiceDietInfo() == null || body.getMealServiceDietInfo().isEmpty()) {
-                log.warn("NEIS API 응답에 mealServiceDietInfo가 없습니다.");
+            // 방어적으로 JsonNode로 파싱해서 'row' 배열을 찾아 처리
+            JsonNode root = objectMapper.readTree(responseBody);
+            if (root == null) {
                 return;
             }
 
-            List<NeisApiResponse.Row> rows = null;
-            for (NeisApiResponse.MealServiceDietInfo info : body.getMealServiceDietInfo()) {
-                if (info.getRow() != null && !info.getRow().isEmpty()) {
-                    rows = info.getRow();
+            JsonNode arrayNode = root.get("mealServiceDietInfo");
+            if (arrayNode == null || !arrayNode.isArray() || arrayNode.isEmpty()) {
+                return;
+            }
+
+            JsonNode rowsNode = null;
+            for (JsonNode infoNode : arrayNode) {
+                if (infoNode.has("row") && infoNode.get("row").isArray() && !infoNode.get("row").isEmpty()) {
+                    rowsNode = infoNode.get("row");
                     break;
                 }
             }
 
-            if (rows == null || rows.isEmpty()) {
-                log.warn("NEIS API row 데이터가 없습니다.");
+            if (rowsNode == null || !rowsNode.isArray() || rowsNode.isEmpty()) {
                 return;
             }
 
-            log.info("NEIS API에서 {}건의 급식 데이터를 받았습니다.", rows.size());
-
             int savedCount = 0;
-            for (NeisApiResponse.Row row : rows) {
+            for (JsonNode row : rowsNode) {
                 try {
-                    LocalDate mealDate = LocalDate.parse(row.getMlsvYmd(), NEIS_DATE_FORMAT);
-                    String mealType = convertMealType(row.getMmealScNm());
+                    String mlsvYmd = row.hasNonNull("MLSV_YMD") ? row.get("MLSV_YMD").asText() : null;
+                    if (mlsvYmd == null || mlsvYmd.isBlank()) {
+                        continue;
+                    }
 
+                    LocalDate mealDate = LocalDate.parse(mlsvYmd, NEIS_DATE_FORMAT);
+
+                    String mmealScNm = row.hasNonNull("MMEAL_SC_NM") ? row.get("MMEAL_SC_NM").asText() : null;
+                    String mealType = convertMealType(mmealScNm);
+
+                    // 기존 데이터 중복 체크
                     if (mealRepository.findByMealDateAndMealType(mealDate, mealType).isPresent()) {
                         continue;
                     }
 
-                    String dishes = row.getDdishNm();
+                    String dishes = row.hasNonNull("DDISH_NM") ? row.get("DDISH_NM").asText() : null;
                     if (dishes != null) {
                         dishes = dishes.replaceAll("<br/>", "\n").trim();
                     }
+
+                    String calInfo = row.hasNonNull("CAL_INFO") ? row.get("CAL_INFO").asText() : null;
+                    String origin = row.hasNonNull("DDISH_NM") ? row.get("DDISH_NM").asText() : null;
 
                     Meal meal = Meal.builder()
                         .mealDate(mealDate)
                         .mealType(mealType)
                         .dishes(dishes)
-                        .calorie(row.getCalInfo())
-                        .originData(row.getDdishNm())
+                        .calorie(calInfo)
+                        .originData(origin)
                         .build();
 
                     mealRepository.save(meal);
                     savedCount++;
                 } catch (Exception e) {
-                    log.error("급식 데이터 저장 중 오류: {}", e.getMessage());
                 }
             }
 
-            log.info("NEIS API 데이터 저장 완료: {}-{}, 저장된 데이터: {}건", year, month, savedCount);
 
         } catch (Exception e) {
-            log.error("NEIS API 호출 중 오류 발생: {}", e.getMessage(), e);
         }
     }
 
     private String convertMealType(String mmealScNm) {
-        if (mmealScNm == null) return "UNKNOWN";
-        return switch (mmealScNm.trim()) {
+        if (mmealScNm == null) return "LUNCH";
+        return switch (mmealScNm) {
             case "조식" -> "BREAKFAST";
             case "중식" -> "LUNCH";
             case "석식" -> "DINNER";
-            default -> "UNKNOWN";
+            default -> "LUNCH";
         };
     }
 
@@ -168,10 +186,10 @@ public class MealService {
     }
 
     private List<String> parseDishes(String dishes) {
-        if (dishes == null || dishes.isEmpty()) return Collections.emptyList();
-        return Arrays.stream(dishes.split("\n"))
+        if (dishes == null) return Collections.emptyList();
+        return Arrays.stream(dishes.split("\\n"))
             .map(String::trim)
             .filter(s -> !s.isEmpty())
-            .collect(Collectors.toList());
+            .toList();
     }
 }

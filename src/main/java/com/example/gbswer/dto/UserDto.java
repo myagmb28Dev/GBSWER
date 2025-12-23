@@ -21,4 +21,5 @@ public class UserDto {
     private String userId;
     private String profileImage;
     private String bio;
+    private Integer admissionYear;
 }

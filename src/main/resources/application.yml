@@ -108,6 +108,12 @@ spring:
     activate:
       on-profile: local
     import: optional:file:.env.local[.properties]
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+      port: 35729
 
 file:
   upload-dir: D:/Codes/GBSWER/Back/uploads
