@@ -33,7 +33,6 @@ const CommunityWriteModal = ({ isOpen, onClose, onSubmit, isAdmin = false }) => 
       return;
     }
     onSubmit({ ...formData, attachments });
-    handleClose();
   };
 
   const handleClose = () => {

@@ -4,7 +4,6 @@ import './ClassTimetable.css';
 
 const ClassTimetable = () => {
   const [timetable] = useState(mockTimetable);
-  const [isEditMode, setIsEditMode] = useState(false);
 
   return (
     <div className="timetable-container">
@@ -12,12 +11,6 @@ const ClassTimetable = () => {
         <h2 className="timetable-title">
           {timetable.major} {timetable.grade}학년 {timetable.classNumber}반 시간표
         </h2>
-        <button 
-          className="edit-timetable-btn"
-          onClick={() => setIsEditMode(!isEditMode)}
-        >
-          {isEditMode ? '완료' : '수정하기'}
-        </button>
       </div>
       <div className="timetable-wrapper">
         <div className="timetable-grid">

@@ -12,6 +12,20 @@ export const studentUser = {
   joinDate: '2024-03-01'
 };
 
+// 선생님 계정 임시 데이터
+export const teacherUser = {
+  id: 'teacher001',
+  name: '이영희',
+  email: 'teacher001@gbsw.kr',
+  role: 'teacher',
+  subject: '수학',
+  grade: 2,
+  class: 3,
+  profileImage: '/profile.png',
+  phone: '010-5555-1234',
+  joinDate: '2018-03-01'
+};
+
 // 관리자 계정 임시 데이터
 export const adminUser = {
   id: 'admin001',
@@ -27,5 +41,12 @@ export const adminUser = {
 
 // 로그인 사용자 정보 (역할별)
 export const getMockUserByRole = (role) => {
-  return role === 'admin' ? adminUser : studentUser;
+  switch (role) {
+    case 'admin':
+      return adminUser;
+    case 'teacher':
+      return teacherUser;
+    default:
+      return studentUser;
+  }
 };

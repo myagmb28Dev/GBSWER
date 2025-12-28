@@ -19,9 +19,31 @@ const CommunityBoard = () => {
         const res = await axios.get('/api/community/', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setPosts(res.data.data);
+        setPosts(res.data.data || res.data || []);
       } catch (err) {
-        console.error('게시글 목록 불러오기 실패:', err);
+        console.error('게시글 목록 불러오기 실패:', err.response?.data || err.message);
+        // 백엔드 연결 실패 시 Mock 데이터 사용
+        console.log('Mock 데이터로 대체합니다.');
+        setPosts([
+          {
+            id: 1,
+            title: '커뮤니티 첫 번째 게시글',
+            content: '이것은 테스트 게시글입니다.',
+            author: '익명',
+            date: '2025-12-24',
+            views: 5,
+            attachments: []
+          },
+          {
+            id: 2,
+            title: '두 번째 게시글',
+            content: '백엔드 서버가 연결되면 실제 데이터가 표시됩니다.',
+            author: '테스트사용자',
+            date: '2025-12-23',
+            views: 3,
+            attachments: []
+          }
+        ]);
       }
     };
     fetchPosts();
@@ -39,6 +61,11 @@ const CommunityBoard = () => {
     // 새 글 작성 후 목록 새로고침
     try {
       const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
       const form = new FormData();
       form.append('title', postData.title);
       form.append('content', postData.content);
@@ -51,24 +78,62 @@ const CommunityBoard = () => {
           form.append('files', att.file);
         });
       }
+
+      // 디버깅: FormData 내용 확인
+      console.log('FormData 전송 내용:');
+      for (let [key, value] of form.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`);
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
       
       // 게시글 작성 API 호출
-      await axios.post('/api/community/write', form, {
+      const response = await axios.post('/api/community/write', form, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
+
+      console.log('게시글 작성 성공:', response.data);
       
       // 목록 새로고침
       const res = await axios.get('/api/community/', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPosts(res.data.data);
+      setPosts(res.data.data || res.data || []);
       setShowWriteModal(false);
       setCurrentPage(1);
+      alert('게시글이 작성되었습니다.');
     } catch (err) {
-      alert('게시글 작성 실패');
+      console.error('게시글 작성 실패 - 상세 정보:');
+      console.error('  Status:', err.response?.status);
+      console.error('  Data:', err.response?.data);
+      console.error('  Message:', err.message);
+      
+      // 백엔드 연결 실패 시 Mock 데이터로 추가
+      if (err.message.includes('ECONNREFUSED') || err.message.includes('Proxy error')) {
+        console.log('Mock 데이터로 게시글을 추가합니다.');
+        const newPost = {
+          id: Date.now(),
+          title: postData.title,
+          content: postData.content,
+          author: postData.isAnonymous ? '익명' : '사용자',
+          date: new Date().toISOString().split('T')[0],
+          views: 0,
+          attachments: postData.attachments || []
+        };
+        setPosts([newPost, ...posts]);
+        setShowWriteModal(false);
+        setCurrentPage(1);
+        alert('게시글이 작성되었습니다. (로컬 저장)');
+        return;
+      }
+      
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert('게시글 작성 실패: ' + errorMsg);
     }
   };
   
@@ -157,7 +222,23 @@ const CommunityBoard = () => {
       <CommunityReadModal 
         isOpen={showReadModal} 
         onClose={() => setShowReadModal(false)} 
-        post={selectedPost} 
+        post={selectedPost}
+        onDelete={async (postId) => {
+          try {
+            const token = localStorage.getItem('accessToken');
+            await axios.delete(`/api/community/${postId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const res = await axios.get('/api/community/', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setPosts(res.data.data || res.data || []);
+            setShowReadModal(false);
+          } catch (err) {
+            console.error('게시글 삭제 실패:', err.response?.data || err.message);
+            alert('게시글 삭제 실패: ' + (err.response?.data?.message || err.message));
+          }
+        }}
       />
 
     </div>

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
+import ForgotPasswordModal from '../../components/ForgotPasswordModal/ForgotPasswordModal';
 import { getMockUserByRole } from '../../mocks/mockUsers';
 
 const Login = ({ onLogin }) => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [accountType, setAccountType] = useState('student');
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -52,14 +54,21 @@ const Login = ({ onLogin }) => {
         <div className="login-left">
           <h1 className="login-title">GBSWER</h1>
           <div className="account-switch">
-            <button 
+            <button
               type="button"
               className={`switch-btn ${accountType === 'student' ? 'active' : ''}`}
               onClick={() => setAccountType('student')}
             >
               학생 계정
             </button>
-            <button 
+            <button
+              type="button"
+              className={`switch-btn ${accountType === 'teacher' ? 'active' : ''}`}
+              onClick={() => setAccountType('teacher')}
+            >
+              선생님 계정
+            </button>
+            <button
               type="button"
               className={`switch-btn ${accountType === 'admin' ? 'active' : ''}`}
               onClick={() => setAccountType('admin')}
@@ -86,9 +95,13 @@ const Login = ({ onLogin }) => {
               <button type="submit" className="login-button">
                 로그인
               </button>
-              <a href="/forgot-password" className="forgot-link">
+              <button 
+                type="button"
+                className="forgot-link"
+                onClick={() => setIsForgotPasswordOpen(true)}
+              >
                 비밀번호를 잊으셨나요?
-              </a>
+              </button>
             </form>
           </div>
         </div>
@@ -97,6 +110,10 @@ const Login = ({ onLogin }) => {
           <img src="/friends.png" alt="캐릭터" className="characters-image" />
         </div>
       </div>
+      <ForgotPasswordModal 
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+      />
       <Footer />
     </div>
   );

@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"Sequential Thinking Tools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"mcp-sequentialthinking-tools"
+			],
+			"type": "stdio"
+		}
+	},
+	"inputs": []
+}

@@ -1,0 +1,110 @@
+.timetable-container {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  width: 100%;
+  height: 530px;
+  font-family: 'Noto Sans KR', sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.timetable-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+  text-align: left;
+  font-weight: bold;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.timetable-wrapper {
+  overflow-x: auto;
+}
+
+.timetable-grid {
+  border-radius: 0;
+  overflow: visible;
+  border: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.weekday-headers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: #4DC4AB;
+  border-radius: 15px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.weekday-header {
+  padding: 8px;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.schedule-grid {
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.subject-cell {
+  padding: 15px;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 16px;
+  color: #555;
+  background: white;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.6;
+}
+
+.subject-cell:last-child {
+  border-right: none;
+}
+
+.schedule-row:last-child .subject-cell {
+  border-bottom: none;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .timetable-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .timetable-title {
+    font-size: 16px;
+  }
+
+  .timetable th,
+  .timetable td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .timetable {
+    min-width: 400px;
+  }
+}

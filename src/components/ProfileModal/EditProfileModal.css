@@ -1,0 +1,213 @@
+/* 강제 새로고침을 위한 주석 - 2024-12-17 - 버튼 스타일 통일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 450px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #333;
+  text-align: center;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4DC4AB;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.modal-buttons-bottom {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.modal-buttons-bottom button {
+  padding: 12px 20px !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  width: 100px !important;
+  height: 44px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.cancel-btn {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+.cancel-btn:hover {
+  background: #e9ecef;
+}
+
+.save-btn {
+  background: #4DC4AB;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #3DB599;
+}
+
+.change-password-btn-bottom {
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #dee2e6 !important;
+  width: 190px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+}
+
+.change-password-btn-bottom:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.disabled-input {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.profile-image-upload {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.preview-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.upload-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  flex: 1;
+}
+
+.profile-image-upload .upload-btn,
+.profile-image-upload .default-profile-btn {
+  flex: 1 !important;
+  padding: 8px 12px !important;
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  height: 36px !important;
+}
+
+.profile-image-upload .upload-btn:hover,
+.profile-image-upload .default-profile-btn:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+}
+
+.logout-section {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 15px 0;
+}
+
+.logout-btn {
+  padding: 8px 16px !important;
+  background: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  width: 80px !important;
+  height: 36px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.logout-btn:hover {
+  background: #c82333;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

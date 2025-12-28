@@ -1,0 +1,153 @@
+.meal-card {
+  background: white;
+  border-radius: 15px;
+  padding: 16px;
+  font-family: 'Noto Sans KR', sans-serif;
+  height: 420px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.meal-card-header {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.meal-card-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.meal-card-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meal-type-container {
+  position: relative;
+}
+
+.meal-type-btn {
+  background-color: #00C896;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.meal-type-btn:hover {
+  background-color: #00B085;
+}
+
+.meal-selector {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 80px;
+  margin-top: 2px;
+}
+
+.meal-option {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.meal-option:hover {
+  background-color: #f5f5f5;
+}
+
+.meal-option.active {
+  background-color: #00C896;
+  color: white;
+}
+
+.meal-option:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.meal-option:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.calories-badge {
+  background-color: #f0f9f7;
+  border: 1px solid #00C896;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #00C896;
+}
+
+.meal-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  height: 350px;
+}
+
+.menu-items {
+  flex: 1;
+  padding-right: 80px;
+}
+
+.menu-item-small {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 6px;
+  padding: 4px 0;
+}
+
+.meal-character-small {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 110px;
+  height: 110px;
+}
+
+.character-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .meal-card {
+    padding: 12px;
+  }
+  
+  .meal-card-title {
+    font-size: 14px;
+  }
+  
+  .menu-item-small {
+    font-size: 13px;
+  }
+}

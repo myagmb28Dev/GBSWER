@@ -47,9 +47,10 @@ function Header() {
                     {showLogoutMenu && (
                         <div className="logout-dropdown">
                             <div className="user-info">
-                                {userRole === 'admin' ? '관리자' : '학생'} 계정
+                                {userRole === 'admin' ? '관리자' :
+                                 userRole === 'teacher' ? '선생님' : '학생'} 계정
                             </div>
-                            <button 
+                            <button
                                 className="logout-btn"
                                 onClick={handleLogoutClick}
                             >
