@@ -187,8 +187,9 @@ public class FileUploadService {
             Files.createDirectories(fullPath.getParent());
             file.transferTo(fullPath.toFile());
 
-            // 프론트가 접근할 수 있는 URL 반환
-            return String.format("http://localhost:%s/uploads/%s", serverPort(), relativePath);
+            // 항상 전체 URL 반환 (상대경로나 파일명만 반환되는 문제 방지)
+            String port = serverPort();
+            return String.format("http://localhost:%s/uploads/%s", port, relativePath);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }

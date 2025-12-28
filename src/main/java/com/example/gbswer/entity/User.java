@@ -24,12 +24,13 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    private String email;
+    @Column(nullable = true, unique = true)
+    private String email; // nullable 명시
 
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
     @Column(name = "profile_image")

@@ -17,12 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 @Getter
 @Setter
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -77,6 +81,13 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "인증 코드가 올바르지 않거나 만료되었습니다.");
         }
 
+        // 중복 이메일 방지: 이미 다른 사용자가 사용 중이면 충돌 응답
+        userRepository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(userId)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
+            }
+        });
+
         User user = findUserById(userId);
         user.setEmail(request.getEmail());
         userRepository.save(user);
@@ -117,16 +128,22 @@ public class UserService {
     @Transactional
     public UserDto updateProfileImage(Long userId, MultipartFile profileImage) {
         User user = findUserById(userId);
+        String oldImage = user.getProfileImage();
+        // 기존 이미지 삭제(선택적 보완)
+        if (oldImage != null) {
+            fileUploadService.deleteFile(oldImage);
+        }
         String imageUrl = fileUploadService.uploadCommunityImageLocal(profileImage);
         user.setProfileImage(imageUrl);
         userRepository.save(user);
+        log.info("User profile image updated (userId={}): [profileImage] '{}' -> '{}'", userId, oldImage, imageUrl);
         return convertToDto(user);
     }
 
     @Transactional
     public UserDto setDefaultProfileImage(Long userId) {
         User user = findUserById(userId);
-        user.setProfileImage(null);
+        user.setProfileImage(null); // 기본 이미지 경로(/profile.png)로 강제 저장하는 로직 없이 null만 저장
         userRepository.save(user);
         return convertToDto(user);
     }
@@ -148,13 +165,52 @@ public class UserService {
     @Transactional
     public UserDto updateProfile(Long userId, UserDto request) {
         User user = findUserById(userId);
-        if (request.getName() != null) user.setName(request.getName());
-        if (request.getMajor() != null) user.setMajor(request.getMajor());
-        if (request.getGrade() != null) user.setGrade(request.getGrade());
-        if (request.getClassNumber() != null) user.setClassNumber(request.getClassNumber());
-        if (request.getBio() != null) user.setBio(request.getBio());
-        if (request.getProfileImage() != null) user.setProfileImage(request.getProfileImage());
-        if (request.getAdmissionYear() != null) user.setAdmissionYear(request.getAdmissionYear());
+        boolean changed = false;
+        StringBuilder changeLog = new StringBuilder();
+        if (request.getName() != null && !request.getName().equals(user.getName())) {
+            changeLog.append(String.format("[name] '%s' -> '%s'; ", user.getName(), request.getName()));
+            user.setName(request.getName());
+            changed = true;
+        }
+        if (request.getMajor() != null && !request.getMajor().equals(user.getMajor())) {
+            changeLog.append(String.format("[major] '%s' -> '%s'; ", user.getMajor(), request.getMajor()));
+            user.setMajor(request.getMajor());
+            changed = true;
+        }
+        if (request.getGrade() != null && !request.getGrade().equals(user.getGrade())) {
+            changeLog.append(String.format("[grade] '%s' -> '%s'; ", user.getGrade(), request.getGrade()));
+            user.setGrade(request.getGrade());
+            changed = true;
+        }
+        if (request.getClassNumber() != null && !request.getClassNumber().equals(user.getClassNumber())) {
+            changeLog.append(String.format("[classNumber] '%s' -> '%s'; ", user.getClassNumber(), request.getClassNumber()));
+            user.setClassNumber(request.getClassNumber());
+            changed = true;
+        }
+        if (request.getBio() != null && !request.getBio().equals(user.getBio())) {
+            changeLog.append(String.format("[bio] '%s' -> '%s'; ", user.getBio(), request.getBio()));
+            user.setBio(request.getBio());
+            changed = true;
+        }
+        if (request.getProfileImage() != null && !request.getProfileImage().equals(user.getProfileImage())) {
+            changeLog.append(String.format("[profileImage] '%s' -> '%s'; ", user.getProfileImage(), request.getProfileImage()));
+            user.setProfileImage(request.getProfileImage());
+            changed = true;
+        }
+        if (request.getAdmissionYear() != null && !request.getAdmissionYear().equals(user.getAdmissionYear())) {
+            changeLog.append(String.format("[admissionYear] '%s' -> '%s'; ", user.getAdmissionYear(), request.getAdmissionYear()));
+            user.setAdmissionYear(request.getAdmissionYear());
+            changed = true;
+        }
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            changeLog.append(String.format("[email] '%s' -> '%s'; ", user.getEmail(), request.getEmail()));
+            user.setEmail(request.getEmail());
+            changed = true;
+        }
+        // profileImage가 null일 때 /profile.png로 강제 저장하는 로직 없음
+        if (changed) {
+            log.info("User profile updated (userId={}): {}", userId, changeLog.toString());
+        }
         userRepository.save(user);
         return convertToDto(user);
     }

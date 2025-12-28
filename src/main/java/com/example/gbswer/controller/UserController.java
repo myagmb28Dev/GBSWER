@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/user")
@@ -78,7 +79,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @PutMapping("/profile-image")
+    @PutMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadProfileImage(@AuthenticationPrincipal UserDto userDto,
                                                 @RequestParam("profileImage") MultipartFile profileImage) {
         var result = userService.updateProfileImage(userDto.getId(), profileImage);

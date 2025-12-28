@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class DashboardDto {
-    private List<ScheduleDto> todaySchedules;
+    private List<CalendarEventDto> todaySchedules;
     private List<TaskDto> upcomingTasks;
     private List<CommunityDto> recentNotices;
 }

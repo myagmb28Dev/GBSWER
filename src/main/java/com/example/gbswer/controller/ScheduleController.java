@@ -1,9 +1,9 @@
 package com.example.gbswer.controller;
 
 import com.example.gbswer.dto.ApiResponseDto;
-import com.example.gbswer.dto.ScheduleCreateDto;
+import com.example.gbswer.dto.CalendarEventDto;
 import com.example.gbswer.dto.UserDto;
-import com.example.gbswer.service.ScheduleService;
+import com.example.gbswer.service.CalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,28 +14,31 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ScheduleController {
 
-    private final ScheduleService scheduleService;
-
-    @GetMapping("/")
+    private final CalendarService calendarService;
+    
+    @GetMapping
     public ResponseEntity<?> getSchedulesByMonth(
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam Integer year,
             @RequestParam Integer month) {
-        var result = scheduleService.getSchedulesByMonth(userDto.getId(), year, month);
+        var result = calendarService.getMonthly(userDto.getId(), year, month);
+        if (result == null || result.isEmpty()) {
+            return ResponseEntity.status(404).body(ApiResponseDto.error("DB에 일정 데이터가 없습니다."));
+        }
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @GetMapping("/today")
     public ResponseEntity<?> getTodaySchedules(@AuthenticationPrincipal UserDto userDto) {
-        var result = scheduleService.getTodaySchedules(userDto.getId());
+        var result = calendarService.getToday(userDto.getId());
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/add")
     public ResponseEntity<?> createSchedule(
             @AuthenticationPrincipal UserDto userDto,
-            @RequestBody ScheduleCreateDto request) {
-        var result = scheduleService.createSchedule(userDto.getId(), request);
+            @RequestBody CalendarEventDto request) {
+        var result = calendarService.createPersonal(userDto.getId(), request);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
@@ -43,8 +46,8 @@ public class ScheduleController {
     public ResponseEntity<?> updateSchedule(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
-            @RequestBody ScheduleCreateDto request) {
-        var result = scheduleService.updateSchedule(id, userDto.getId(), request);
+            @RequestBody CalendarEventDto request) {
+        var result = calendarService.updateEvent(userDto.getId(), id, request);
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
@@ -52,7 +55,14 @@ public class ScheduleController {
     public ResponseEntity<?> deleteSchedule(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto) {
-        scheduleService.deleteSchedule(id, userDto.getId());
+        calendarService.deleteEvent(userDto.getId(), id);
         return ResponseEntity.ok(ApiResponseDto.success(null));
+    }
+
+
+    @PostMapping("/refresh-month")
+    public ResponseEntity<?> refreshMonth(@RequestParam int year, @RequestParam int month) {
+        var result = calendarService.refreshMonth(year, month);
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 }
