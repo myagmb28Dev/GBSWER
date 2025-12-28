@@ -2,37 +2,45 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
+import { getMockUserByRole } from '../../mocks/mockUsers';
 
 const Login = ({ onLogin }) => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
-  const [accountType, setAccountType] = useState('student'); // 'student' 또는 'admin'
+  const [accountType, setAccountType] = useState('student');
 
   const handleLogin = async (e) => {
     e.preventDefault();
-<<<<<<< HEAD
-    if (!id || !password) {
-=======
-    console.log('로그인 시도:', { id, password, accountType });
     
-    // 간단한 로그인 검증 (실제로는 백엔드 API 호출)
-    if (id && password) {
-      onLogin(accountType); // 계정 타입을 함께 전달
-    } else {
->>>>>>> 3abdeff (feat: enhance assignment page features)
+    if (!id || !password) {
       alert('아이디와 비밀번호를 입력해주세요.');
       return;
     }
+
     try {
-      const response = await axios.post('/api/auth/login', {
-        userId: id,
-        password: password
-      });
-      const { accessToken, refreshToken } = response.data.data;
-      // 토큰 저장 (예: localStorage)
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      onLogin(); // 로그인 성공 시 App.js의 setIsLoggedIn(true) 호출
+      // 테스트용 로그인 (실제 API 없을 때)
+      try {
+        const response = await axios.post('/api/auth/login', {
+          userId: id,
+          password: password
+        });
+        const { accessToken, refreshToken } = response.data.data;
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        onLogin(accountType);
+      } catch (apiError) {
+        // API 없을 때 테스트 모드로 진행
+        console.log('API 서버 없음. 테스트 모드로 진행합니다.');
+        const testToken = 'test_token_' + Date.now();
+        localStorage.setItem('accessToken', testToken);
+        localStorage.setItem('refreshToken', testToken);
+        
+        // 역할별 임시 사용자 데이터 저장
+        const mockUser = getMockUserByRole(accountType);
+        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+        
+        onLogin(accountType);
+      }
     } catch (error) {
       alert('로그인 실패: ' + (error.response?.data?.message || '서버 오류'));
     }

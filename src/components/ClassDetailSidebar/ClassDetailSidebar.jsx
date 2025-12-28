@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, File, Plus } from 'lucide-react';
+import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
 import './ClassDetailSidebar.css';
 
 const ClassDetailSidebar = ({ 
@@ -9,6 +10,10 @@ const ClassDetailSidebar = ({
   const [attachments, setAttachments] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [addToSchedule, setAddToSchedule] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showSubmitNotification, setShowSubmitNotification] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isAssignmentStatusOpen, setIsAssignmentStatusOpen] = useState(false);
 
   if (!selectedPost) {
     return (
@@ -54,8 +59,16 @@ const ClassDetailSidebar = ({
   };
 
   const handleSubmit = () => {
+    // 이미 제출된 경우
+    if (isSubmitted) {
+      setShowSubmitNotification(true);
+      setTimeout(() => setShowSubmitNotification(false), 2000);
+      return;
+    }
+    
     // 과제 제출 로직
     console.log('과제 제출:', uploadedFiles);
+    setIsSubmitted(true);
     alert('과제가 제출되었습니다!');
   };
 
@@ -138,8 +151,11 @@ const ClassDetailSidebar = ({
             <div className="character-section">
               <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
               <div className="button-section">
-                <button onClick={handleSubmit} className="submit-button">
-                  제출하기
+                <button 
+                  onClick={handleSubmit} 
+                  className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
+                >
+                  {isSubmitted ? '수정하기' : '제출하기'}
                 </button>
                 <div className="add-file-section">
                   <input 
@@ -156,6 +172,13 @@ const ClassDetailSidebar = ({
                 </div>
               </div>
             </div>
+
+            {/* 제출 알림 */}
+            {showSubmitNotification && (
+              <div className="submit-notification">
+                이미 올린 파일입니다
+              </div>
+            )}
 
             {/* 선택된 파일 미리보기 */}
             {attachments.length > 0 && (
@@ -195,8 +218,37 @@ const ClassDetailSidebar = ({
             {/* 캐릭터 */}
             <div className="character-section">
               <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
+              <div className="button-section">
+                <button 
+                  onClick={() => setIsEditMode(!isEditMode)} 
+                  className="edit-button"
+                >
+                  수정하기
+                </button>
+              </div>
             </div>
           </>
+        )}
+
+        {/* 과제 현황 모달 */}
+        {selectedPost?.type === '과제' && (
+          <AssignmentStatusModal
+            isOpen={isAssignmentStatusOpen}
+            onClose={() => setIsAssignmentStatusOpen(false)}
+            assignmentTitle={selectedPost.title}
+            participants={[
+              { id: 1, name: "김민수", studentId: "2024001", profileImage: "/profile.png", submitted: true },
+              { id: 2, name: "이지은", studentId: "2024002", profileImage: "/profile.png", submitted: false },
+              { id: 3, name: "박준호", studentId: "2024003", profileImage: "/profile.png", submitted: true },
+              { id: 4, name: "최서연", studentId: "2024004", profileImage: "/profile.png", submitted: false },
+              { id: 5, name: "정우진", studentId: "2024005", profileImage: "/profile.png", submitted: true },
+              { id: 6, name: "한소영", studentId: "2024006", profileImage: "/profile.png", submitted: true },
+              { id: 7, name: "윤태현", studentId: "2024007", profileImage: "/profile.png", submitted: false },
+              { id: 8, name: "강민지", studentId: "2024008", profileImage: "/profile.png", submitted: true },
+              { id: 9, name: "조현우", studentId: "2024009", profileImage: "/profile.png", submitted: false },
+              { id: 10, name: "신예린", studentId: "2024010", profileImage: "/profile.png", submitted: true },
+            ]}
+          />
         )}
       </div>
     </div>

@@ -31,6 +31,8 @@ const ClassCreateButton = ({ userRole = 'student' }) => {
     <>
       <button className="class-create-button" onClick={handleButtonClick}>
         <Plus size={20} className="plus-icon" />
+        {userRole === 'admin' && <span className="button-text">클래스룸 생성</span>}
+        {userRole === 'student' && <span className="button-text">클래스룸 참여</span>}
       </button>
 
       {showModal && userRole === 'admin' && (

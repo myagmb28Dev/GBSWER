@@ -10,13 +10,39 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.timetable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
 .timetable-title {
-  margin: 0 0 15px 0;
+  margin: 0;
   font-size: 16px;
   color: #333;
   text-align: left;
   font-weight: bold;
   font-family: 'Noto Sans KR', sans-serif;
+}
+
+.edit-timetable-btn {
+  background: #4DC4AB;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.edit-timetable-btn:hover {
+  background: #3db89a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
 }
 
 .timetable-wrapper {
@@ -109,4 +135,96 @@
   .timetable {
     min-width: 400px;
   }
+}
+
+
+/* 관리자 페이지 시간표 수정 기능 */
+
+.timetable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.edit-button {
+  background: #4DC4AB;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.edit-button:hover {
+  background: #3db89a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
+}
+
+.subject-input {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #4DC4AB;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: center;
+  background: #f9f9f9;
+  transition: all 0.2s;
+}
+
+.subject-input:focus {
+  outline: none;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(77, 196, 171, 0.1);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-save {
+  background: #4DC4AB;
+  color: white;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.btn-save:hover {
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
 }

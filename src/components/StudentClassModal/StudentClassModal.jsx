@@ -31,12 +31,11 @@ const StudentClassModal = ({ isOpen, onClose, onJoinClass }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="student-class-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>클래스 참여하기</h2>
-          <button className="close-button" onClick={handleClose}>
-            <X size={24} />
-          </button>
-        </div>
+        <button className="close-button" onClick={handleClose}>
+          <X size={24} />
+        </button>
+
+        <h2 className="modal-title">클래스 참여하기</h2>
 
         <form onSubmit={handleSubmit} className="modal-content">
           <div className="form-group">

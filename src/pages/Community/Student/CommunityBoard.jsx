@@ -35,10 +35,32 @@ const CommunityBoard = () => {
 
   const postsPerPage = 10;
 
-  const handleWritePost = async (newPost) => {
+  const handleWritePost = async (postData) => {
     // 새 글 작성 후 목록 새로고침
     try {
       const token = localStorage.getItem('accessToken');
+      const form = new FormData();
+      form.append('title', postData.title);
+      form.append('content', postData.content);
+      form.append('major', 'ALL');
+      form.append('isAnonymous', postData.isAnonymous);
+      
+      // 파일 첨부
+      if (postData.attachments && postData.attachments.length > 0) {
+        postData.attachments.forEach((att) => {
+          form.append('files', att.file);
+        });
+      }
+      
+      // 게시글 작성 API 호출
+      await axios.post('/api/community/write', form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // 목록 새로고침
       const res = await axios.get('/api/community/', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,13 +68,24 @@ const CommunityBoard = () => {
       setShowWriteModal(false);
       setCurrentPage(1);
     } catch (err) {
-      alert('게시글 목록 갱신 실패');
+      alert('게시글 작성 실패');
     }
   };
   
-  const handleReadPost = (post) => {
-    setSelectedPost(post);
-    setShowReadModal(true);
+  const handleReadPost = async (post) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      // 조회수 증가 API 호출
+      await axios.put(`/api/community/${post.id}/view`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedPost(post);
+      setShowReadModal(true);
+    } catch (err) {
+      console.error('조회수 업데이트 실패:', err);
+      setSelectedPost(post);
+      setShowReadModal(true);
+    }
   };
 
   const totalPages = Math.ceil(posts.length / postsPerPage);

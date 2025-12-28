@@ -1,0 +1,217 @@
+.schedule-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.schedule-detail-modal {
+  background: white;
+  border-radius: 12px;
+  width: 500px;
+  max-height: 600px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 세로 스크롤바 스타일 */
+.schedule-detail-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.schedule-detail-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.schedule-detail-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.schedule-detail-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.modal-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  pointer-events: none;
+}
+
+.nav-btn {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  pointer-events: all;
+  color: #666;
+}
+
+.nav-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.prev-btn {
+  margin-left: -50px;
+}
+
+.next-btn {
+  margin-right: -50px;
+}
+
+.events-list {
+  margin: 20px 0;
+  min-height: 100px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+/* 4개 이상일 때만 스크롤바 표시 */
+.events-list.has-scroll {
+  max-height: 300px;
+}
+
+/* 이벤트 리스트 스크롤바 스타일 */
+.events-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.events-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.events-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.events-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.event-item {
+  background: #f9f9f9;
+  border-left: 4px solid #FFB3BA;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.event-info {
+  flex: 1;
+}
+
+.event-item h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.event-date {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.delete-event-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-event-btn:hover {
+  color: #ff6b6b;
+}
+
+.no-events {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  margin: 20px 0;
+}
+
+.add-event-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4DC4AB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.add-event-btn:hover {
+  background: #3db89a;
+}

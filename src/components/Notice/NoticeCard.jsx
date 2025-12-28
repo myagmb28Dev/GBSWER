@@ -9,7 +9,9 @@ const NoticeCard = () => {
 
   useEffect(() => {
     const noticeData = getTodayNoticeData();
-    setNoticeList(noticeData);
+    // 관리자 글만 필터링
+    const adminNotices = noticeData.filter(notice => notice.author === '관리자');
+    setNoticeList(adminNotices);
   }, []);
 
   const handleNoticeClick = (notice) => {

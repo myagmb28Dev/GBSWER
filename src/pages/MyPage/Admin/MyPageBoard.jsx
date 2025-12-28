@@ -4,7 +4,7 @@ import Footer from '../../../components/Footer/Footer';
 import UserProfileCard from '../../../components/UserProfileCard/UserProfileCard';
 import PersonalScheduleBox from '../../../components/PersonalScheduleBox/PersonalScheduleBox';
 import SchoolMealCard from '../../../components/SchoolMealCard/SchoolMealCard';
-import ClassTimetable from '../../../components/ClassTimetable/ClassTimetable';
+import AdminClassTimetable from '../../../components/ClassTimetable/AdminClassTimetable';
 import './MyPageBoard.css';
 
 const MyPageBoard = () => {
@@ -31,7 +31,7 @@ const MyPageBoard = () => {
             </div>
             
             <div className="timetable-section">
-              <ClassTimetable />
+              <AdminClassTimetable />
             </div>
           </div>
         </div>

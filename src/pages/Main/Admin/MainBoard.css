@@ -7,38 +7,23 @@
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: 350px 870px;
+  gap: 40px;
+  padding: 15px 30px;
+  justify-content: center;
+  overflow-x: hidden;
 }
-.main-content {
-  flex: 1;
+
+.left-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
-
-.admin-welcome {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.admin-welcome h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-  margin: 0 0 10px 0;
-  font-family: 'Noto Sans KR', sans-serif;
-}
-
-.admin-welcome p {
-  font-size: 16px;
-  color: #666;
-  margin: 0;
-  font-family: 'Noto Sans KR', sans-serif;
+  gap: 15px;
 }
 
 .class-button-container {
   display: flex;
   justify-content: center;
+  padding: 20px;
+  margin-bottom: 20px;
 }

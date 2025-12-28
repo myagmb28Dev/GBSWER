@@ -1,35 +1,11 @@
-import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD:src/pages/MyPage/MealCard/MealCard.jsx
-import axios from 'axios';
-import './MealCard.css';
-=======
+import React, { useState } from 'react';
 import './SchoolMealCard.css';
 import { getTodayMealData } from '../../mocks/mockMeal';
->>>>>>> 3abdeff (feat: enhance assignment page features):src/components/SchoolMealCard/SchoolMealCard.jsx
 
 const SchoolMealCard = () => {
   const [selectedMealType, setSelectedMealType] = useState('석식');
   const [showMealSelector, setShowMealSelector] = useState(false);
-  const [mealData, setMealData] = useState({});
-
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const res = await axios.get(`/api/meals?year=${year}&month=${month}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        // res.data.data: { [mealType]: { dishes, calorie, ... } }
-        setMealData(res.data.data[today.toISOString().slice(0,10)] || {});
-      } catch (err) {
-        setMealData({});
-      }
-    };
-    fetchMeals();
-  }, []);
+  const mealData = getTodayMealData();
 
   const handleMealTypeClick = () => {
     setShowMealSelector(!showMealSelector);

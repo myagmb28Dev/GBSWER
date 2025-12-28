@@ -1,6 +1,6 @@
-import { X, File } from 'lucide-react';
+import { X, File, Trash2 } from 'lucide-react';
 
-const CommunityReadModal = ({ isOpen, onClose, post }) => {
+const CommunityReadModal = ({ isOpen, onClose, post, onDelete, isAdmin = false }) => {
     const handleDownload = (attachment) => {
     const link = document.createElement('a');
     link.href = attachment.url;
@@ -8,6 +8,12 @@ const CommunityReadModal = ({ isOpen, onClose, post }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+};
+
+const handleDelete = () => {
+    if (window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+        onDelete(post.id);
+    }
 };
 
 if (!isOpen || !post) return null;
@@ -70,11 +76,21 @@ return (
         </div>
     )}
         </div>
-        <div className="flex justify-end p-4 md:p-6 border-t">
+        <div className="flex justify-between items-center p-4 md:p-6 border-t">
+            <div>
+                {isAdmin && (
+                    <button 
+                        onClick={handleDelete}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2"
+                    >
+                        <Trash2 size={18} />
+                        삭제
+                    </button>
+                )}
+            </div>
             <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300" > 닫기 </button>
         </div>
     </div>
-</div>
 );
 };
 

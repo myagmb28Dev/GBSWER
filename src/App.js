@@ -8,13 +8,8 @@ import MyPageBoardAdmin from "./pages/MyPage/Admin/MyPageBoard";
 import CommunityBoardAdmin from "./pages/Community/Admin/CommunityBoard";
 import ClassroomBoardAdmin from "./pages/Classroom/Admin/ClassroomBoard";
 import Login from "./pages/Login/Login";
-<<<<<<< HEAD
-import EditProfileModal from "./components/ProfileModal/EditProfileModal";
-import axios from "axios";
-=======
 import EditProfileModal from "./components/UserProfileModal/EditProfileModal";
-import { mockProfile } from "./mocks/mockProfile";
->>>>>>> 3abdeff (feat: enhance assignment page features)
+import axios from "axios";
 
 const AppContext = createContext();
 export const useAppContext = () => {
@@ -28,14 +23,25 @@ export const useAppContext = () => {
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
   const [showProfileModal, setShowProfileModal] = useState(false);
-<<<<<<< HEAD
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return !!localStorage.getItem('accessToken');
+  });
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem('userRole') || 'student';
+  });
   const [profile, setProfile] = useState(null);
   const [globalEvents, setGlobalEvents] = useState([]);
 
   // 프로필 정보 불러오기
   const fetchProfile = async () => {
     try {
+      // 먼저 localStorage에서 임시 사용자 데이터 확인
+      const mockUserData = localStorage.getItem('mockUser');
+      if (mockUserData) {
+        setProfile(JSON.parse(mockUserData));
+        return;
+      }
+
       const token = localStorage.getItem('accessToken');
       if (!token) return;
       const res = await axios.get('/api/user/profile', {
@@ -60,11 +66,6 @@ function App() {
   React.useEffect(() => {
     if (isLoggedIn) fetchProfile();
   }, [isLoggedIn]);
-=======
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // 기본값을 true로 설정 (로그인된 상태)
-  const [userRole, setUserRole] = useState('student'); // 'student' 또는 'admin'
-  const [globalEvents, setGlobalEvents] = useState([]); // 전역 일정 상태
->>>>>>> 3abdeff (feat: enhance assignment page features)
 
   const renderCurrentPage = () => {
     const isAdmin = userRole === 'admin';
@@ -95,19 +96,19 @@ function App() {
     } catch (err) {}
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('mockUser');
     setIsLoggedIn(false);
     setShowProfileModal(false);
     setCurrentPage('main');
-<<<<<<< HEAD
     setProfile(null);
-=======
-    setUserRole('student'); // 로그아웃 시 기본값으로 리셋
+    setUserRole('student');
   };
 
   const handleLogin = (role = 'student') => {
+    localStorage.setItem('userRole', role);
     setIsLoggedIn(true);
     setUserRole(role);
->>>>>>> 3abdeff (feat: enhance assignment page features)
   };
 
   const contextValue = {

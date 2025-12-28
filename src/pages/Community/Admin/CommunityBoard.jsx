@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 import { Plus } from "lucide-react";
 import CommunityWriteModal from "../../../components/CommunityWriteModal/CommunityWriteModal";
 import CommunityReadModal from "../../../components/CommunityReadModal/CommunityReadModal";
@@ -14,51 +15,94 @@ const CommunityBoard = () => {
   const [showReadModal, setShowReadModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [anonymousCount, setAnonymousCount] = useState(0);
+
+  // Fetch posts from server on component mount
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('/api/community/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPosts(res.data.data);
+      } catch (err) {
+        console.error('게시글 목록 불러오기 실패:', err);
+      }
+    };
+    fetchPosts();
+  }, []);
 
 
   const postsPerPage = 10;
 
-  const handleWritePost = (postData) => {
-    const now = new Date();
-    let author;
-    
-    if (postData.isAnonymous) {
-      const newCount = anonymousCount + 1;
-      author = `익명${newCount}`;
-      setAnonymousCount(newCount);
-    } else {
-      author = "관리자";
+  const handleWritePost = async (postData) => {
+    // 새 글 작성 후 목록 새로고침
+    try {
+      const token = localStorage.getItem('accessToken');
+      const form = new FormData();
+      form.append('title', postData.title);
+      form.append('content', postData.content);
+      form.append('major', 'ALL');
+      form.append('isAnonymous', postData.isAnonymous);
+      
+      // 파일 첨부
+      if (postData.attachments && postData.attachments.length > 0) {
+        postData.attachments.forEach((att) => {
+          form.append('files', att.file);
+        });
+      }
+      
+      // 게시글 작성 API 호출
+      await axios.post('/api/community/write', form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // 목록 새로고침
+      const res = await axios.get('/api/community/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPosts(res.data.data);
+      setShowWriteModal(false);
+      setCurrentPage(1);
+    } catch (err) {
+      alert('게시글 작성 실패');
     }
-    
-    const newPost = {
-      id: Date.now(),
-      date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`,
-      title: postData.title,
-      content: postData.content,
-      author: author,
-      isAnonymous: postData.isAnonymous,
-      attachments: postData.attachments,
-      views: 0
-    };
-
-    setPosts([newPost, ...posts]);
-    setShowWriteModal(false);
-    setCurrentPage(1);
   };
   
-  const handleReadPost = (post) => {
-    const updatedPosts = posts.map(p => 
-      p.id === post.id ? { ...p, views: p.views + 1 } : p
-    );
-    setPosts(updatedPosts);
-    setSelectedPost({ ...post, views: post.views + 1 });
-    setShowReadModal(true);
+  const handleReadPost = async (post) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      // 조회수 증가 API 호출
+      await axios.put(`/api/community/${post.id}/view`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedPost(post);
+      setShowReadModal(true);
+    } catch (err) {
+      console.error('조회수 업데이트 실패:', err);
+      setSelectedPost(post);
+      setShowReadModal(true);
+    }
   };
 
-  const handleDeletePost = (postId) => {
-    setPosts(posts.filter(p => p.id !== postId));
-    setShowReadModal(false);
+  const handleDeletePost = async (postId) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.delete(`/api/community/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // 삭제 후 목록 새로고침
+      const res = await axios.get('/api/community/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPosts(res.data.data);
+      setShowReadModal(false);
+    } catch (err) {
+      alert('게시글 삭제 실패');
+    }
   };
 
   const totalPages = Math.ceil(posts.length / postsPerPage);
@@ -132,6 +176,7 @@ const CommunityBoard = () => {
         isOpen={showWriteModal} 
         onClose={() => setShowWriteModal(false)} 
         onSubmit={handleWritePost}
+        isAdmin={true}
       />
       <CommunityReadModal 
         isOpen={showReadModal} 

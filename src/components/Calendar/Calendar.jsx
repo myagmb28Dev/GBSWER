@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 import AddEventModal from './AddEventModal';
 import ViewEventModal from './ViewEventModal';
+import ScheduleDetailModal from './ScheduleDetailModal';
 import { useAppContext } from '../../App';
 import { mockSchedule } from '../../mocks/mockSchedule';
 
@@ -11,6 +12,7 @@ const Calendar = () => {
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScheduleDetailOpen, setIsScheduleDetailOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -37,7 +39,7 @@ const Calendar = () => {
 
   const handleDateClick = (day) => {
     setSelectedDate(new Date(year, month, day));
-    setIsModalOpen(true);
+    setIsScheduleDetailOpen(true);
   };
 
   const handleAddEvent = (eventData) => {
@@ -168,6 +170,17 @@ const Calendar = () => {
           selectedDate={selectedDate}
           onClose={() => setIsModalOpen(false)}
           onAddEvent={handleAddEvent}
+        />
+      )}
+
+      {isScheduleDetailOpen && selectedDate && (
+        <ScheduleDetailModal
+          selectedDate={selectedDate}
+          events={events}
+          onClose={() => setIsScheduleDetailOpen(false)}
+          onAddEvent={handleAddEvent}
+          onDeleteEvent={handleDeleteEvent}
+          onEditEvent={handleEditEvent}
         />
       )}
 
