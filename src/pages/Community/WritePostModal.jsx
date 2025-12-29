@@ -26,17 +26,26 @@ const WritePostModal = ({ isOpen, onClose, onSubmit }) => {
             try {
                 const token = localStorage.getItem('accessToken');
                 const form = new FormData();
-                form.append('title', formData.title);
-                form.append('content', formData.content);
-                form.append('major', 'ALL'); // 필요시 major 선택 UI 추가
-                form.append('isAnonymous', formData.isAnonymous);
+                
+                // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+                const dto = {
+                    title: formData.title,
+                    content: formData.content,
+                    major: 'ALL', // 필요시 major 선택 UI 추가
+                    anonymous: formData.isAnonymous
+                };
+                const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+                form.append('dto', dtoBlob);
+                
+                // 파일은 files 파트로 전송
                 attachments.forEach((att, idx) => {
                     form.append('files', att.file);
                 });
+                
                 const res = await axios.post('/api/community/write', form, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data'
+                        Authorization: `Bearer ${token}`
+                        // Content-Type은 axios가 자동으로 설정 (boundary 포함)
                     }
                 });
                 onSubmit(res.data.data); // 작성된 게시글 반환

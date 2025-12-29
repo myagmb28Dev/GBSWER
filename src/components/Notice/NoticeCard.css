@@ -33,12 +33,92 @@
   color: #333;
 }
 
+.notice-header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.notice-refresh-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.notice-refresh-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.notice-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notice-test-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.notice-test-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .notice-box-content {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.8) transparent;
+}
+
+.notice-box-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notice-box-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notice-box-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 3px;
+}
+
+.notice-box-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 1.0);
 }
 
 .notice-item {
@@ -66,6 +146,8 @@
 .notice-item-author {
   font-size: 12px;
   color: #666;
+  display: block; /* 작성자가 보이도록 명시적으로 설정 */
+  margin-top: 4px;
 }
 
 .empty-notice-text {

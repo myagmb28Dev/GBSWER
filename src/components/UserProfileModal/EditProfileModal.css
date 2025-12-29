@@ -1,16 +1,19 @@
 /* 강제 새로고침을 위한 주석 - 2024-12-17 - 버튼 스타일 통일 */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  padding: 20px !important;
 }
 
 .modal-content {
@@ -175,32 +178,7 @@
   border-color: #adb5bd !important;
 }
 
-.logout-section {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0 15px 0;
-}
-
-.logout-btn {
-  padding: 8px 16px !important;
-  background: #dc3545 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  font-family: 'Noto Sans KR', sans-serif !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  width: 80px !important;
-  height: 36px !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-}
-
-.logout-btn:hover {
-  background: #c82333;
-}
+/* logout button removed from modal; header dropdown handles logout */
 
 @media (max-width: 768px) {
   .modal-content {

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from 'axios';
 import { Plus } from "lucide-react";
 import CommunityWriteModal from "../../../components/CommunityWriteModal/CommunityWriteModal";
-import CommunityReadModal from "../../../components/CommunityReadModal/CommunityReadModal";
+import ReadPostModal from "./ReadPostModal";
 import CommunityPostTable from "../../../components/CommunityPostTable/CommunityPostTable";
 import CommunityPagination from "../../../components/CommunityPagination/CommunityPagination";
 import Header from "../../../components/Header/Header";
@@ -12,50 +12,77 @@ import Footer from "../../../components/Footer/Footer";
 const CommunityBoard = () => {
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/community/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setPosts(res.data.data || res.data || []);
-      } catch (err) {
-        console.error('게시글 목록 불러오기 실패:', err.response?.data || err.message);
-        // 백엔드 연결 실패 시 Mock 데이터 사용
-        console.log('Mock 데이터로 대체합니다.');
-        setPosts([
-          {
-            id: 1,
-            title: '커뮤니티 첫 번째 게시글',
-            content: '이것은 테스트 게시글입니다.',
-            author: '익명',
-            date: '2025-12-24',
-            views: 5,
-            attachments: []
-          },
-          {
-            id: 2,
-            title: '두 번째 게시글',
-            content: '백엔드 서버가 연결되면 실제 데이터가 표시됩니다.',
-            author: '테스트사용자',
-            date: '2025-12-23',
-            views: 3,
-            attachments: []
-          }
-        ]);
-      }
-    };
-    fetchPosts();
-  }, []);
   const [showWriteModal, setShowWriteModal] = useState(false);
   const [showReadModal, setShowReadModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [anonymousCount, setAnonymousCount] = useState(0);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await axios.get(`/api/community/?page=${currentPage - 1}&size=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const postsData = Array.isArray(res.data) ? res.data : (res.data?.data?.content || []);
+      
+      // 익명 게시물 처리 (bit(1) 타입 고려)
+      const processedPosts = postsData.map(post => {
+        // MySQL bit(1) 타입: 1(true), 0(false) 또는 Buffer 값도 가능
+        const isAnonymous = post.anonymous === true ||
+                           post.anonymous === 'true' ||
+                           post.anonymous === 1 ||
+                           post.anonymous === '1' ||
+                           post.anonymous === '0x01' || // Buffer 형태
+                           (typeof post.anonymous === 'object' && post.anonymous?.[0] === 1); // Buffer [1]
+
+        const displayWriter = isAnonymous ? '익명' : (post.writer || '알 수 없음');
+
+        return {
+          ...post,
+          displayWriter
+        };
+      });
+      setPosts(processedPosts);
+    } catch (err) {
+      // 백엔드 연결 실패 시 빈 목록 표시
+      setPosts([]);
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
 
   const postsPerPage = 10;
+
+  // 학생 유저의 학과 정보 감지 (마이페이지와 동일한 API 사용)
+  const getUserMajor = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        return 'ALL';
+      }
+
+      // 마이페이지와 동일하게 /api/user/profile API 호출
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get('/api/user/profile', config);
+      const profile = res.data.data;
+
+      const major = profile.major || profile.department || profile.majorName || profile.dept || 'ALL';
+      return major;
+    } catch (err) {
+      // fallback: JWT 토큰에서 시도
+      try {
+        const token = localStorage.getItem('accessToken');
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const major = payload.major || payload.department || payload.majorName || payload.dept || 'ALL';
+        return major;
+      } catch (jwtErr) {
+        return 'ALL';
+      }
+    }
+  };
 
   const handleWritePost = async (postData) => {
     // 새 글 작성 후 목록 새로고침
@@ -66,97 +93,56 @@ const CommunityBoard = () => {
         return;
       }
 
+      // 사용자 학과 정보 먼저 가져오기
+      const userMajor = await getUserMajor();
+
       const form = new FormData();
-      form.append('title', postData.title);
-      form.append('content', postData.content);
-      form.append('major', 'ALL');
-      form.append('isAnonymous', postData.isAnonymous);
       
-      // 파일 첨부
+      // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+      const dto = {
+        title: postData.title || '',
+        content: postData.content || '',
+        major: userMajor,
+        anonymous: postData.anonymous || false
+      };
+      const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+      form.append('dto', dtoBlob);
+
+      // 파일 첨부 - files 파트로 전송
       if (postData.attachments && postData.attachments.length > 0) {
         postData.attachments.forEach((att) => {
           form.append('files', att.file);
         });
       }
-
-      // 디버깅: FormData 내용 확인
-      console.log('FormData 전송 내용:');
-      for (let [key, value] of form.entries()) {
-        if (value instanceof File) {
-          console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`);
-        } else {
-          console.log(`  ${key}: ${value}`);
-        }
-      }
       
       // 게시글 작성 API 호출
-      const response = await axios.post('/api/community/write', form, {
+      await axios.post('/api/community/write', form, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          Authorization: `Bearer ${token}`
+          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
         }
       });
 
-      console.log('게시글 작성 성공:', response.data);
-      
-      // 목록 새로고침
-      const res = await axios.get('/api/community/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPosts(res.data.data || res.data || []);
+      // 작성 완료 후 페이지 새로고침으로 최신 데이터 반영
       setShowWriteModal(false);
-      setCurrentPage(1);
-      alert('게시글이 작성되었습니다.');
+      window.location.reload();
     } catch (err) {
-      console.error('게시글 작성 실패 - 상세 정보:');
-      console.error('  Status:', err.response?.status);
-      console.error('  Data:', err.response?.data);
-      console.error('  Message:', err.message);
-      
-      // 백엔드 연결 실패 시 Mock 데이터로 추가
-      if (err.message.includes('ECONNREFUSED') || err.message.includes('Proxy error')) {
-        console.log('Mock 데이터로 게시글을 추가합니다.');
-        const newPost = {
-          id: Date.now(),
-          title: postData.title,
-          content: postData.content,
-          author: postData.isAnonymous ? '익명' : '사용자',
-          date: new Date().toISOString().split('T')[0],
-          views: 0,
-          attachments: postData.attachments || []
-        };
-        setPosts([newPost, ...posts]);
-        setShowWriteModal(false);
-        setCurrentPage(1);
-        alert('게시글이 작성되었습니다. (로컬 저장)');
-        return;
-      }
-      
       const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
       alert('게시글 작성 실패: ' + errorMsg);
     }
   };
   
   const handleReadPost = async (post) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      // 조회수 증가 API 호출
-      await axios.put(`/api/community/${post.id}/view`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSelectedPost(post);
-      setShowReadModal(true);
-    } catch (err) {
-      console.error('조회수 업데이트 실패:', err);
-      setSelectedPost(post);
-      setShowReadModal(true);
-    }
+    // 조회수 증가는 ReadPostModal에서 처리하므로 여기서는 모달만 열기
+    setSelectedPost(post);
+    setShowReadModal(true);
   };
 
-  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const safePosts = Array.isArray(posts) ? posts : [];
+  const totalPages = Math.ceil(safePosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+  const currentPosts = safePosts.slice(indexOfFirstPost, indexOfLastPost);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -219,26 +205,10 @@ const CommunityBoard = () => {
         onClose={() => setShowWriteModal(false)} 
         onSubmit={handleWritePost}
       />
-      <CommunityReadModal 
-        isOpen={showReadModal} 
-        onClose={() => setShowReadModal(false)} 
+      <ReadPostModal
+        isOpen={showReadModal}
+        onClose={() => setShowReadModal(false)}
         post={selectedPost}
-        onDelete={async (postId) => {
-          try {
-            const token = localStorage.getItem('accessToken');
-            await axios.delete(`/api/community/${postId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            const res = await axios.get('/api/community/', {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            setPosts(res.data.data || res.data || []);
-            setShowReadModal(false);
-          } catch (err) {
-            console.error('게시글 삭제 실패:', err.response?.data || err.message);
-            alert('게시글 삭제 실패: ' + (err.response?.data?.message || err.message));
-          }
-        }}
       />
 
     </div>

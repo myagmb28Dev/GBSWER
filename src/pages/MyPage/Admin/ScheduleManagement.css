@@ -1,0 +1,228 @@
+.schedule-management {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.header h2 {
+  color: #333;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.last-refresh {
+  font-size: 14px;
+  color: #666;
+}
+
+.content {
+  width: 100%;
+}
+
+.schedule-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.period-selector {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.period-selector label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.year-select,
+.month-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.refresh-btn,
+.view-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn {
+  background: #4DC4AB;
+  color: white;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: #3da892;
+}
+
+.refresh-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.view-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #5a6268;
+}
+
+.info-section {
+  margin-bottom: 30px;
+}
+
+.info-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  padding: 20px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.info-item h4 {
+  color: #333;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.info-item p {
+  color: #666;
+  margin: 0 0 15px 0;
+  line-height: 1.5;
+}
+
+.info-item ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-item li {
+  color: #666;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.warning-section {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+}
+
+.warning-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.warning-content h4 {
+  color: #856404;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.warning-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.warning-content li {
+  color: #856404;
+  margin-bottom: 5px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .schedule-management {
+    padding: 15px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .schedule-controls {
+    padding: 15px;
+  }
+
+  .period-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+
+  .refresh-btn,
+  .view-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .warning-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .warning-icon {
+    align-self: center;
+  }
+}

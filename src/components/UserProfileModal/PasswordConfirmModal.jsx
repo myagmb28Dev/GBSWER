@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './PasswordConfirmModal.css';
 
 const PasswordConfirmModal = ({ onClose, onConfirm, currentPassword, userEmail }) => {
@@ -6,13 +7,25 @@ const PasswordConfirmModal = ({ onClose, onConfirm, currentPassword, userEmail }
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password === currentPassword) {
-      onConfirm();
-      onClose();
-    } else {
-      setError('비밀번호가 일치하지 않습니다.');
+    setError('');
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await axios.post(
+        '/api/user/confirm-password',
+        { password },
+        { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+      );
+      if (res.status === 200) {
+        onConfirm();
+        onClose();
+      } else {
+        setError('비밀번호 확인에 실패했습니다.');
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || '비밀번호가 일치하지 않습니다.';
+      setError(msg);
     }
   };
 

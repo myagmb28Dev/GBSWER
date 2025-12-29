@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Check, Clock } from 'lucide-react';
 import './AssignmentStatusModal.css';
 
-const AssignmentStatusModal = ({ isOpen, onClose, assignmentTitle, participants = [] }) => {
+const AssignmentStatusModal = ({ isOpen, onClose, assignmentTitle, participants = [], loading = false, onReviewSubmission }) => {
   const [filterStatus, setFilterStatus] = useState('ALL'); // 'ALL', 'SUBMITTED', 'PENDING'
 
   // 제출 상태 필터링
@@ -64,9 +64,15 @@ const AssignmentStatusModal = ({ isOpen, onClose, assignmentTitle, participants 
 
         {/* 학생 목록 */}
         <div className="participants-list">
-          {filteredParticipants.length > 0 ? (
+          {loading ? (
+            <div className="loading">제출 현황을 불러오는 중...</div>
+          ) : filteredParticipants.length > 0 ? (
             filteredParticipants.map(participant => (
-              <div key={participant.id} className="participant-item">
+              <div
+                key={participant.id}
+                className={`participant-item ${participant.submitted ? 'clickable' : ''}`}
+                onClick={() => participant.submitted && onReviewSubmission && onReviewSubmission(participant)}
+              >
                 <div className="participant-info">
                   <img 
                     src={participant.profileImage} 

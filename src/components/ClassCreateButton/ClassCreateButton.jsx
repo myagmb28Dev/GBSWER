@@ -4,7 +4,7 @@ import AdminClassModal from '../AdminClassModal/AdminClassModal';
 import StudentClassModal from '../StudentClassModal/StudentClassModal';
 import './ClassCreateButton.css';
 
-const ClassCreateButton = ({ userRole = 'student' }) => {
+const ClassCreateButton = ({ userRole = 'student', onCreateClass, onJoinClass }) => {
   const [showModal, setShowModal] = useState(false);
 
   const handleButtonClick = () => {
@@ -15,15 +15,17 @@ const ClassCreateButton = ({ userRole = 'student' }) => {
     setShowModal(false);
   };
 
-  const handleClassCreate = (classData) => {
-    console.log('클래스 생성:', classData);
-    // 클래스 생성 로직 처리
+  const handleClassCreate = async (classData) => {
+    if (onCreateClass) {
+      await onCreateClass(classData);
+    }
     setShowModal(false);
   };
 
-  const handleClassJoin = (code) => {
-    console.log('클래스 참여:', code);
-    // 클래스 참여 로직 처리
+  const handleClassJoin = async (code) => {
+    if (onJoinClass) {
+      await onJoinClass(code);
+    }
     setShowModal(false);
   };
 
@@ -31,11 +33,11 @@ const ClassCreateButton = ({ userRole = 'student' }) => {
     <>
       <button className="class-create-button" onClick={handleButtonClick}>
         <Plus size={20} className="plus-icon" />
-        {userRole === 'admin' && <span className="button-text">클래스룸 생성</span>}
+        {(userRole === 'admin' || userRole === 'teacher') && <span className="button-text">클래스룸 생성</span>}
         {userRole === 'student' && <span className="button-text">클래스룸 참여</span>}
       </button>
 
-      {showModal && userRole === 'admin' && (
+      {showModal && (userRole === 'admin' || userRole === 'teacher') && (
         <AdminClassModal
           isOpen={showModal}
           onClose={handleCloseModal}

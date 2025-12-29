@@ -57,44 +57,52 @@
 .logout-dropdown {
     position: absolute;
     top: 50px;
-    right: 0;
+    right: -40px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-    min-width: 120px;
+    min-width: 160px;
     z-index: 1002;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(0, 0, 0, 0.08);
     animation: dropdownFadeIn 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 10px 10px 10px;
 }
 
 .user-info {
-    padding: 12px 14px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 8px 12px;
     font-size: 14px;
     color: #555;
-    background: #fafafa;
-    font-weight: 500;
+    background: transparent; /* remove rectangle background */
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: none; /* remove dividing border */
 }
 
 .logout-btn {
-    width: 100%;
-    padding: 8px 12px;
+    display: inline-block;
+    min-width: 120px;
+    padding: 8px 18px;
     border: none;
-    background: #4DC4AB !important;
-    color: white !important;
+    background: #4DC4AB;
+    color: white;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s ease;
-    border-radius: 0;
+    transition: all 0.12s ease;
+    border-radius: 10px;
     box-sizing: border-box;
+    margin-top: 8px;
 }
 
 .logout-btn:hover {
-    background: #3DB599 !important;
-    color: white !important;
+    background: #3DB599;
 }
 
 @keyframes dropdownFadeIn {

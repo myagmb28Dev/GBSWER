@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Plus } from "lucide-react";
 import WritePostModal from "./WritePostModal";
 import ReadPostModal from "./ReadPostModal";
-import PostTable from "./PostTable";
+import PostTable from "../components/CommunityPostTable/CommunityPostTable";
 import Pagination from "./Pagination";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
@@ -19,7 +19,22 @@ const CommunityBoard = () => {
         const res = await axios.get('/api/community/', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setPosts(res.data.data);
+        const payload = res.data?.data ?? res.data;
+        // API 명세서 기준: CommunityDto { id, title, content, writer, createdAt, viewCount, major, files, anonymous }
+        const mapCommunity = (item) => ({
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          writer: item.writer ?? '',
+          createdAt: item.createdAt ?? '',
+          viewCount: item.viewCount ?? 0,
+          major: item.major,
+          files: Array.isArray(item.files) ? item.files : [],
+          anonymous: item.anonymous ?? false
+        });
+        if (Array.isArray(payload)) setPosts(payload.map(mapCommunity));
+        else if (payload?.content && Array.isArray(payload.content)) setPosts(payload.content.map(mapCommunity));
+        else setPosts([]);
       } catch (err) {
         console.error('게시글 목록 불러오기 실패:', err);
       }
@@ -50,15 +65,17 @@ const CommunityBoard = () => {
     }
   };
   
-  const handleReadPost = (post) => {
+  const handleReadPost = async (post) => {
+    // 조회수 증가는 ReadPostModal에서 처리하므로 여기서는 모달만 열기
     setSelectedPost(post);
     setShowReadModal(true);
   };
 
-  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const safePosts = Array.isArray(posts) ? posts : [];
+  const totalPages = Math.ceil(safePosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+  const currentPosts = safePosts.slice(indexOfFirstPost, indexOfLastPost);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

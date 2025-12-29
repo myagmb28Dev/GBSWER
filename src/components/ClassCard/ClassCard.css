@@ -2,19 +2,26 @@
   width: 250px;
   height: 70px;
   background: white;
-  border: 1px solid #e8e8e8;
+  border: 1px solid rgba(77, 196, 171, 0.4);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(77, 196, 171, 0.25), 0 0 0 1px rgba(77, 196, 171, 0.1);
   font-family: 'Noto Sans KR', sans-serif;
+  /* 기본 상태에서도 초록색 은은한 빛 - 더 강하게 */
 }
 
 .class-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   border-color: #4DC4AB;
+}
+
+.class-card.selected {
+  border-color: #4DC4AB;
+  background-color: #f0f9f7;
+  box-shadow: 0 4px 16px rgba(77, 196, 171, 0.2);
 }
 
 .class-card-content {

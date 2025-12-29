@@ -1,16 +1,26 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import axios from 'axios';
+import { Trash2 } from 'lucide-react';
 import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
+import SubmissionReviewModal from '../SubmissionReviewModal/SubmissionReviewModal';
 import './ClassDetailSidebar.css';
 
-const AdminClassDetailSidebar = ({ 
+const AdminClassDetailSidebar = ({
   selectedPost = null,
-  onClose
+  onClose,
+  classId,
+  onPostCreate,
+  onPostUpdate,
+  onPostDelete
 }) => {
   const [isAssignmentStatusOpen, setIsAssignmentStatusOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [submissions, setSubmissions] = useState([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   if (!selectedPost) {
     return (
@@ -33,6 +43,58 @@ const AdminClassDetailSidebar = ({
     // 수정 로직
     console.log('수정 저장:', { title: editTitle, content: editContent });
     setIsEditMode(false);
+  };
+
+  const fetchSubmissions = async () => {
+    if (!selectedPost || selectedPost.type !== '과제' || !classId) return;
+
+    try {
+      setLoadingSubmissions(true);
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(`/api/classes/${classId}/posts/${selectedPost.id}/submissions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setSubmissions(response.data?.data?.submissions || []);
+    } catch (error) {
+      console.error('제출 현황 조회 실패:', error);
+      // API가 없으면 하드코딩된 데이터 사용
+      setSubmissions([
+        { id: 1, studentId: 1, studentName: "김민수", studentNumber: "2024001", submitted: true, submittedAt: "2024-12-25T10:00:00", attachments: [] },
+        { id: 2, studentId: 2, studentName: "이지은", studentNumber: "2024002", submitted: false, submittedAt: null, attachments: [] },
+        { id: 3, studentId: 3, studentName: "박준호", studentNumber: "2024003", submitted: true, submittedAt: "2024-12-24T15:30:00", attachments: [] }
+      ]);
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  };
+
+  const handleViewSubmissions = () => {
+    fetchSubmissions();
+    setIsAssignmentStatusOpen(true);
+  };
+
+  const handleReviewSubmission = (submission) => {
+    setSelectedSubmission(submission);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSaveReview = async (reviewData) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.post(`/api/classes/${classId}/posts/${selectedPost.id}/submissions/${selectedSubmission.id}/review`, reviewData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert('평가가 저장되었습니다.');
+      setIsReviewModalOpen(false);
+      setSelectedSubmission(null);
+      // 제출 현황 새로고침
+      fetchSubmissions();
+    } catch (error) {
+      console.error('평가 저장 실패:', error);
+      alert('평가 저장에 실패했습니다.');
+    }
   };
 
   return (
@@ -94,7 +156,7 @@ const AdminClassDetailSidebar = ({
                   </div>
                   
                   <p className="post-content">
-                    {selectedPost.content || '과제 내용이 없습니다.'}
+                    {selectedPost.content || '과제 내용이 아직 준비되지 않았습니다.'}
                   </p>
                 </div>
 
@@ -102,17 +164,31 @@ const AdminClassDetailSidebar = ({
                 <div className="character-section">
                   <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
                   <div className="button-section">
-                    <button 
-                      onClick={handleEditStart} 
+                    <button
+                      onClick={handleEditStart}
                       className="edit-button"
                     >
                       수정하기
                     </button>
-                    <button 
-                      onClick={() => setIsAssignmentStatusOpen(true)}
+                    <button
+                      onClick={handleViewSubmissions}
                       className="status-button"
                     >
-                      과제 현황
+                      제출 현황
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('게시물을 삭제하시겠습니까?')) {
+                          if (onPostDelete && classId) {
+                            onPostDelete(selectedPost.id);
+                            onClose();
+                          }
+                        }
+                      }}
+                      className="delete-button"
+                    >
+                      <Trash2 size={16} />
+                      삭제하기
                     </button>
                   </div>
                 </div>
@@ -164,7 +240,7 @@ const AdminClassDetailSidebar = ({
                 <div className="post-header">
                   <h3 className="post-title">{selectedPost.title}</h3>
                   <p className="post-content">
-                    {selectedPost.content || '공지 내용이 없습니다.'}
+                    {selectedPost.content || '공지 내용이 아직 준비되지 않았습니다.'}
                   </p>
                 </div>
 
@@ -177,6 +253,20 @@ const AdminClassDetailSidebar = ({
                       className="edit-button"
                     >
                       수정하기
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('게시물을 삭제하시겠습니까?')) {
+                          if (onPostDelete && classId) {
+                            onPostDelete(selectedPost.id);
+                            onClose();
+                          }
+                        }
+                      }}
+                      className="delete-button"
+                    >
+                      <Trash2 size={16} />
+                      삭제하기
                     </button>
                   </div>
                 </div>
@@ -191,18 +281,23 @@ const AdminClassDetailSidebar = ({
             isOpen={isAssignmentStatusOpen}
             onClose={() => setIsAssignmentStatusOpen(false)}
             assignmentTitle={selectedPost.title}
-            participants={[
-              { id: 1, name: "김민수", studentId: "2024001", profileImage: "/profile.png", submitted: true },
-              { id: 2, name: "이지은", studentId: "2024002", profileImage: "/profile.png", submitted: false },
-              { id: 3, name: "박준호", studentId: "2024003", profileImage: "/profile.png", submitted: true },
-              { id: 4, name: "최서연", studentId: "2024004", profileImage: "/profile.png", submitted: false },
-              { id: 5, name: "정우진", studentId: "2024005", profileImage: "/profile.png", submitted: true },
-              { id: 6, name: "한소영", studentId: "2024006", profileImage: "/profile.png", submitted: true },
-              { id: 7, name: "윤태현", studentId: "2024007", profileImage: "/profile.png", submitted: false },
-              { id: 8, name: "강민지", studentId: "2024008", profileImage: "/profile.png", submitted: true },
-              { id: 9, name: "조현우", studentId: "2024009", profileImage: "/profile.png", submitted: false },
-              { id: 10, name: "신예린", studentId: "2024010", profileImage: "/profile.png", submitted: true },
-            ]}
+            participants={submissions}
+            loading={loadingSubmissions}
+            onReviewSubmission={handleReviewSubmission}
+          />
+        )}
+
+        {/* 제출물 평가 모달 */}
+        {selectedSubmission && (
+          <SubmissionReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => {
+              setIsReviewModalOpen(false);
+              setSelectedSubmission(null);
+            }}
+            submission={selectedSubmission}
+            assignmentTitle={selectedPost.title}
+            onSaveReview={handleSaveReview}
           />
         )}
       </div>

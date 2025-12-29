@@ -1,10 +1,12 @@
 import { X, File, Trash2 } from 'lucide-react';
 
 const CommunityReadModal = ({ isOpen, onClose, post, onDelete, isAdmin = false }) => {
-    const handleDownload = (attachment) => {
+    const handleDownload = (file) => {
     const link = document.createElement('a');
-    link.href = attachment.url;
-    link.download = attachment.name;
+    link.href = file.url;
+    // URL에서 파일명 추출하거나 기본값 사용
+    const fileName = file.name || file.url.split('/').pop() || 'download';
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -17,8 +19,8 @@ const handleDelete = () => {
 };
 
 if (!isOpen || !post) return null;
-const imageAttachments = post.attachments?.filter(att => att.type.startsWith('image/')) || [];
-const fileAttachments = post.attachments?.filter(att => !att.type.startsWith('image/')) || [];
+const imageAttachments = post.files?.filter(file => file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) || [];
+const fileAttachments = post.files?.filter(file => !file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) || [];
 
 return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -32,9 +34,9 @@ return (
             <div className="p-4 md:p-6">
                 <div className="flex justify-between items-center mb-4 pb-4 border-b">
                     <div className="flex gap-4 text-sm text-gray-600">
-                        <span>작성자: {post.author}</span>
-                        <span>작성일: {post.date}</span>
-                        <span>조회수: {post.views}</span>
+                        <span>작성자: {post.writer}</span>
+                        <span>작성일: {new Date(post.createdAt).toLocaleString()}</span>
+                        <span>조회수: {post.viewCount}</span>
                     </div>
                 </div>
                 
@@ -47,12 +49,12 @@ return (
                     <div className="border-t pt-4 mb-4">
                         <h4 className="text-sm font-medium mb-3">이미지 ({imageAttachments.length})</h4>
                         <div className="grid grid-cols-2 gap-3">
-                            {imageAttachments.map((att) => (
-                                <div key={att.id} className="border rounded-lg overflow-hidden">
-                                    <img src={att.url} alt={att.name} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
-                                    onClick={() => window.open(att.url, '_blank')} />
+                            {imageAttachments.map((file, index) => (
+                                <div key={index} className="border rounded-lg overflow-hidden">
+                                    <img src={file.url} alt={file.name || 'image'} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
+                                    onClick={() => window.open(file.url, '_blank')} />
                                     <div className="p-2 bg-gray-50">
-                                        <p className="text-xs text-gray-600 truncate">{att.name}</p>
+                                        <p className="text-xs text-gray-600 truncate">{file.name || '이미지'}</p>
                                     </div>
                                 </div>
                             ))}
@@ -65,11 +67,11 @@ return (
                 <div className="border-t pt-4">
                     <h4 className="text-sm font-medium mb-3">첨부파일 ({fileAttachments.length})</h4>
                     <div className="space-y-2">
-                        {fileAttachments.map((att) => (
-                            <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => handleDownload(att)}>
+                        {fileAttachments.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => handleDownload(file)}>
                                 <div className="flex items-center gap-3">
                                     <File size={20} className="text-gray-500" />
-                                    <span className="text-sm">{att.name}</span>
+                                    <span className="text-sm">{file.name || file.url.split('/').pop() || '파일'}</span>
                                 </div>
                                 <span className="text-xs text-teal-600 font-medium">다운로드</span>
                             </div>

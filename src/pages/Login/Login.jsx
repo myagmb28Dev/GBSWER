@@ -3,7 +3,6 @@ import axios from 'axios';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
 import ForgotPasswordModal from '../../components/ForgotPasswordModal/ForgotPasswordModal';
-import { getMockUserByRole } from '../../mocks/mockUsers';
 
 const Login = ({ onLogin }) => {
   const [id, setId] = useState('');
@@ -31,17 +30,9 @@ const Login = ({ onLogin }) => {
         localStorage.setItem('refreshToken', refreshToken);
         onLogin(accountType);
       } catch (apiError) {
-        // API 없을 때 테스트 모드로 진행
-        console.log('API 서버 없음. 테스트 모드로 진행합니다.');
-        const testToken = 'test_token_' + Date.now();
-        localStorage.setItem('accessToken', testToken);
-        localStorage.setItem('refreshToken', testToken);
-        
-        // 역할별 임시 사용자 데이터 저장
-        const mockUser = getMockUserByRole(accountType);
-        localStorage.setItem('mockUser', JSON.stringify(mockUser));
-        
-        onLogin(accountType);
+        // API 호출 실패 시 오류 표시
+        console.error('로그인 API 호출 실패:', apiError.response?.data || apiError.message);
+        alert('로그인 실패: API 서버 응답 없음 또는 인증 오류');
       }
     } catch (error) {
       alert('로그인 실패: ' + (error.response?.data?.message || '서버 오류'));

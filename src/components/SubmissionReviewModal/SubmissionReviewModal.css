@@ -1,0 +1,317 @@
+.submission-review-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.submission-review-modal {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.modal-content {
+  padding: 25px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.assignment-info {
+  margin-bottom: 25px;
+}
+
+.assignment-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.submission-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4DC4AB;
+}
+
+.student-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.student-id {
+  font-size: 14px;
+  color: #666;
+}
+
+.submission-time {
+  font-size: 14px;
+  color: #888;
+}
+
+.attachments-section,
+.review-section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.file-icon {
+  color: #666;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #888;
+}
+
+.no-attachments {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-options {
+  display: flex;
+  gap: 10px;
+}
+
+.status-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--status-color);
+  background: var(--status-bg);
+  color: var(--status-text-color, white);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-btn.active {
+  background: var(--status-color) !important;
+  color: white !important;
+}
+
+.status-btn:hover {
+  opacity: 0.8;
+}
+
+.feedback-textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: #4DC4AB;
+  box-shadow: 0 0 0 2px rgba(77, 196, 171, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 25px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+}
+
+.save-btn {
+  background: #4DC4AB;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #3da892;
+}
+
+/* 스크롤바 스타일링 */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 1.0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .submission-review-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .modal-header {
+    padding: 15px 20px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .submission-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .modal-footer {
+    padding: 15px 20px;
+  }
+
+  .status-options {
+    flex-wrap: wrap;
+  }
+
+  .status-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+}

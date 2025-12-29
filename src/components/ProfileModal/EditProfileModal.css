@@ -175,32 +175,7 @@
   border-color: #adb5bd !important;
 }
 
-.logout-section {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0 15px 0;
-}
-
-.logout-btn {
-  padding: 8px 16px !important;
-  background: #dc3545 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  font-family: 'Noto Sans KR', sans-serif !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  width: 80px !important;
-  height: 36px !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-}
-
-.logout-btn:hover {
-  background: #c82333;
-}
+/* logout button removed from modal; header dropdown handles logout */
 
 @media (max-width: 768px) {
   .modal-content {

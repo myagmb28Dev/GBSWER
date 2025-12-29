@@ -1,15 +1,98 @@
 import React, { useState } from 'react';
-import { Upload, File, Plus } from 'lucide-react';
+import { File, Plus } from 'lucide-react';
 import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
+import { useAppContext } from '../../App';
 import './ClassDetailSidebar.css';
 
-const ClassDetailSidebar = ({ 
+const ClassDetailSidebar = ({
   selectedPost = null,
-  onClose
+  onClose,
+  onSubmitAssignment,
+  onUpdateSubmission
 }) => {
+  // 기본 디버그: 컴포넌트가 렌더링되는지 확인
+  // eslint-disable-next-line no-console
+  console.log('🎯 ClassDetailSidebar rendered, selectedPost:', selectedPost);
+  const { userRole } = useAppContext();
+  // 게시물 본문을 여러 가능한 키에서 찾아 반환하는 헬퍼
+  const resolveContent = (post) => {
+    if (!post || typeof post !== 'object') return '';
+
+    // 새로운 API 명세서에 따라 content를 우선적으로 확인
+    if (post.content && String(post.content).trim() !== '') {
+      // eslint-disable-next-line no-console
+      console.log('✅ Found content:', post.content);
+      return post.content;
+    }
+
+    // description도 확인 (호환성을 위해)
+    if (post.description && String(post.description).trim() !== '') {
+      // eslint-disable-next-line no-console
+      console.log('✅ Found description:', post.description);
+      return post.description;
+    }
+
+    // 가능한 다른 키 목록 (description 다음 우선순위)
+    const keys = [
+      'content', 'body', 'detail', 'text', 'desc', 'message', 'note',
+      'contents', 'data', 'value', 'html', 'markdown', 'summary', 'info', 'details'
+    ];
+
+    // 직접 키 확인
+    for (const k of keys) {
+      if (post[k] && String(post[k]).trim() !== '') return post[k];
+    }
+
+    // 중첩된 data 객체에 들어있는 경우도 검사
+    if (post.data && typeof post.data === 'object') {
+      // description 우선 확인
+      if (post.data.description && String(post.data.description).trim() !== '') {
+        return post.data.description;
+      }
+      for (const k of keys) {
+        if (post.data[k] && String(post.data[k]).trim() !== '') return post.data[k];
+      }
+    }
+
+    // 중첩된 객체에서 재귀적으로 찾기
+    const findContent = (obj) => {
+      if (!obj || typeof obj !== 'object') return null;
+      // description 우선 확인
+      if (obj.description && String(obj.description).trim() !== '') return obj.description;
+      for (const k of keys) {
+        if (obj[k] && String(obj[k]).trim() !== '') return obj[k];
+      }
+      return null;
+    };
+
+    // 모든 중첩 객체 탐색
+    for (const key in post) {
+      if (post[key] && typeof post[key] === 'object') {
+        const found = findContent(post[key]);
+        if (found) return found;
+      }
+    }
+
+    return '';
+  };
+  // 선택된 게시물이 바뀔 때 디버그 정보를 남김
+  if (typeof window !== 'undefined' && selectedPost) {
+    // 상세한 디버그: 개발시 콘솔에서 확인
+    // eslint-disable-next-line no-console
+    console.log('🔍 ClassDetailSidebar selectedPost:', selectedPost);
+    // eslint-disable-next-line no-console
+    console.log('🔍 selectedPost keys:', Object.keys(selectedPost));
+    // eslint-disable-next-line no-console
+    console.log('🔍 selectedPost content:', selectedPost.content);
+    // eslint-disable-next-line no-console
+    console.log('🔍 selectedPost description:', selectedPost.description);
+    // eslint-disable-next-line no-console
+    console.log('🔍 selectedPost type:', selectedPost.type);
+    // eslint-disable-next-line no-console
+    console.log('🔍 resolveContent result:', resolveContent(selectedPost));
+  }
   const [attachments, setAttachments] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [addToSchedule, setAddToSchedule] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSubmitNotification, setShowSubmitNotification] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -58,34 +141,28 @@ const ClassDetailSidebar = ({
     setUploadedFiles(uploadedFiles.filter(file => file.id !== id));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // 이미 제출된 경우
     if (isSubmitted) {
       setShowSubmitNotification(true);
       setTimeout(() => setShowSubmitNotification(false), 2000);
       return;
     }
-    
-    // 과제 제출 로직
-    console.log('과제 제출:', uploadedFiles);
-    setIsSubmitted(true);
-    alert('과제가 제출되었습니다!');
-  };
 
-  const handleScheduleChange = (e) => {
-    setAddToSchedule(e.target.checked);
-    if (e.target.checked) {
-      // 개인 일정에 추가하는 로직
-      const scheduleItem = {
-        id: Date.now(),
-        title: selectedPost.title,
-        date: '2024-12-25', // 과제 기간 종료일
-        type: 'personal'
+    try {
+      const submissionData = {
+        files: uploadedFiles
       };
-      console.log('일정 추가:', scheduleItem);
-      // 실제로는 상위 컴포넌트나 전역 상태로 전달해야 함
+
+      if (onSubmitAssignment) {
+        await onSubmitAssignment(selectedPost.id, submissionData);
+        setIsSubmitted(true);
+      }
+    } catch (error) {
+      console.error('제출 실패:', error);
     }
   };
+
 
   return (
     <div className="class-detail-sidebar">
@@ -108,22 +185,9 @@ const ClassDetailSidebar = ({
                 <p className="period-text">과제 기간: 2024.12.20 - 2024.12.25</p>
               </div>
               
-              {/* 일정표 추가 체크박스 */}
-              <div className="schedule-checkbox">
-                <label className="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    checked={addToSchedule}
-                    onChange={handleScheduleChange}
-                    className="checkbox-input"
-                  />
-                  <span className="checkbox-text">일정표에 추가</span>
-                </label>
-              </div>
               
               <p className="post-content">
-                이것은 과제 내용입니다. 과제에 대한 상세한 설명이 여기에 표시됩니다.
-                학생들이 제출해야 할 과제에 대한 자세한 안내사항이 포함되어 있습니다.
+                {selectedPost.content || "과제 내용이 아직 준비되지 않았습니다."}
               </p>
             </div>
 
@@ -210,8 +274,7 @@ const ClassDetailSidebar = ({
             <div className="post-header">
               <h3 className="post-title">{selectedPost.title}</h3>
               <p className="post-content">
-                이것은 공지사항 내용입니다. 중요한 공지사항에 대한 상세한 내용이 여기에 표시됩니다.
-                학생들이 꼭 알아야 할 정보들을 포함하고 있습니다.
+                {selectedPost.content || "공지 내용이 아직 준비되지 않았습니다."}
               </p>
             </div>
 
@@ -219,12 +282,14 @@ const ClassDetailSidebar = ({
             <div className="character-section">
               <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
               <div className="button-section">
-                <button 
-                  onClick={() => setIsEditMode(!isEditMode)} 
-                  className="edit-button"
-                >
-                  수정하기
-                </button>
+                {userRole !== 'student' && (
+                  <button 
+                    onClick={() => setIsEditMode(!isEditMode)} 
+                    className="edit-button"
+                  >
+                    수정하기
+                  </button>
+                )}
               </div>
             </div>
           </>

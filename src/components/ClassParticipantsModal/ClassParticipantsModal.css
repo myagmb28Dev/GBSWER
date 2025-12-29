@@ -149,12 +149,12 @@
 }
 
 .participants-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 3px;
 }
 
 .participants-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 1.0);
 }
 
 /* 반응형 디자인 */

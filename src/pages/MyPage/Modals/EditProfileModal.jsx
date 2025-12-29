@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import PasswordConfirmModal from './PasswordConfirmModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import './EditProfileModal.css';
@@ -73,10 +74,40 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
     setShowPasswordConfirm(true);
   };
 
-  const handlePasswordConfirmed = () => {
+  const handlePasswordConfirmed = async () => {
     if (pendingData) {
-      onSave(pendingData);
-      onClose();
+      try {
+        const token = localStorage.getItem('accessToken');
+        // If profileImage is a File, upload it first via multipart
+        if (pendingData.profileImage && pendingData.profileImage instanceof File) {
+          const form = new FormData();
+          form.append('profileImage', pendingData.profileImage);
+          await axios.put('/api/user/profile-image', form, {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : '',
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        }
+
+        // Prepare JSON payload without file and map classNumber -> class
+        const payload = {
+          name: pendingData.name,
+          email: pendingData.email,
+          major: pendingData.major,
+          grade: pendingData.grade,
+          class: pendingData.classNumber
+        };
+
+        await axios.put('/api/user/profile', payload, {
+          headers: { Authorization: token ? `Bearer ${token}` : '' }
+        });
+
+        onSave({ ...profile, ...payload, profileImage: previewImage });
+        onClose();
+      } catch (err) {
+        alert('프로필 정보 수정 실패');
+      }
     }
   };
 

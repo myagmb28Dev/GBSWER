@@ -84,6 +84,83 @@
   font-weight: 500;
 }
 
+.participant-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manage-participants-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #4DC4AB;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.manage-participants-btn:hover {
+  background: #3da892;
+  transform: scale(1.05);
+}
+
+.manage-participants-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-class-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+}
+
+.delete-class-btn:hover {
+  background: #c82333;
+  transform: scale(1.05);
+}
+
+.delete-class-btn:active {
+  transform: scale(0.95);
+}
+
+.leave-class-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #ff6b35;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+}
+
+.leave-class-btn:hover {
+  background: #e55a2b;
+  transform: scale(1.05);
+}
+
+.leave-class-btn:active {
+  transform: scale(0.95);
+}
+
 /* 구분선 */
 .divider-line {
   width: 100%;
@@ -184,10 +261,40 @@
   font-weight: 500;
 }
 
+.loading-text,
+.empty-posts-text {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
 .post-date {
   font-size: 12px;
   color: #999;
   flex-shrink: 0;
+  white-space: nowrap; /* 날짜 강제 줄바꿈 방지 */
+}
+
+.post-delete-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.post-delete-btn:hover {
+  background: #c82333;
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 /* 스크롤바 스타일링 */
@@ -200,12 +307,12 @@
 }
 
 .posts-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 3px;
 }
 
 .posts-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 1.0);
 }
 
 /* 반응형 디자인 */
@@ -233,5 +340,156 @@
   .class-info-right {
     align-self: flex-end;
   }
+}
+
+
+/* 작성 버튼 스타일 */
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.write-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.write-button:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.notice-button {
+  background: #28a745;
+}
+
+.notice-button:hover {
+  background: #218838;
+}
+
+/* 게시물 상세 모달 */
+.post-detail-modal {
+  background: white;
+  border-radius: 12px;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.post-detail-modal .modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-detail-modal .modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.post-detail-modal .close-button {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.post-detail-modal .close-button:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.post-detail-modal .modal-body {
+  padding: 24px;
+}
+
+.post-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.post-type {
+  background: #007bff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.post-date,
+.post-deadline {
+  color: #666;
+  font-size: 14px;
+}
+
+.post-content {
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+}
+
+.post-detail-modal .modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.post-detail-modal .edit-button,
+.post-detail-modal .delete-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-detail-modal .edit-button {
+  background: #007bff;
+  color: white;
+}
+
+.post-detail-modal .edit-button:hover {
+  background: #0056b3;
+}
+
+.post-detail-modal .delete-button {
+  background: #dc3545;
+  color: white;
+}
+
+.post-detail-modal .delete-button:hover {
+  background: #c82333;
 }
 

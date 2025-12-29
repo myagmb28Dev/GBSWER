@@ -7,17 +7,57 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     const [postData, setPostData] = useState(post);
     const [showEditModal, setShowEditModal] = useState(false);
 
+    // post prop이 변경되면 postData도 업데이트
+    useEffect(() => {
+        if (post) {
+            setPostData(post);
+        }
+    }, [post]);
+
     useEffect(() => {
         const fetchPost = async () => {
             if (!isOpen || !post?.id) return;
             try {
                 const token = localStorage.getItem('accessToken');
+                // 먼저 조회수 증가 API 호출
+                try {
+                    await axios.put(`/api/community/${post.id}/view`, {}, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                } catch (viewErr) {
+                    // 404 등 무시하고 계속 진행
+                    console.log('조회수 증가 API 호출 실패 (무시):', viewErr);
+                }
+                // 상세 조회
                 const res = await axios.get(`/api/community/${post.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setPostData(res.data.data);
+                const payload = res.data?.data ?? res.data;
+                console.log('상세 게시글 API 응답 원본:', res.data);
+                console.log('상세 게시글 payload:', payload);
+                // API 명세서 기준: CommunityDto { id, title, content, writer, createdAt, viewCount, major, files, anonymous }
+                // FileInfoDto: { url, name }
+                const mapped = {
+                    id: payload.id,
+                    title: payload.title,
+                    content: payload.content,
+                    writer: payload.writer ?? '',
+                    createdAt: payload.createdAt ?? '',
+                    viewCount: payload.viewCount ?? 0,
+                    major: payload.major,
+                    files: Array.isArray(payload.files) ? payload.files : [],
+                    anonymous: payload.anonymous ?? false
+                };
+                console.log('매핑된 postData:', mapped);
+                setPostData(mapped);
             } catch (err) {
                 console.error('게시글 조회 실패:', err);
+                console.error('에러 응답:', err.response?.data);
+                // API 호출 실패 시에도 초기 post 데이터 사용
+                if (post) {
+                    console.log('초기 post 데이터 사용:', post);
+                    setPostData(post);
+                }
             }
         };
         fetchPost();
@@ -54,16 +94,26 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const form = new FormData();
-            form.append('title', updatedPost.title);
-            form.append('content', updatedPost.content);
-            form.append('major', postData.major || 'ALL');
+            
+            // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+            const dto = {
+                title: updatedPost.title,
+                content: updatedPost.content,
+                major: postData.major || 'ALL',
+                anonymous: updatedPost.anonymous || false
+            };
+            const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+            form.append('dto', dtoBlob);
+            
+            // 파일은 files 파트로 전송
             updatedPost.attachments?.forEach((att) => {
                 form.append('files', att.file);
             });
+            
             await axios.put(`/api/community/${postData.id}`, form, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                    Authorization: `Bearer ${token}`
+                    // Content-Type은 axios가 자동으로 설정 (boundary 포함)
                 }
             });
             alert('수정되었습니다.');
@@ -75,18 +125,44 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     };
 
     if (!isOpen || !postData) return null;
-    const imageAttachments = postData.attachments?.filter(att => att.type.startsWith('image/')) || [];
-    const fileAttachments = postData.attachments?.filter(att => !att.type.startsWith('image/')) || [];
+    
+    console.log('ReadPostModal 렌더링 - postData:', postData);
+    
+    // API 명세서 기준: FileInfoDto { url, name } - 확장자로 이미지 판별
+    const files = Array.isArray(postData.files) ? postData.files : [];
+    console.log('files 배열:', files);
+    
+    const imageAttachments = files.filter(file => {
+        if (!file || !file.name) return false;
+        const nameLower = file.name.toLowerCase();
+        return nameLower.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/);
+    });
+    const fileAttachments = files.filter(file => {
+        if (!file || !file.name) return false;
+        const nameLower = file.name.toLowerCase();
+        return !nameLower.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/);
+    });
+    
+    console.log('imageAttachments:', imageAttachments);
+    console.log('fileAttachments:', fileAttachments);
+    
+    // 작성자, 작성일, 조회수 - API 명세서 기준 필드 사용
+    const writer = postData.writer || '';
+    const createdAt = postData.createdAt || '';
+    const viewCount = postData.viewCount ?? 0;
+    
+    console.log('작성자:', writer, '작성일:', createdAt, '조회수:', viewCount);
 
     return (
         <>
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-lg shadow-xl w-full max-w-xl md:max-w-2xl max-h-[85vh] overflow-y-auto">
-                    <div className="flex justify-between items-center p-4 md:p-6 border-b">
-                        <h3 className="text-xl md:text-2xl font-bold">{postData.title}</h3>
+                        <div className="flex justify-between items-center p-4 md:p-6 border-b">
+                        <h3 className="text-xl md:text-2xl font-bold">{postData.title || '제목 없음'}</h3>
                         <div className="flex gap-2">
-                            <button onClick={handleEdit} className="text-gray-500 hover:text-teal-600 p-1 rounded transition-all" title="수정">
-                                <Edit size={22} />
+                            <button onClick={handleEdit} className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all flex items-center gap-2" title="수정">
+                                <Edit size={18} />
+                                <span>수정</span>
                             </button>
                             <button onClick={handleDelete} className="text-gray-500 hover:text-red-500 p-1 rounded transition-all" title="삭제">
                                 <Trash size={22} />
@@ -99,9 +175,9 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                     <div className="p-4 md:p-6">
                         <div className="flex justify-between items-center mb-4 pb-4 border-b">
                             <div className="flex gap-4 text-sm text-gray-600">
-                                <span>작성자: {postData.author}</span>
-                                <span>작성일: {postData.date}</span>
-                                <span>조회수: {postData.views}</span>
+                                <span>작성자: {writer || '알 수 없음'}</span>
+                                <span>작성일: {createdAt ? (createdAt.includes('T') ? createdAt.split('T')[0] : createdAt) : '알 수 없음'}</span>
+                                <span>조회수: {viewCount}</span>
                             </div>
                         </div>
                         <div className="prose max-w-none mb-6">
@@ -112,12 +188,12 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                             <div className="border-t pt-4 mb-4">
                                 <h4 className="text-sm font-medium mb-3">이미지 ({imageAttachments.length})</h4>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {imageAttachments.map((att) => (
-                                        <div key={att.id} className="border rounded-lg overflow-hidden">
-                                            <img src={att.url} alt={att.name} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
-                                                onClick={() => window.open(att.url, '_blank')} />
+                                    {imageAttachments.map((file, idx) => (
+                                        <div key={idx} className="border rounded-lg overflow-hidden">
+                                            <img src={file.url} alt={file.name} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
+                                                onClick={() => file.url && window.open(file.url, '_blank')} />
                                             <div className="p-2 bg-gray-50">
-                                                <p className="text-xs text-gray-600 truncate">{att.name}</p>
+                                                <p className="text-xs text-gray-600 truncate">{file.name}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -129,11 +205,11 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                             <div className="border-t pt-4">
                                 <h4 className="text-sm font-medium mb-3">첨부파일 ({fileAttachments.length})</h4>
                                 <div className="space-y-2">
-                                    {fileAttachments.map((att) => (
-                                        <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => handleDownload(att)} >
+                                    {fileAttachments.map((file, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => file.url && handleDownload(file)} >
                                             <div className="flex items-center gap-3">
                                                 <File size={20} className="text-gray-500" />
-                                                <span className="text-sm">{att.name}</span>
+                                                <span className="text-sm">{file.name}</span>
                                             </div>
                                             <span className="text-xs text-teal-600 font-medium">다운로드</span>
                                         </div>
@@ -142,8 +218,13 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                             </div>
                         )}
                     </div>
-                    <div className="flex justify-end p-4 md:p-6 border-t">
-                        <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300" > 닫기 </button>
+                    <div className="flex justify-end p-4 md:p-6 border-t gap-2">
+                        <button onClick={handleDelete} className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
+                            <Trash size={18} />
+                            <span>삭제</span>
+                        </button>
+                        <button onClick={handleEdit} className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600">수정</button>
+                        <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">닫기</button>
                     </div>
                 </div>
             </div>

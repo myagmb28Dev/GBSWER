@@ -221,19 +221,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
               </div>
             </div>
 
-            <div className="logout-section">
-              <button
-                type="button"
-                className="logout-btn"
-                onClick={() => {
-                  if (window.confirm('로그아웃 하시겠습니까?')) {
-                    handleLogout();
-                  }
-                }}
-              >
-                로그아웃
-              </button>
-            </div>
+            {/* 로그아웃 버튼은 헤더 드롭다운으로 통합됨 - 모달 내 로그아웃 버튼 제거 */}
 
             <div className="modal-buttons-bottom">
               <button

@@ -2,11 +2,13 @@ import React from 'react';
 import './ClassCard.css';
 
 const ClassCard = ({ 
-  className = "빅데이터프로그래밍", 
-  teacherName = "홍길동 선생님", 
-  posts = [], // 과제와 공지사항 배열
+  classData,
+  isSelected,
   onClick 
 }) => {
+  const className = classData?.className || "클래스명 없음";
+  const teacherName = classData?.teacherName || "선생님 정보 없음";
+  const posts = classData?.posts || []; // 과제와 공지사항 배열
   // 가장 임박한 과제의 마감일 찾기
   const getUrgentAssignmentDeadline = (posts) => {
     const assignments = posts.filter(post => post.type === '과제' && post.deadline && !post.submitted);
@@ -44,7 +46,7 @@ const ClassCard = ({
   const dDay = calculateDDay(urgentDeadline);
 
   return (
-    <div className="class-card" onClick={onClick}>
+    <div className={`class-card ${isSelected ? 'selected' : ''}`} onClick={onClick}>
       <div className="class-card-content">
         <div className="class-info">
           <h3 className="class-name">{className}</h3>

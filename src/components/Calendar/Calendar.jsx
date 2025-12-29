@@ -4,10 +4,10 @@ import AddEventModal from './AddEventModal';
 import ViewEventModal from './ViewEventModal';
 import ScheduleDetailModal from './ScheduleDetailModal';
 import { useAppContext } from '../../App';
-import { mockSchedule } from '../../mocks/mockSchedule';
+import axios from 'axios';
 
 const Calendar = () => {
-  const { globalEvents, setGlobalEvents } = useAppContext();
+  const { globalEvents, setGlobalEvents, cachedSchedules, setCachedSchedules, schedulesRefreshing, setSchedulesRefreshing, profile } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -16,12 +16,201 @@ const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  // 전역 일정과 mockSchedule을 합쳐서 사용
+  // 서버 일정과 전역 일정을 합쳐서 사용
   useEffect(() => {
-    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
-    const combinedEvents = [...mockSchedule, ...safeGlobalEvents];
-    setEvents(combinedEvents);
-  }, [globalEvents]);
+    // profile이 없으면 일정을 불러오지 않음
+    if (!profile) {
+      return;
+    }
+
+    const fetchSchedules = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+        // currentDate를 사용하여 현재 선택된 월의 일정을 가져옴
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        const currentUserId = profile?.id || profile?.userId || 'unknown';
+        const key = `schedule:${currentUserId}:${year}-${month}`;
+        // 캐시에 이미 있으면 재사용
+        if (cachedSchedules && cachedSchedules[key]) {
+          const serverEvents = cachedSchedules[key];
+          // userId 타입 변환을 위한 헬퍼 함수
+          const normalizedUserId = currentUserId ? String(currentUserId) : null;
+          const normalizedScheduleUserId = (schedule) => String(schedule.userId);
+
+          const filteredServerEvents = serverEvents.filter(event => 
+            event.category !== '개인' || (normalizedUserId && normalizedScheduleUserId(event) === normalizedUserId)
+          );
+          const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+          // globalEvents를 우선으로 병합 (globalEvents의 데이터가 더 최신)
+          const merged = [...filteredServerEvents, ...safeGlobalEvents];
+          const deduped = merged.reduce((acc, ev) => {
+            const existingIndex = acc.findIndex(e => e.id === ev.id);
+            if (existingIndex >= 0) {
+              // globalEvents에서 온 데이터면 덮어쓰기
+              if (safeGlobalEvents.some(ge => ge.id === ev.id)) {
+                acc[existingIndex] = ev;
+              }
+            } else {
+              acc.push(ev);
+            }
+            return acc;
+          }, []);
+          setEvents(deduped);
+          return;
+        }
+        const res = await axios.get(`/api/schedule?year=${year}&month=${month}`, config);
+        let serverEvents = res.data?.data || [];
+        
+        // 데이터가 없으면 POST로 refresh-month 호출하여 데이터 생성
+        if (!serverEvents || serverEvents.length === 0) {
+          console.log(`📭 ${year}년 ${month}월 일정 데이터 없음, POST로 refresh-month 호출`);
+          try {
+            // 리프레시 중복 방지
+            if (schedulesRefreshing && schedulesRefreshing[key]) {
+              const waitForCache = () => new Promise(resolve => {
+                const start = Date.now();
+                const iv = setInterval(() => {
+                  if (cachedSchedules && cachedSchedules[key]) {
+                    clearInterval(iv);
+                    resolve(cachedSchedules[key]);
+                  }
+                  if (Date.now() - start > 5000) { clearInterval(iv); resolve(null); }
+                }, 200);
+              });
+              serverEvents = await waitForCache() || [];
+            } else {
+              setSchedulesRefreshing(prev => ({ ...prev, [key]: true }));
+              const refreshRes = await axios.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {}, config);
+              serverEvents = refreshRes.data?.data || [];
+              setSchedulesRefreshing(prev => ({ ...prev, [key]: false }));
+              console.log(`✅ POST refresh-month 성공, ${serverEvents.length}개 일정 로드`);
+            }
+          } catch (refreshErr) {
+            console.error('❌ POST refresh-month 실패:', refreshErr);
+            setSchedulesRefreshing(prev => ({ ...prev, [key]: false }));
+            serverEvents = [];
+          }
+        } else {
+          console.log(`✅ GET 성공, ${serverEvents.length}개 일정 로드`);
+        }
+        
+        // 개인 일정은 현재 사용자의 것만 포함 (userId로 필터링)
+        // userId 타입 변환을 위한 헬퍼 함수
+        const normalizedUserId = currentUserId ? String(currentUserId) : null;
+        const normalizedScheduleUserId = (schedule) => String(schedule.userId);
+
+        const filteredServerEvents = serverEvents.filter(event => 
+          event.category !== '개인' || (normalizedUserId && normalizedScheduleUserId(event) === normalizedUserId)
+        );
+        const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+        // globalEvents를 우선으로 병합 (globalEvents의 데이터가 더 최신)
+        const merged = [...filteredServerEvents, ...safeGlobalEvents];
+        const deduped = merged.reduce((acc, ev) => {
+          const existingIndex = acc.findIndex(e => e.id === ev.id);
+          if (existingIndex >= 0) {
+            // globalEvents에서 온 데이터면 덮어쓰기
+            if (safeGlobalEvents.some(ge => ge.id === ev.id)) {
+              acc[existingIndex] = ev;
+            }
+          } else {
+            acc.push(ev);
+          }
+          return acc;
+        }, []);
+        setEvents(deduped);
+        // 캐시에 저장
+        setCachedSchedules(prev => ({ ...prev, [key]: filteredServerEvents }));
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          try {
+            const token = localStorage.getItem('accessToken');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            // currentDate를 사용하여 현재 선택된 월의 일정을 가져옴
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+            const currentUserId = profile?.id || profile?.userId || 'unknown';
+            const key = `schedule:${currentUserId}:${year}-${month}`;
+            // 이미 다른 컴포넌트가 리프레시 중이면 캐시가 채워질 때까지 대기
+            if (schedulesRefreshing && schedulesRefreshing[key]) {
+              const waitForCache = () => new Promise(resolve => {
+                const start = Date.now();
+                const iv = setInterval(() => {
+                  if (cachedSchedules && cachedSchedules[key]) {
+                    clearInterval(iv);
+                    resolve(cachedSchedules[key]);
+                  }
+                  if (Date.now() - start > 5000) { clearInterval(iv); resolve(null); }
+                }, 200);
+              });
+              const serverEvents = await waitForCache();
+              // userId 타입 변환을 위한 헬퍼 함수
+              const normalizedUserId = currentUserId ? String(currentUserId) : null;
+              const normalizedScheduleUserId = (schedule) => String(schedule.userId);
+
+              const filteredServerEvents = serverEvents.filter(event => 
+                event.category !== '개인' || (normalizedUserId && normalizedScheduleUserId(event) === normalizedUserId)
+              );
+              const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+              // globalEvents를 우선으로 병합 (globalEvents의 데이터가 더 최신)
+              const merged = [...filteredServerEvents, ...safeGlobalEvents];
+              const deduped = merged.reduce((acc, ev) => {
+                const existingIndex = acc.findIndex(e => e.id === ev.id);
+                if (existingIndex >= 0) {
+                  // globalEvents에서 온 데이터면 덮어쓰기
+                  if (safeGlobalEvents.some(ge => ge.id === ev.id)) {
+                    acc[existingIndex] = ev;
+                  }
+                } else {
+                  acc.push(ev);
+                }
+                return acc;
+              }, []);
+              setEvents(deduped);
+              return;
+            }
+
+            setSchedulesRefreshing(prev => ({ ...prev, [key]: true }));
+            const refreshRes = await axios.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {}, config);
+            const serverEvents = refreshRes.data?.data || [];
+            // userId 타입 변환을 위한 헬퍼 함수
+            const normalizedUserId = currentUserId ? String(currentUserId) : null;
+            const normalizedScheduleUserId = (schedule) => String(schedule.userId);
+
+            const filteredServerEvents = serverEvents.filter(event => 
+              event.category !== '개인' || (normalizedUserId && normalizedScheduleUserId(event) === normalizedUserId)
+            );
+            setCachedSchedules(prev => ({ ...prev, [key]: filteredServerEvents }));
+            const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+            // globalEvents를 우선으로 병합 (globalEvents의 데이터가 더 최신)
+            const merged = [...filteredServerEvents, ...safeGlobalEvents];
+            const deduped = merged.reduce((acc, ev) => {
+              const existingIndex = acc.findIndex(e => e.id === ev.id);
+              if (existingIndex >= 0) {
+                // globalEvents에서 온 데이터면 덮어쓰기
+                if (safeGlobalEvents.some(ge => ge.id === ev.id)) {
+                  acc[existingIndex] = ev;
+                }
+              } else {
+                acc.push(ev);
+              }
+              return acc;
+            }, []);
+            setEvents(deduped);
+            setSchedulesRefreshing(prev => ({ ...prev, [key]: false }));
+          } catch (refreshErr) {
+            const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+            setEvents([...safeGlobalEvents]);
+          }
+        } else {
+          const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+          setEvents([...safeGlobalEvents]);
+        }
+      }
+    };
+    fetchSchedules();
+  }, [currentDate, globalEvents, profile, cachedSchedules, schedulesRefreshing, setCachedSchedules, setSchedulesRefreshing]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -42,18 +231,52 @@ const Calendar = () => {
     setIsScheduleDetailOpen(true);
   };
 
-  const handleAddEvent = (eventData) => {
-    const newEvent = {
-      ...eventData, 
-      id: Date.now(),
-      category: '개인',
-      showInSchedule: eventData.showInSchedule !== undefined ? eventData.showInSchedule : true
-    };
-    
-    // 전역 상태에 추가
-    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
-    setGlobalEvents([...safeGlobalEvents, newEvent]);
-    setIsModalOpen(false);
+  const handleAddEvent = async (eventData) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      // DB에 개인 일정 저장 (API 구조에 맞게)
+      const eventPayload = {
+        title: eventData.title,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
+        memo: eventData.memo || '',
+        category: '개인',
+        color: eventData.color,
+        showInSchedule: eventData.showInSchedule !== undefined ? eventData.showInSchedule : true
+      };
+
+      console.log('📤 캘린더 개인 일정 DB 저장 시도:', eventPayload);
+
+      const response = await axios.post('/api/schedule/add', eventPayload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('✅ 캘린더 개인 일정 DB 저장 성공:', response.data);
+
+      // 성공 시 전역 상태에도 추가 (UI 즉시 반영)
+      const newEvent = {
+        id: response.data?.data?.id || Date.now(), // DB에서 받은 ID 우선 사용
+        ...eventData,
+        category: '개인',
+        showInSchedule: eventData.showInSchedule !== undefined ? eventData.showInSchedule : true
+      };
+
+      const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+      setGlobalEvents([...safeGlobalEvents, newEvent]);
+
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('❌ 캘린더 개인 일정 DB 저장 실패:', error.response?.data || error.message);
+      alert('개인 일정 추가에 실패했습니다.');
+    }
   };
 
   const handleEventClick = (event, e) => {
@@ -62,16 +285,82 @@ const Calendar = () => {
     setIsViewModalOpen(true);
   };
 
-  const handleDeleteEvent = (eventId) => {
-    // 전역 상태에서도 삭제
-    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
-    setGlobalEvents(safeGlobalEvents.filter(e => e.id !== eventId));
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      console.log('🗑️ 캘린더 개인 일정 DB 삭제 시도:', eventId);
+      await axios.delete(`/api/schedule/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log('✅ 캘린더 개인 일정 DB 삭제 성공');
+
+      // 전역 상태에서도 삭제
+      const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+      setGlobalEvents(safeGlobalEvents.filter(e => e.id !== eventId));
+
+      // 페이지 새로고침
+      window.location.reload();
+    } catch (error) {
+      console.error('❌ 캘린더 개인 일정 DB 삭제 실패:', error.response?.data || error.message);
+      alert('개인 일정 삭제에 실패했습니다.');
+    }
   };
 
-  const handleEditEvent = (eventId, updatedData) => {
-    // 전역 상태에서도 수정
-    const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
-    setGlobalEvents(safeGlobalEvents.map(e => e.id === eventId ? { ...e, ...updatedData } : e));
+  const handleEditEvent = async (eventId, updatedData) => {
+    console.log('🔧 handleEditEvent 호출됨:', { eventId, updatedData });
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      // DB에 개인 일정 수정 저장 (API 구조에 맞게)
+      const updatePayload = {
+        id: eventId,
+        title: updatedData.title,
+        startDate: updatedData.startDate,
+        endDate: updatedData.endDate,
+        memo: updatedData.memo || '',
+        category: '개인',
+        color: updatedData.color,
+        showInSchedule: updatedData.showInSchedule !== undefined ? updatedData.showInSchedule : true
+      };
+
+      console.log('✏️ 캘린더 개인 일정 DB 수정 시도:', eventId, updatePayload);
+      await axios.put(`/api/schedule/${eventId}`, updatePayload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('✅ 캘린더 개인 일정 DB 수정 성공');
+
+      // 전역 상태에서도 수정 (UI 즉시 반영)
+      const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
+      const updatedEvent = { ...updatedData, id: eventId };
+      setGlobalEvents(safeGlobalEvents.map(e =>
+        e.id === eventId
+          ? updatedEvent
+          : e
+      ));
+
+      console.log('🔄 전역 상태 업데이트 완료:', updatedEvent);
+
+      // 페이지 새로고침
+      window.location.reload();
+    } catch (error) {
+      console.error('❌ 캘린더 개인 일정 DB 수정 실패:', error.response?.data || error.message);
+      alert('개인 일정 수정에 실패했습니다.');
+    }
   };
 
   const getEventPosition = (event, day) => {

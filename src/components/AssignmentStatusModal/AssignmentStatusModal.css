@@ -155,6 +155,22 @@
   background: #f0f0f0;
 }
 
+.participant-item.clickable {
+  cursor: pointer;
+}
+
+.participant-item.clickable:hover {
+  background: #e8f5f0;
+  border: 1px solid #4DC4AB;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
 .participant-info {
   display: flex;
   align-items: center;
@@ -234,10 +250,10 @@
 }
 
 .participants-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 3px;
 }
 
 .participants-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 1.0);
 }

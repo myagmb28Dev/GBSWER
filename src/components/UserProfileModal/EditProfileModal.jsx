@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import PasswordConfirmModal from './PasswordConfirmModal';
 import ChangePasswordModal from './ChangePasswordModal';
@@ -6,7 +7,9 @@ import { useAppContext } from '../../App';
 import './EditProfileModal.css';
 
 const EditProfileModal = ({ profile, onClose, onSave }) => {
-  const { handleLogout } = useAppContext();
+  const { userRole } = useAppContext();
+  const isTeacher = userRole === 'teacher';
+
   const [formData, setFormData] = useState({
     profileImage: profile.profileImage,
     name: profile.name,
@@ -60,7 +63,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
     const token = localStorage.getItem('accessToken');
     // 변경사항이 없는 경우
     const isImageChanged = formData.profileImage && formData.profileImage !== profile.profileImage;
-    const isOtherChanged = formData.name !== profile.name || formData.email !== profile.email || formData.major !== profile.major || formData.grade !== profile.grade || formData.classNumber !== profile.classNumber;
+    const isOtherChanged = formData.name !== profile.name || formData.email !== profile.email || formData.major !== profile.major ||
+      (!isTeacher && (formData.grade !== profile.grade || formData.classNumber !== profile.classNumber));
     if (!isImageChanged && !isOtherChanged) {
       alert('변경된 내용이 없습니다.');
       return;
@@ -92,10 +96,34 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
     if (pendingData) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.put('/api/user/profile', pendingData, {
+        // If profileImage is a File, upload it first via multipart
+        if (pendingData.profileImage && pendingData.profileImage instanceof File) {
+          const form = new FormData();
+          form.append('profileImage', pendingData.profileImage);
+          await axios.put('/api/user/profile-image', form, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        }
+
+        // Prepare JSON payload without file and with backend field names
+        const payload = {
+          name: pendingData.name,
+          email: pendingData.email,
+          major: pendingData.major,
+          ...(isTeacher ? {} : {
+          grade: pendingData.grade,
+          class: pendingData.classNumber
+          })
+        };
+
+        await axios.put('/api/user/profile', payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        onSave(pendingData);
+
+        onSave({ ...profile, ...payload, profileImage: previewImage });
         onClose();
       } catch (err) {
         alert('프로필 정보 수정 실패');
@@ -104,18 +132,11 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   };
 
   const handlePasswordChange = async (newPassword) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      await axios.put('/api/user/profile', { password: newPassword }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      onSave({ password: newPassword });
-    } catch (err) {
-      alert('비밀번호 변경 실패');
-    }
+    // Password change is handled inside ChangePasswordModal via API.
+    onSave({ password: newPassword });
   };
 
-  return (
+  const modalContent = (
     <>
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content" style={{position:'relative'}} onClick={(e) => e.stopPropagation()}>
@@ -192,9 +213,12 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 value={formData.major}
                 onChange={handleChange}
                 placeholder="학과를 입력하세요"
+                disabled={isTeacher}
+                className={isTeacher ? "disabled-input" : ""}
               />
             </div>
 
+{!isTeacher && (
             <div className="form-row">
               <div className="form-group">
                 <label>학년</label>
@@ -220,20 +244,9 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 />
               </div>
             </div>
+          )}
 
-            <div className="logout-section">
-              <button
-                type="button"
-                className="logout-btn"
-                onClick={() => {
-                  if (window.confirm('로그아웃 하시겠습니까?')) {
-                    handleLogout();
-                  }
-                }}
-              >
-                로그아웃
-              </button>
-            </div>
+            {/* 로그아웃 버튼은 헤더 드롭다운으로 통합됨 - 모달 내 로그아웃 버튼 제거 */}
 
             <div className="modal-buttons-bottom">
               <button
@@ -270,6 +283,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
       )}
     </>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default EditProfileModal;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, File, Edit, Trash } from 'lucide-react';
 import axios from 'axios';
-import WritePostModal from './WritePostModal';
+import CommunityWriteModal from '../../../components/CommunityWriteModal/CommunityWriteModal';
 
 const ReadPostModal = ({ isOpen, onClose, post }) => {
     const [postData, setPostData] = useState(post);
@@ -17,16 +17,17 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 });
                 setPostData(res.data.data);
             } catch (err) {
-                console.error('게시글 조회 실패:', err);
+                // 조회 실패 시 무시
             }
         };
+
         fetchPost();
     }, [isOpen, post]);
 
-    const handleDownload = (attachment) => {
+    const handleDownload = (file) => {
         const link = document.createElement('a');
-        link.href = attachment.url;
-        link.download = attachment.name;
+        link.href = file.url;
+        link.download = file.name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -39,8 +40,8 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
             await axios.delete(`/api/community/${postData.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('삭제되었습니다.');
             onClose();
+            window.location.reload();
         } catch (err) {
             alert('삭제 실패');
         }
@@ -54,29 +55,41 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const form = new FormData();
-            form.append('title', updatedPost.title);
-            form.append('content', updatedPost.content);
-            form.append('major', postData.major || 'ALL');
+            
+            // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+            const dto = {
+                title: updatedPost.title || '',
+                content: updatedPost.content || '',
+                major: postData.major || 'ALL',
+                anonymous: updatedPost.anonymous || false
+            };
+            const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+            form.append('dto', dtoBlob);
+            
+            // 파일은 files 파트로 전송
             updatedPost.attachments?.forEach((att) => {
-                form.append('files', att.file);
-            });
-            await axios.put(`/api/community/${postData.id}`, form, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                if (att.file) {
+                    form.append('files', att.file);
                 }
             });
-            alert('수정되었습니다.');
+            
+            await axios.put(`/api/community/${postData.id}`, form, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                    // Content-Type은 axios가 자동으로 설정 (boundary 포함)
+                }
+            });
             setShowEditModal(false);
             onClose();
+            window.location.reload();
         } catch (err) {
-            alert('수정 실패');
+            alert('수정 실패: ' + (err.response?.data?.message || err.message));
         }
     };
 
     if (!isOpen || !postData) return null;
-    const imageAttachments = postData.attachments?.filter(att => att.type.startsWith('image/')) || [];
-    const fileAttachments = postData.attachments?.filter(att => !att.type.startsWith('image/')) || [];
+    const imageAttachments = postData.files?.filter(file => file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) || [];
+    const fileAttachments = postData.files?.filter(file => !file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) || [];
 
     return (
         <>
@@ -99,9 +112,10 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                     <div className="p-4 md:p-6">
                         <div className="flex justify-between items-center mb-4 pb-4 border-b">
                             <div className="flex gap-4 text-sm text-gray-600">
-                                <span>작성자: {postData.author}</span>
-                                <span>작성일: {postData.date}</span>
-                                <span>조회수: {postData.views}</span>
+                                <span>학과: {postData.major || '전체'}</span>
+                                <span>작성자: {postData.anonymous ? '익명' : postData.writer}</span>
+                                <span>작성일: {new Date(postData.createdAt).toLocaleString()}</span>
+                                <span>조회수: {postData.viewCount}</span>
                             </div>
                         </div>
                         <div className="prose max-w-none mb-6">
@@ -112,12 +126,12 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                             <div className="border-t pt-4 mb-4">
                                 <h4 className="text-sm font-medium mb-3">이미지 ({imageAttachments.length})</h4>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {imageAttachments.map((att) => (
-                                        <div key={att.id} className="border rounded-lg overflow-hidden">
-                                            <img src={att.url} alt={att.name} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
-                                                onClick={() => window.open(att.url, '_blank')} />
+                                    {imageAttachments.map((file, index) => (
+                                        <div key={index} className="border rounded-lg overflow-hidden">
+                                            <img src={file.url} alt={file.name} className="w-full h-48 object-cover cursor-pointer hover:opacity-90"
+                                                onClick={() => window.open(file.url, '_blank')} />
                                             <div className="p-2 bg-gray-50">
-                                                <p className="text-xs text-gray-600 truncate">{att.name}</p>
+                                                <p className="text-xs text-gray-600 truncate">{file.name}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -129,11 +143,11 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                             <div className="border-t pt-4">
                                 <h4 className="text-sm font-medium mb-3">첨부파일 ({fileAttachments.length})</h4>
                                 <div className="space-y-2">
-                                    {fileAttachments.map((att) => (
-                                        <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => handleDownload(att)} >
+                                    {fileAttachments.map((file, index) => (
+                                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={() => handleDownload(file)} >
                                             <div className="flex items-center gap-3">
                                                 <File size={20} className="text-gray-500" />
-                                                <span className="text-sm">{att.name}</span>
+                                                <span className="text-sm">{file.name}</span>
                                             </div>
                                             <span className="text-xs text-teal-600 font-medium">다운로드</span>
                                         </div>
@@ -148,11 +162,17 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 </div>
             </div>
             {showEditModal && (
-                <WritePostModal
+                <CommunityWriteModal
                     isOpen={showEditModal}
                     onClose={() => setShowEditModal(false)}
                     onSubmit={handleEditSubmit}
-                    initialData={postData}
+                    initialData={{
+                        ...postData,
+                        anonymous: postData.anonymous === true || postData.anonymous === 'true' ||
+                                  postData.anonymous === 1 || postData.anonymous === '1' ||
+                                  (typeof postData.anonymous === 'object' && postData.anonymous?.[0] === 1)
+                    }}
+                    isEdit={true}
                 />
             )}
         </>

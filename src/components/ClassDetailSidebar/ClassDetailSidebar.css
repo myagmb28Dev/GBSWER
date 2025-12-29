@@ -81,41 +81,6 @@
   font-weight: 400;
 }
 
-/* 일정표 추가 체크박스 */
-.schedule-checkbox {
-  margin: 10px 0;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
-  font-weight: 400;
-  width: fit-content;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-}
-
-.checkbox-input {
-  width: 18px;
-  height: 18px;
-  accent-color: #4DC4AB;
-  cursor: pointer;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1;
-  vertical-align: middle;
-}
-
-.checkbox-text {
-  font-size: 14px;
-  color: #333;
-  font-weight: 400;
-  white-space: nowrap;
-}
 
 /* 제출된 과제 표기 박스 (캐릭터 바로 위) */
 .submitted-files-container {
@@ -198,6 +163,8 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .add-file-section {
@@ -240,6 +207,14 @@
   transition: background 0.2s ease;
   box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
   height: 32px;
+  min-width: 70px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submit-button:hover {
@@ -409,13 +384,13 @@
 
 .submitted-files-box::-webkit-scrollbar-thumb,
 .temp-attachment-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
 }
 
 .submitted-files-box::-webkit-scrollbar-thumb:hover,
 .temp-attachment-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 1.0);
 }
 
 /* 반응형 디자인 */
@@ -464,6 +439,8 @@
   transition: background 0.2s ease;
   box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
   height: 36px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .edit-button:hover {
@@ -564,4 +541,28 @@
 
 .btn-save:hover {
   background: #3db89a;
+}
+
+/* 삭제하기 버튼 */
+.delete-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+  height: 36px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-button:hover {
+  background: #c82333;
 }

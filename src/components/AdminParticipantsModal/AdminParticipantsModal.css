@@ -1,0 +1,258 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-participants-modal {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.modal-content {
+  padding: 25px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.participants-summary {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.summary-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.participants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.participant-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.participant-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.participant-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.participant-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #4DC4AB;
+  flex-shrink: 0;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participant-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.participant-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.participant-id {
+  font-size: 14px;
+  color: #666;
+}
+
+.joined-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.participant-actions {
+  flex-shrink: 0;
+}
+
+.remove-participant-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-participant-btn:hover {
+  background: #ff5252;
+  transform: translateY(-1px);
+}
+
+.remove-participant-btn:active {
+  transform: translateY(0);
+}
+
+.empty-participants {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+  text-align: center;
+}
+
+.empty-participants svg {
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-participants p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 스크롤바 스타일링 */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 1.0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .admin-participants-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .modal-header {
+    padding: 15px 20px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .participant-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .participant-info {
+    width: 100%;
+  }
+
+  .participant-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .participant-name {
+    font-size: 15px;
+  }
+
+  .participant-id {
+    font-size: 13px;
+  }
+}

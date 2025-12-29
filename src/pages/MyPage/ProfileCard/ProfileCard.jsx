@@ -12,9 +12,8 @@ const ProfileCard = () => {
       try {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
-        const res = await axios.get('/api/user/profile', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get('/api/user/profile', config);
         setProfile(res.data.data);
       } catch (err) {
         setProfile(null);

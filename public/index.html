@@ -24,10 +24,72 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       background-color: #ffffff;
+      overflow-x: hidden;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.8) transparent;
+    }
+
+    body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 3px;
+    }
+
+    body::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 1.0);
+    }
+    
+    /* 기본 스크롤바 스타일 (흰색 배경에 검정색 스크롤바) */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.8) transparent;
+    }
+    
+    *::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    *::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 3px;
+    }
+    
+    *::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 1.0);
+    }
+    
+    /* 검정 배경에 흰색 스크롤바를 사용하는 특정 요소들 */
+    [data-dark-scrollbar]::-webkit-scrollbar-thumb,
+    .dark-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    [data-dark-scrollbar]::-webkit-scrollbar-thumb:hover,
+    .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 1.0) !important;
+    }
+    
+    [data-dark-scrollbar],
+    .dark-scrollbar {
+      scrollbar-color: rgba(255, 255, 255, 0.8) transparent !important;
     }
     
     #root {
       min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
     }
     
     .loading {

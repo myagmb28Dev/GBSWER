@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../../App';
 
 function Header() {
-    const { setCurrentPage, handleLogout, userRole } = useAppContext();
+    const { setCurrentPage, handleLogout, userRole, profile } = useAppContext();
     const [showLogoutMenu, setShowLogoutMenu] = useState(false);
 
     function goToMain() {
@@ -39,9 +39,9 @@ function Header() {
                 <a href="#mypage" onClick={(e) => { e.preventDefault(); goToMyPage(); }}>마이페이지</a>
                 <div className="profile-menu">
                     <img 
-                        src="/profile.png" 
-                        alt="프로필" 
-                        className="profile" 
+                        src={profile && profile.profileImage ? profile.profileImage : '/profile.png'}
+                        alt="프로필"
+                        className="profile"
                         onClick={handleProfileClick}
                     />
                     {showLogoutMenu && (
