@@ -25,7 +25,7 @@ public class User {
     private Role role;
 
     @Column(nullable = true, unique = true)
-    private String email; // nullable 명시
+    private String email;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -39,13 +39,13 @@ public class User {
     @Column(name = "bio")
     private String bio;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String major;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer grade;
 
-    @Column(name = "class_number", nullable = false)
+    @Column(name = "class_number", nullable = true)
     private Integer classNumber;
 
     @Column(name = "student_number")

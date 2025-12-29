@@ -6,6 +6,7 @@ import com.example.gbswer.dto.UserDto;
 import com.example.gbswer.service.CalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ public class ScheduleController {
     private final CalendarService calendarService;
     
     @GetMapping
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> getSchedulesByMonth(
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam Integer year,
@@ -29,12 +31,14 @@ public class ScheduleController {
     }
 
     @GetMapping("/today")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> getTodaySchedules(@AuthenticationPrincipal UserDto userDto) {
         var result = calendarService.getToday(userDto.getId());
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> createSchedule(
             @AuthenticationPrincipal UserDto userDto,
             @RequestBody CalendarEventDto request) {
@@ -43,6 +47,7 @@ public class ScheduleController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> updateSchedule(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
@@ -52,6 +57,7 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> deleteSchedule(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto) {
@@ -61,6 +67,7 @@ public class ScheduleController {
 
 
     @PostMapping("/refresh-month")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> refreshMonth(@RequestParam int year, @RequestParam int month) {
         var result = calendarService.refreshMonth(year, month);
         return ResponseEntity.ok(ApiResponseDto.success(result));

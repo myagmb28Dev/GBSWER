@@ -215,6 +215,7 @@ public class UserService {
         return convertToDto(user);
     }
 
+
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));

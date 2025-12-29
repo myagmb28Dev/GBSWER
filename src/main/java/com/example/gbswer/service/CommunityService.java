@@ -111,7 +111,7 @@ public class CommunityService {
 
     @Transactional
     public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
-                                    String major, List<MultipartFile> files) {
+                                    String major, List<MultipartFile> files, boolean anonymous) {
         Community community = findCommunityById(postId);
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
@@ -156,6 +156,7 @@ public class CommunityService {
 
         community.setTitle(title);
         community.setContent(content);
+        community.setAnonymous(anonymous);  // 익명 설정 추가
         if (major != null) {
             if (author.getRole() == User.Role.TEACHER) {
                 community.setMajor(normalizeMajor(major));
@@ -178,12 +179,6 @@ public class CommunityService {
         }
         deleteFilesByUrls(convertJsonToList(community.getFileNames()));
         communityRepository.delete(community);
-    }
-
-    public List<CommunityDto> getRecentNotices() {
-        return communityRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 5))
-                .map(this::convertToDto)
-                .getContent();
     }
 
     private Community findCommunityById(Long postId) {

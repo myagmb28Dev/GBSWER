@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,15 +12,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaskDto {
+public class ClassDto {
     private Long id;
-    private String title;
-    private String content;
+    private String className;
+    private String classCode;
+    private Long teacherId;
     private String teacherName;
-    private LocalDate dueDate;
-    private String type;
-    private Long classId;
-    private List<FileInfoDto> files;
-    private boolean anonymous;
     private LocalDateTime createdAt;
+    private Integer participantCount;
+    private List<ClassParticipantDto> participants;
+    private List<TaskDto> posts;
 }

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,6 +29,8 @@ public class MealService {
     private final NeisProperties neisProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private static final DateTimeFormatter NEIS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter RESPONSE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -134,11 +138,18 @@ public class MealService {
                     mealRepository.save(meal);
                     savedCount++;
                 } catch (Exception e) {
+                    // 예외 발생 시 로그를 남기고, 세션에 남은 엔티티로 인한 flush 오류 방지
+                    System.err.println("[MealService] Meal 저장 중 예외 발생: " + e.getMessage());
+                    e.printStackTrace();
+                    entityManager.clear();
                 }
             }
 
 
         } catch (Exception e) {
+            // 전체 예외도 반드시 로그로 남김
+            System.err.println("[MealService] NEIS 급식 데이터 파싱/저장 전체 예외: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

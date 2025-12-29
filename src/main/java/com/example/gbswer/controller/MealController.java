@@ -4,6 +4,7 @@ import com.example.gbswer.dto.ApiResponseDto;
 import com.example.gbswer.service.MealService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,7 @@ public class MealController {
     }
 
     @PostMapping("/refresh")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> refreshMonthlyMeals(@RequestParam int year, @RequestParam int month) {
         var result = mealService.refreshMonthlyMeals(year, month);
         return ResponseEntity.ok(ApiResponseDto.success(result));

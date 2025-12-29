@@ -37,4 +37,3 @@ public class Meal {
     @Column(name = "origin_data", columnDefinition = "TEXT")
     private String originData; // 원본 NEIS 데이터 보관용
 }
-

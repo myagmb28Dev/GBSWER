@@ -1,6 +1,5 @@
 package com.example.gbswer.service;
 
-import com.example.gbswer.dto.TaskCreateDto;
 import com.example.gbswer.dto.SubmissionDto;
 import com.example.gbswer.dto.TaskDto;
 import com.example.gbswer.dto.FileInfoDto;
@@ -10,6 +9,7 @@ import com.example.gbswer.entity.User;
 import com.example.gbswer.repository.SubmissionRepository;
 import com.example.gbswer.repository.TaskRepository;
 import com.example.gbswer.repository.UserRepository;
+import com.example.gbswer.repository.ClassRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,6 +30,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final SubmissionRepository submissionRepository;
     private final UserRepository userRepository;
+    private final ClassRepository classRepository;
     private final FileUploadService fileUploadService;
 
     public List<TaskDto> getAllTasks() {
@@ -43,7 +44,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto createTask(Long teacherId, TaskCreateDto request, List<MultipartFile> files) {
+    public TaskDto createTask(Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, boolean anonymous, List<MultipartFile> files) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
@@ -59,13 +60,16 @@ public class TaskService {
         }
 
         Task task = Task.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .dueDate(request.getDueDate())
+                .title(title)
+                .content(content)
+                .dueDate(dueDate)
+                .type(type)
+                .classEntity(classId != null ? classRepository.findById(classId).orElse(null) : null)
                 .teacher(teacher)
                 .teacherName(teacher.getName())
                 .fileNames(convertListToJson(fileNames))
                 .fileUrls(convertListToJson(fileUrls))
+                .anonymous(anonymous)
                 .build();
 
         taskRepository.save(task);
@@ -73,16 +77,37 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long taskId, Long teacherId, TaskCreateDto request) {
+    public TaskDto updateTask(Long taskId, Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, boolean anonymous, List<MultipartFile> files) {
         Task task = findTaskById(taskId);
 
         if (!task.getTeacher().getId().equals(teacherId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
-        task.setDueDate(request.getDueDate());
+        // 파일 업데이트 처리
+        if (files != null && !files.isEmpty()) {
+            // 기존 파일 삭제
+            if (task.getFileUrls() != null) {
+                fileUploadService.deleteFiles(convertJsonToList(task.getFileUrls()));
+            }
+
+            List<String> fileUrls = new ArrayList<>();
+            List<String> fileNames = new ArrayList<>();
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue;
+                String url = fileUploadService.uploadTaskFile(file);
+                fileUrls.add(url);
+                fileNames.add(file.getOriginalFilename());
+            }
+            task.setFileNames(convertListToJson(fileNames));
+            task.setFileUrls(convertListToJson(fileUrls));
+        }
+
+        task.setTitle(title);
+        task.setContent(content);
+        task.setDueDate(dueDate);
+        task.setType(type);
+        task.setAnonymous(anonymous);
         taskRepository.save(task);
         return convertToDto(task);
     }
@@ -214,10 +239,14 @@ public class TaskService {
         return TaskDto.builder()
                 .id(task.getId())
                 .title(task.getTitle())
-                .description(task.getDescription())
+                .content(task.getContent())
                 .teacherName(task.getTeacherName())
                 .dueDate(task.getDueDate())
+                .type(task.getType())
+                .classId(task.getClassEntity() != null ? task.getClassEntity().getId() : null)
                 .files(files)
+                .anonymous(task.isAnonymous())
+                .createdAt(task.getCreatedAt())
                 .build();
     }
 

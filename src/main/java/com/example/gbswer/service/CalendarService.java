@@ -103,7 +103,10 @@ public class CalendarService {
         if (CATEGORY_SCHOOL.equals(event.getCategory())) {
             throw new ResponseStatusException(FORBIDDEN, "school events are read-only");
         }
-        if (event.getUser() == null || !event.getUser().getId().equals(userId)) {
+        // ADMIN은 모든 개인 일정 삭제 가능, 그 외는 본인만
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "user not found"));
+        if (!User.Role.ADMIN.equals(user.getRole()) && (event.getUser() == null || !event.getUser().getId().equals(userId))) {
             throw new ResponseStatusException(FORBIDDEN, "not authorized");
         }
         calendarEventRepository.delete(event);
@@ -118,18 +121,21 @@ public class CalendarService {
     }
 
     private List<CalendarEventDto> findVisibleEvents(Long userId, LocalDate start, LocalDate end) {
-        if (userId == null) {
-            // userId가 null이면 학교 일정만 조회
-            List<CalendarEvent> events = calendarEventRepository.findByStartDateBetween(start, end);
-            System.out.println("[INFO] 조회된 학교 일정 수: " + events.size());
-            return events.stream()
-                    .filter(ev -> CATEGORY_SCHOOL.equals(ev.getCategory()))
-                    .map(this::toDto)
-                    .collect(Collectors.toList());
+        List<CalendarEvent> events = new ArrayList<>();
+
+        // 학교 일정 추가
+        List<CalendarEvent> schoolEvents = calendarEventRepository.findByStartDateBetween(start, end).stream()
+                .filter(ev -> CATEGORY_SCHOOL.equals(ev.getCategory()))
+                .collect(Collectors.toList());
+        events.addAll(schoolEvents);
+
+        // 개인 일정 추가 (userId가 있으면)
+        if (userId != null) {
+            List<CalendarEvent> personalEvents = calendarEventRepository.findByStartDateBetweenAndUserId(start, end, userId);
+            events.addAll(personalEvents);
         }
 
-        List<CalendarEvent> events = calendarEventRepository.findByStartDateBetweenAndUserId(start, end, userId);
-        System.out.println("[INFO] userId: " + userId + ", 조회된 일정 수: " + events.size());
+        System.out.println("[INFO] userId: " + userId + ", 조회된 총 일정 수: " + events.size() + " (학교: " + schoolEvents.size() + ", 개인: " + (userId != null ? events.size() - schoolEvents.size() : 0) + ")");
         return events.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

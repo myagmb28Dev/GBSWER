@@ -60,7 +60,7 @@ public class CommunityController {
     }
 
     @PostMapping(path = "/write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam String title,
@@ -72,7 +72,13 @@ public class CommunityController {
         try {
             int fileCount = (files == null) ? 0 : files.size();
 
-            var result = communityService.createPost(authorId, title, content, major, files, anonymous);
+            String finalMajor = major;
+            // 학생은 자신의 major로만 게시 가능 (요청값 무시)
+            if (userDto.getRole() != null && userDto.getRole().equalsIgnoreCase("STUDENT")) {
+                finalMajor = userDto.getMajor();
+            }
+
+            var result = communityService.createPost(authorId, title, content, finalMajor, files, anonymous);
 
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
@@ -82,21 +88,22 @@ public class CommunityController {
     }
 
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> updatePost(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
             @RequestParam String title,
             @RequestParam String content,
             @RequestParam(required = false) String major,
-            @RequestParam(required = false) List<MultipartFile> files) {
+            @RequestParam(required = false) List<MultipartFile> files,
+            @RequestParam(defaultValue = "false") boolean anonymous) {
         try {
             String finalMajor = major;
             // 학생은 자신의 major로만 변경 가능(요청값 무시)
             if (userDto.getRole() != null && userDto.getRole().equalsIgnoreCase("STUDENT")) {
                 finalMajor = userDto.getMajor();
             }
-            var result = communityService.updatePost(id, userDto.getId(), title, content, finalMajor, files);
+            var result = communityService.updatePost(id, userDto.getId(), title, content, finalMajor, files, anonymous);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode()).body(ApiResponseDto.error(rse.getReason()));
@@ -107,7 +114,7 @@ public class CommunityController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> deletePost(@PathVariable Long id, @AuthenticationPrincipal UserDto userDto) {
         try {
             communityService.deletePost(id, userDto.getId());

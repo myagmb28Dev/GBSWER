@@ -5,8 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
@@ -14,6 +17,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Task {
 
     @Id
@@ -23,14 +27,21 @@ public class Task {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 2000)
-    private String description;
+    @Column(name = "content", length = 2000)
+    private String content;
 
     @Column(name = "teacher_name")
     private String teacherName;
 
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    @Column(nullable = false)
+    private String type; // "공지" 또는 "과제"
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private Class classEntity;
 
     @Column(name = "file_path")
     private String filePath;
@@ -41,7 +52,17 @@ public class Task {
     @Column(name = "file_urls", columnDefinition = "TEXT")
     private String fileUrls;
 
+    @Column(name = "anonymous", nullable = false)
+    private boolean anonymous;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private User teacher;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
