@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { Upload, File, Plus } from 'lucide-react';
+<<<<<<< HEAD
 import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
+=======
+import { useAppContext } from '../../App';
+import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
+import ParticipantListModal from '../ParticipantListModal/ParticipantListModal';
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 import './ClassDetailSidebar.css';
 
 const ClassDetailSidebar = ({ 
   selectedPost = null,
-  onClose
+  onClose,
+  classId = null,
+  participants = []
 }) => {
+  const { userRole } = useAppContext();
   const [attachments, setAttachments] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [addToSchedule, setAddToSchedule] = useState(false);
@@ -14,6 +23,13 @@ const ClassDetailSidebar = ({
   const [showSubmitNotification, setShowSubmitNotification] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAssignmentStatusOpen, setIsAssignmentStatusOpen] = useState(false);
+<<<<<<< HEAD
+=======
+  const [isParticipantListOpen, setIsParticipantListOpen] = useState(false);
+
+  // 학생 여부 확인
+  const isStudent = userRole === 'student';
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 
   if (!selectedPost) {
     return (
@@ -93,6 +109,13 @@ const ClassDetailSidebar = ({
         <button className="close-button" onClick={onClose}>
           ×
         </button>
+        {/* <button 
+          className="participant-info-btn"
+          onClick={() => setIsParticipantListOpen(true)}
+          title="참여자 정보"
+        >
+          👥
+        </button> */}
       </div>
       
       <div className="sidebar-content">
@@ -151,6 +174,7 @@ const ClassDetailSidebar = ({
             <div className="character-section">
               <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
               <div className="button-section">
+<<<<<<< HEAD
                 <button 
                   onClick={handleSubmit} 
                   className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
@@ -170,6 +194,48 @@ const ClassDetailSidebar = ({
                     <Plus size={16} />
                   </label>
                 </div>
+=======
+                {/* 학생: 제출하기 버튼만 표시 */}
+                {isStudent ? (
+                  <>
+                    <button 
+                      onClick={handleSubmit} 
+                      className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
+                    >
+                      {isSubmitted ? '수정하기' : '제출하기'}
+                    </button>
+                    <div className="add-file-section">
+                      <input 
+                        type="file" 
+                        multiple 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                        id="assignment-file-upload" 
+                        accept="image/*,.pdf,.doc,.docx,.txt" 
+                      />
+                      <label htmlFor="assignment-file-upload" className="circle-add-button">
+                        <Plus size={16} />
+                      </label>
+                    </div>
+                  </>
+                ) : (
+                  // 관리자: 수정하기와 과제 현황 버튼 표시
+                  <>
+                    <button 
+                      onClick={() => setIsEditMode(!isEditMode)} 
+                      className="edit-button"
+                    >
+                      수정하기
+                    </button>
+                    <button 
+                      onClick={() => setIsAssignmentStatusOpen(true)} 
+                      className="assignment-status-button"
+                    >
+                      과제 현황
+                    </button>
+                  </>
+                )}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
               </div>
             </div>
 
@@ -181,7 +247,7 @@ const ClassDetailSidebar = ({
             )}
 
             {/* 선택된 파일 미리보기 */}
-            {attachments.length > 0 && (
+            {isStudent && attachments.length > 0 && (
               <>
                 <div className="temp-attachment-list">
                   {attachments.map((att) => (
@@ -219,12 +285,24 @@ const ClassDetailSidebar = ({
             <div className="character-section">
               <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
               <div className="button-section">
+<<<<<<< HEAD
                 <button 
                   onClick={() => setIsEditMode(!isEditMode)} 
                   className="edit-button"
                 >
                   수정하기
                 </button>
+=======
+                {/* 관리자만 수정하기 버튼 표시 */}
+                {!isStudent && (
+                  <button 
+                    onClick={() => setIsEditMode(!isEditMode)} 
+                    className="edit-button"
+                  >
+                    수정하기
+                  </button>
+                )}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
               </div>
             </div>
           </>
@@ -250,6 +328,28 @@ const ClassDetailSidebar = ({
             ]}
           />
         )}
+<<<<<<< HEAD
+=======
+
+        {/* 참여자 정보 모달 */}
+        <ParticipantListModal
+          isOpen={isParticipantListOpen}
+          onClose={() => setIsParticipantListOpen(false)}
+          classId={classId}
+          participants={participants.length > 0 ? participants : [
+            { id: 1, name: "김민수", userId: "2024001", profileImage: "/profile.png" },
+            { id: 2, name: "이지은", userId: "2024002", profileImage: "/profile.png" },
+            { id: 3, name: "박준호", userId: "2024003", profileImage: "/profile.png" },
+            { id: 4, name: "최서연", userId: "2024004", profileImage: "/profile.png" },
+            { id: 5, name: "정우진", userId: "2024005", profileImage: "/profile.png" },
+            { id: 6, name: "한소영", userId: "2024006", profileImage: "/profile.png" },
+            { id: 7, name: "윤태현", userId: "2024007", profileImage: "/profile.png" },
+            { id: 8, name: "강민지", userId: "2024008", profileImage: "/profile.png" },
+            { id: 9, name: "조현우", userId: "2024009", profileImage: "/profile.png" },
+            { id: 10, name: "신예린", userId: "2024010", profileImage: "/profile.png" },
+          ]}
+        />
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
       </div>
     </div>
   );

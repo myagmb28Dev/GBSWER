@@ -80,10 +80,29 @@
   font-family: 'Noto Sans KR', sans-serif !important;
   cursor: pointer !important;
   transition: all 0.2s !important;
-  width: 100px !important;
   height: 44px !important;
   text-align: center !important;
   white-space: nowrap !important;
+}
+
+.logout-btn-inline {
+  background: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  padding: 12px 20px !important;
+  height: 44px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.logout-btn-inline:hover {
+  background: #c82333 !important;
 }
 
 .cancel-btn {
@@ -98,6 +117,7 @@
 .save-btn {
   background: #4DC4AB;
   color: white;
+  width: 100px !important;
 }
 
 .save-btn:hover {
@@ -108,7 +128,6 @@
   background: #f8f9fa !important;
   color: #495057 !important;
   border: 1px solid #dee2e6 !important;
-  width: 190px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -116,6 +135,7 @@
   font-size: 14px !important;
   font-weight: 600 !important;
   font-family: 'Noto Sans KR', sans-serif !important;
+  flex: 1 !important;
 }
 
 .change-password-btn-bottom:hover {
@@ -176,30 +196,7 @@
 }
 
 .logout-section {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0 15px 0;
-}
-
-.logout-btn {
-  padding: 8px 16px !important;
-  background: #dc3545 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  font-family: 'Noto Sans KR', sans-serif !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  width: 80px !important;
-  height: 36px !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-}
-
-.logout-btn:hover {
-  background: #c82333;
+  display: none;
 }
 
 @media (max-width: 768px) {

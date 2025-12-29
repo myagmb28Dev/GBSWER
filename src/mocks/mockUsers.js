@@ -12,6 +12,7 @@ export const studentUser = {
   joinDate: '2024-03-01'
 };
 
+<<<<<<< HEAD
 // 선생님 계정 임시 데이터
 export const teacherUser = {
   id: 'teacher001',
@@ -26,6 +27,8 @@ export const teacherUser = {
   joinDate: '2018-03-01'
 };
 
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 // 관리자 계정 임시 데이터
 export const adminUser = {
   id: 'admin001',
@@ -41,6 +44,7 @@ export const adminUser = {
 
 // 로그인 사용자 정보 (역할별)
 export const getMockUserByRole = (role) => {
+<<<<<<< HEAD
   switch (role) {
     case 'admin':
       return adminUser;
@@ -49,4 +53,7 @@ export const getMockUserByRole = (role) => {
     default:
       return studentUser;
   }
+=======
+  return role === 'admin' ? adminUser : studentUser;
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 };

@@ -74,7 +74,7 @@
 }
 
 .welcome-section h3 {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #333;
   margin: 0 0 15px 0;
@@ -82,7 +82,7 @@
 }
 
 .welcome-section p {
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
   margin: 0;
   line-height: 1.6;

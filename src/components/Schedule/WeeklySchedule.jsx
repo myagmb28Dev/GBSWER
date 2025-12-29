@@ -10,6 +10,7 @@ const WeeklySchedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showAdditionalSchedules, setShowAdditionalSchedules] = useState(true);
 
   // 전역 일정과 로컬 일정을 합치기
   useEffect(() => {
@@ -17,6 +18,21 @@ const WeeklySchedule = () => {
     const combinedSchedules = [...mockSchedule, ...safeGlobalEvents];
     setSchedules(combinedSchedules);
   }, [globalEvents]);
+
+  // localStorage에서 체크박스 상태 복원
+  useEffect(() => {
+    const savedState = localStorage.getItem('showAdditionalSchedules');
+    if (savedState !== null) {
+      setShowAdditionalSchedules(JSON.parse(savedState));
+    }
+  }, []);
+
+  // 체크박스 상태 변경 시 localStorage에 저장
+  const handleCheckboxChange = (e) => {
+    const newState = e.target.checked;
+    setShowAdditionalSchedules(newState);
+    localStorage.setItem('showAdditionalSchedules', JSON.stringify(newState));
+  };
 
   // 이번주 일정 필터링 (D-day부터 7일까지)
   const getWeeklySchedules = () => {
@@ -27,6 +43,11 @@ const WeeklySchedule = () => {
     sevenDaysLater.setDate(today.getDate() + 7);
     
     return schedules.filter(schedule => {
+      // 체크박스가 체크되지 않으면 추가 일정 제외
+      if (!showAdditionalSchedules && schedule.isAdditional === true) {
+        return false;
+      }
+      
       // 일정표에 표시 안함으로 설정된 일정 제외
       if (schedule.showInSchedule === false) {
         return false;
@@ -132,7 +153,9 @@ const WeeklySchedule = () => {
       {/* 일정 박스 */}
       <div className="schedule-box">
         <div className="schedule-box-header">
-          <span className="schedule-title">이번주 학사 일정</span>
+          <div className="header-left">
+            <span className="schedule-title">이번주 학사 일정</span>
+            </div>
           <button className="add-schedule-btn" onClick={handleAddSchedule}>
             +
           </button>

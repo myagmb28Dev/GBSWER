@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, RefreshCw } from 'lucide-react';
+import { Copy, RefreshCw } from 'lucide-react';
 import './AdminClassModal.css';
 
 const AdminClassModal = ({ isOpen, onClose, onCreateClass }) => {
@@ -48,65 +48,60 @@ const AdminClassModal = ({ isOpen, onClose, onCreateClass }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="admin-class-modal" onClick={(e) => e.stopPropagation()}>
+<<<<<<< HEAD
         <button className="close-button" onClick={handleClose}>
           <X size={24} />
         </button>
 
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
         <h2 className="modal-title">클래스 생성하기</h2>
 
-        <form onSubmit={handleSubmit} className="modal-content">
-          <div className="form-group">
-            <label htmlFor="className">반 이름</label>
-            <input
-              type="text"
-              id="className"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              placeholder="예: 3학년 1반"
-              className="class-name-input"
-            />
-          </div>
+        <label htmlFor="className" className="form-label">반 이름</label>
+        <input
+          type="text"
+          id="className"
+          value={className}
+          onChange={(e) => setClassName(e.target.value)}
+          placeholder="예: 3학년 1반"
+          className="class-name-input"
+        />
 
-          <div className="form-group">
-            <label>클래스 참여 코드</label>
-            <div className="code-section">
-              <div className="code-display">
-                {isCodeGenerated ? (
-                  <div className="generated-code">
-                    <span className="code-text">{generatedCode}</span>
-                    <button
-                      type="button"
-                      className="copy-button"
-                      onClick={copyToClipboard}
-                      title="코드 복사"
-                    >
-                      <Copy size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <span className="no-code">코드를 생성해주세요</span>
-                )}
-              </div>
+        <label className="form-label">클래스 참여 코드</label>
+        <div className="code-display">
+          {isCodeGenerated ? (
+            <>
+              <span className="code-text">{generatedCode}</span>
               <button
                 type="button"
-                className="generate-button"
-                onClick={generateClassCode}
+                className="copy-button"
+                onClick={copyToClipboard}
+                title="코드 복사"
               >
-                <RefreshCw size={16} />
-                {isCodeGenerated ? '새 코드 생성' : '코드 생성'}
+                <Copy size={16} />
               </button>
-            </div>
-          </div>
+            </>
+          ) : (
+            <span className="no-code">코드를 생성해주세요</span>
+          )}
+        </div>
+        <button
+          type="button"
+          className="generate-button"
+          onClick={generateClassCode}
+        >
+          <RefreshCw size={16} />
+          {isCodeGenerated ? '새 코드 생성' : '코드 생성'}
+        </button>
 
-          <div className="modal-buttons">
-            <button type="button" className="cancel-button" onClick={handleClose}>
-              취소
-            </button>
-            <button type="submit" className="create-button">
-              클래스 생성
-            </button>
-          </div>
-        </form>
+        <div className="modal-buttons">
+          <button type="button" className="cancel-button" onClick={handleClose}>
+            취소
+          </button>
+          <button type="button" className="create-button" onClick={handleSubmit}>
+            클래스 생성
+          </button>
+        </div>
       </div>
     </div>
   );

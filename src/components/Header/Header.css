@@ -54,12 +54,17 @@
     position: relative;
 }
 
+<<<<<<< HEAD
 .logout-dropdown {
+=======
+.profile-info-box {
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
     position: absolute;
     top: 50px;
     right: 0;
     background: white;
     border-radius: 12px;
+<<<<<<< HEAD
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
     min-width: 120px;
     z-index: 1002;
@@ -106,4 +111,83 @@
         opacity: 1;
         transform: translateY(0);
     }
+=======
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+    z-index: 1002;
+    overflow: hidden;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f0f0f0;
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.profile-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.profile-id {
+    font-size: 13px;
+    color: #999;
+}
+
+.profile-buttons {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+}
+
+.edit-profile-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #4DC4AB;
+    background: white;
+    color: #4DC4AB;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-profile-btn:hover {
+    background: #f0faf8;
+}
+
+.logout-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    background: #f5f5f5;
+    color: #d32f2f;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #efefef;
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 }

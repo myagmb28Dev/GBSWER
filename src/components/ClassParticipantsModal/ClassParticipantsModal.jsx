@@ -23,13 +23,10 @@ const ClassParticipantsModal = ({
           <div className="header-info">
             <Users size={24} className="header-icon" />
             <div>
-              <h3 className="modal-title">{className}</h3>
+              <h3 className="modal-title1"><strong>{className}</strong></h3>
               <p className="participant-count">참가자 {participants.length}명</p>
             </div>
           </div>
-          <button className="close-button" onClick={onClose}>
-            <X size={24} />
-          </button>
         </div>
 
         <div className="participants-content">
@@ -44,7 +41,7 @@ const ClassParticipantsModal = ({
                       className="avatar-image"
                     />
                   </div>
-                  <div className="participant-info">
+                  <div className="participant-info1">
                     <p className="participant-name">{participant.name}</p>
                     <p className="participant-id">{participant.studentId}</p>
                   </div>

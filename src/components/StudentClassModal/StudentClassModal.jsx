@@ -31,13 +31,18 @@ const StudentClassModal = ({ isOpen, onClose, onJoinClass }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="student-class-modal" onClick={(e) => e.stopPropagation()}>
+<<<<<<< HEAD
         <button className="close-button" onClick={handleClose}>
           <X size={24} />
         </button>
 
         <h2 className="modal-title">클래스 참여하기</h2>
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 
-        <form onSubmit={handleSubmit} className="modal-content">
+        <h2 className="modal-title">클래스 참여하기</h2>
+
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="classCode">클래스 참여 코드</label>
             <input

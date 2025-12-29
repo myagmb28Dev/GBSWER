@@ -11,6 +11,16 @@ const AdminClassDetailSidebar = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+<<<<<<< HEAD
+=======
+  const [editDeadline, setEditDeadline] = useState('');
+  const [editSubmissionType, setEditSubmissionType] = useState('deadline');
+
+  // selectedPost가 변경되면 수정 모드 해제
+  React.useEffect(() => {
+    setIsEditMode(false);
+  }, [selectedPost]);
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 
   if (!selectedPost) {
     return (
@@ -26,12 +36,25 @@ const AdminClassDetailSidebar = ({
   const handleEditStart = () => {
     setEditTitle(selectedPost.title);
     setEditContent(selectedPost.content || '');
+<<<<<<< HEAD
+=======
+    setEditDeadline(selectedPost.deadline || '');
+    setEditSubmissionType(selectedPost.submissionType || 'deadline');
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
     setIsEditMode(true);
   };
 
   const handleEditSave = () => {
     // 수정 로직
+<<<<<<< HEAD
     console.log('수정 저장:', { title: editTitle, content: editContent });
+=======
+    console.log('수정 저장:', { title: editTitle, content: editContent, deadline: editDeadline, submissionType: editSubmissionType });
+    setIsEditMode(false);
+  };
+
+  const handleEditCancel = () => {
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
     setIsEditMode(false);
   };
 
@@ -65,12 +88,43 @@ const AdminClassDetailSidebar = ({
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     className="textarea-field"
+<<<<<<< HEAD
                     rows="6"
                   />
                 </div>
                 <div className="edit-actions">
                   <button 
                     onClick={() => setIsEditMode(false)}
+=======
+                    rows="3"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>수용 범위</label>
+                  <select
+                    value={editSubmissionType}
+                    onChange={(e) => setEditSubmissionType(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="deadline">기한</option>
+                    <option value="unlimited">무제한</option>
+                  </select>
+                </div>
+                {editSubmissionType === 'deadline' && (
+                  <div className="form-group">
+                    <label>기한</label>
+                    <input
+                      type="date"
+                      value={editDeadline}
+                      onChange={(e) => setEditDeadline(e.target.value)}
+                      className="input-field"
+                    />
+                  </div>
+                )}
+                <div className="edit-actions">
+                  <button 
+                    onClick={handleEditCancel}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                     className="btn-cancel"
                   >
                     취소
@@ -103,17 +157,29 @@ const AdminClassDetailSidebar = ({
                   <img src="/meister-game.png" alt="마이스터 캐릭터" className="sidebar-character" />
                   <div className="button-section">
                     <button 
+<<<<<<< HEAD
                       onClick={handleEditStart} 
                       className="edit-button"
                     >
                       수정하기
                     </button>
                     <button 
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                       onClick={() => setIsAssignmentStatusOpen(true)}
                       className="status-button"
                     >
                       과제 현황
                     </button>
+<<<<<<< HEAD
+=======
+                    <button 
+                      onClick={handleEditStart} 
+                      className="edit-button"
+                    >
+                      수정하기
+                    </button>
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                   </div>
                 </div>
               </>
@@ -145,7 +211,11 @@ const AdminClassDetailSidebar = ({
                 </div>
                 <div className="edit-actions">
                   <button 
+<<<<<<< HEAD
                     onClick={() => setIsEditMode(false)}
+=======
+                    onClick={handleEditCancel}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                     className="btn-cancel"
                   >
                     취소

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import AddEventModal from './AddEventModal';
+<<<<<<< HEAD
+=======
+import ViewEventModal from './ViewEventModal';
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 import './ScheduleDetailModal.css';
 
 const ScheduleDetailModal = ({ 
@@ -13,6 +17,11 @@ const ScheduleDetailModal = ({
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date(selectedDate));
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+<<<<<<< HEAD
+=======
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -51,6 +60,15 @@ const ScheduleDetailModal = ({
     setCurrentDate(newDate);
   };
 
+<<<<<<< HEAD
+=======
+  const handleEventClick = (event, e) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setIsViewModalOpen(true);
+  };
+
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
   const dayEvents = getEventsForDate(currentDate);
   const hasScroll = dayEvents.length >= 4;
 
@@ -77,7 +95,16 @@ const ScheduleDetailModal = ({
         <div className={`events-list ${hasScroll ? 'has-scroll' : ''}`}>
           {dayEvents.length > 0 ? (
             dayEvents.map(event => (
+<<<<<<< HEAD
               <div key={event.id} className="event-item" style={{ borderLeftColor: event.color }}>
+=======
+              <div 
+                key={event.id} 
+                className="event-item" 
+                style={{ borderLeftColor: event.color }}
+                onClick={(e) => handleEventClick(event, e)}
+              >
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                 <div className="event-info">
                   <h4>{event.title}</h4>
                   <p className="event-date">
@@ -86,7 +113,14 @@ const ScheduleDetailModal = ({
                 </div>
                 <button 
                   className="delete-event-btn"
+<<<<<<< HEAD
                   onClick={() => onDeleteEvent(event.id)}
+=======
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteEvent(event.id);
+                  }}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                 >
                   ×
                 </button>
@@ -114,6 +148,18 @@ const ScheduleDetailModal = ({
             }}
           />
         )}
+<<<<<<< HEAD
+=======
+
+        {isViewModalOpen && selectedEvent && (
+          <ViewEventModal
+            event={selectedEvent}
+            onClose={() => setIsViewModalOpen(false)}
+            onDelete={onDeleteEvent}
+            onEdit={onEditEvent}
+          />
+        )}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
       </div>
     </div>
   );

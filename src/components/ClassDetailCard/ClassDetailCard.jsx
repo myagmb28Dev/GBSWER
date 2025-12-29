@@ -80,7 +80,7 @@ const ClassDetailCard = ({
 
       {/* 필터 섹션 */}
       <div className="filter-section">
-        <h3 className="section-title">과제 및 공지사항</h3>
+        <h3 className="section-title2">과제 및 공지사항</h3>
         <div className="filter-buttons">
           {['ALL', '과제', '공지'].map((filter) => (
             <button

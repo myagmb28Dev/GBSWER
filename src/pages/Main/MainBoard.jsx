@@ -20,11 +20,6 @@ const MainBoard = () => {
         <Calendar />
       </div>
       
-      {/* 클래스 생성/참여 버튼 */}
-      <div className="class-button-container">
-        <ClassCreateButton userRole="student" />
-      </div>
-      
       <Footer />
     </div>
   );

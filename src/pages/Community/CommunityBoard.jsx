@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import axios from 'axios';
 import { Plus } from "lucide-react";
@@ -127,8 +128,177 @@ const CommunityBoard = () => {
         post={selectedPost} 
       />
 
+=======
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
+import './CommunityBoard.css';
+
+const CommunityBoard = () => {
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      date: '2025.01.17',
+      title: '첫 번째 게시물입니다. 안녕하세요.',
+      author: '김민수',
+      views: 125
+    },
+    {
+      id: 2,
+      date: '2025.01.17',
+      title: '두 번째 게시물입니다. 반갑습니다.',
+      author: '이지은',
+      views: 98
+    },
+    {
+      id: 3,
+      date: '2025.01.17',
+      title: '세 번째 게시물입니다. 환영합니다.',
+      author: '박준호',
+      views: 87
+    },
+    {
+      id: 4,
+      date: '2025.01.17',
+      title: '네 번째 게시물입니다. 좋은 하루.',
+      author: '최서연',
+      views: 76
+    },
+    {
+      id: 5,
+      date: '2025.01.17',
+      title: '다섯 번째 게시물입니다. 화이팅.',
+      author: '정우진',
+      views: 65
+    },
+    {
+      id: 6,
+      date: '2025.01.17',
+      title: '여섯 번째 게시물입니다. 파이팅.',
+      author: '한소영',
+      views: 54
+    },
+    {
+      id: 7,
+      date: '2025.01.17',
+      title: '일곱 번째 게시물입니다. 화이팅.',
+      author: '윤태현',
+      views: 43
+    },
+    {
+      id: 8,
+      date: '2025.01.17',
+      title: '여덟 번째 게시물입니다. 파이팅.',
+      author: '강민지',
+      views: 32
+    },
+    {
+      id: 9,
+      date: '2025.01.17',
+      title: '아홉 번째 게시물입니다. 화이팅.',
+      author: '조현우',
+      views: 21
+    },
+    {
+      id: 10,
+      date: '2025.01.17',
+      title: '열 번째 게시물입니다. 파이팅.',
+      author: '신예린',
+      views: 10
+    }
+  ]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 8;
+
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const displayedPosts = posts.slice(startIndex, startIndex + postsPerPage);
+
+  const handlePostClick = (postId) => {
+    navigate(`/community/read/${postId}`);
+  };
+
+  const handleWriteClick = () => {
+    navigate('/community/write');
+  };
+
+  return (
+    <div className="community-board">
+      <Header />
+
+      <div className="community-content">
+        <div className="community-date-display">
+          <p className="community-year-text">2025년</p>
+          <h2 className="community-date-text">12월 25일</h2>
+        </div>
+
+        <div className="community-posts-table-wrapper">
+          <table className="community-posts-table">
+            <thead>
+              <tr>
+                <th className="community-col-date">작성일</th>
+                <th className="community-col-title">제목</th>
+                <th className="community-col-author">작성자</th>
+                <th className="community-col-views">조회수</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedPosts.map((post) => (
+                <tr key={post.id} onClick={() => handlePostClick(post.id)} className="post-row">
+                  <td className="community-col-date">{post.date}</td>
+                  <td className="community-col-title">{post.title}</td>
+                  <td className="community-col-author">{post.author}</td>
+                  <td className="community-col-views">{post.views}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="community-pagination">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="community-pagination-btn"
+          >
+            이전
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`community-pagination-btn ${currentPage === page ? 'active' : ''}`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="community-pagination-btn"
+          >
+            다음
+          </button>
+        </div>
+
+        <div className="community-write-button-wrapper">
+          <button className="community-write-button" onClick={handleWriteClick}>
+            +
+          </button>
+        </div>
+      </div>
+
+      <Footer />
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default CommunityBoard;
+=======
+export default CommunityBoard;
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)

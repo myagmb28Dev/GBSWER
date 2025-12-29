@@ -221,10 +221,10 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
               </div>
             </div>
 
-            <div className="logout-section">
+            <div className="modal-buttons-bottom">
               <button
                 type="button"
-                className="logout-btn"
+                className="logout-btn-inline"
                 onClick={() => {
                   if (window.confirm('로그아웃 하시겠습니까?')) {
                     handleLogout();
@@ -233,9 +233,6 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
               >
                 로그아웃
               </button>
-            </div>
-
-            <div className="modal-buttons-bottom">
               <button
                 type="button"
                 className="change-password-btn-bottom"

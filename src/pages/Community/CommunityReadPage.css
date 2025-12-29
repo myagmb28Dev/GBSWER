@@ -1,0 +1,249 @@
+.community-read-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: white;
+}
+
+.community-read-content {
+  flex: 1;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.community-back-button {
+  background: none;
+  border: none;
+  color: #4DC4AB;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0 20px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: color 0.2s;
+  margin-bottom: 20px;
+}
+
+.community-back-button:hover {
+  color: #3db89a;
+}
+
+.community-post-header {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.community-post-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.community-post-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 15px 0;
+  line-height: 1.4;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-post-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.community-meta-item {
+  font-size: 13px;
+  color: #666;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-post-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.community-action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-edit-btn {
+  background: #4DC4AB;
+  color: white;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.community-edit-btn:hover {
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
+}
+
+.community-delete-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.community-delete-btn:hover {
+  background: #e0e0e0;
+}
+
+.community-post-content {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.8;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 20px 0;
+}
+
+.community-post-stats {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.community-stat-item {
+  font-size: 13px;
+  color: #666;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-comments-section {
+  margin-top: 30px;
+}
+
+.community-comments-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-comment-write {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.community-comment-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.community-comment-input:focus {
+  outline: none;
+  border-color: #4DC4AB;
+  box-shadow: 0 0 0 3px rgba(77, 196, 171, 0.1);
+}
+
+.community-comment-submit-btn {
+  align-self: flex-end;
+  padding: 8px 16px;
+  background: #4DC4AB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.community-comment-submit-btn:hover {
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
+}
+
+.community-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.community-comment-item {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.community-comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.community-comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-comment-date {
+  font-size: 12px;
+  color: #999;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.community-comment-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .community-read-content {
+    padding: 20px 15px;
+  }
+
+  .community-post-title {
+    font-size: 22px;
+  }
+
+  .community-post-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .community-post-actions {
+    flex-direction: column;
+  }
+
+  .community-action-btn {
+    width: 100%;
+  }
+}

@@ -1,24 +1,28 @@
 .main-board {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: white;
 }
 
-.main-content {
+.content-container {
   flex: 1;
   display: grid;
   grid-template-columns: 350px 870px;
   gap: 40px;
   padding: 15px 30px;
   justify-content: center;
+<<<<<<< HEAD
   overflow-x: hidden;
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
 }
 
 .left-section {
   display: flex;
   flex-direction: column;
   gap: 15px;
+<<<<<<< HEAD
 }
 
 .class-button-container {
@@ -27,3 +31,39 @@
   padding: 20px;
   margin-bottom: 20px;
 }
+=======
+}
+
+.notice-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content-container {
+    grid-template-columns: 1fr;
+    padding: 15px;
+    gap: 20px;
+  }
+  
+  .notice-section {
+    padding: 20px;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
+  }
+}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)

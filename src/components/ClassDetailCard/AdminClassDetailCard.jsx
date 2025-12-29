@@ -16,6 +16,11 @@ const AdminClassDetailCard = ({
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [isPostWriteModalOpen, setIsPostWriteModalOpen] = useState(false);
+<<<<<<< HEAD
+=======
+  const [isTeacherEditOpen, setIsTeacherEditOpen] = useState(false);
+  const [editTeacherName, setEditTeacherName] = useState(teacherName);
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
   const [postsList, setPostsList] = useState(posts);
 
   const filteredPosts = selectedFilter === 'ALL' 
@@ -58,7 +63,17 @@ const AdminClassDetailCard = ({
         {/* 왼쪽: 제목과 선생님 이름 */}
         <div className="class-info-left">
           <h2 className="class-title">{className}</h2>
+<<<<<<< HEAD
           <p className="teacher-name">{teacherName}</p>
+=======
+          <p 
+            className="teacher-name" 
+            onClick={() => setIsTeacherEditOpen(true)}
+            style={{ cursor: 'pointer' }}
+          >
+            {editTeacherName}
+          </p>
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
         </div>
         
         {/* 오른쪽: 반 코드와 참가 인원을 세로로 배치 */}
@@ -82,8 +97,27 @@ const AdminClassDetailCard = ({
 
       {/* 필터 섹션 */}
       <div className="filter-section">
+<<<<<<< HEAD
         <div className="filter-header">
           <h3 className="section-title">과제 및 공지사항</h3>
+=======
+        <h3 className="section-title">과제 및 공지사항</h3>
+        <div className="filter-controls">
+          <div className="filter-buttons">
+            {['ALL', '과제', '공지'].map((filter) => (
+              <button
+                key={filter}
+                className={`filter-button ${selectedFilter === filter ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedFilter(filter);
+                }}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
           <button 
             className="write-button"
             onClick={() => setIsPostWriteModalOpen(true)}
@@ -92,6 +126,7 @@ const AdminClassDetailCard = ({
             <Plus size={20} />
           </button>
         </div>
+<<<<<<< HEAD
         <div className="filter-buttons">
           {['ALL', '과제', '공지'].map((filter) => (
             <button
@@ -106,6 +141,8 @@ const AdminClassDetailCard = ({
             </button>
           ))}
         </div>
+=======
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
       </div>
 
       {/* 게시물 목록 */}
@@ -143,6 +180,44 @@ const AdminClassDetailCard = ({
         }}
         classId={className}
       />
+<<<<<<< HEAD
+=======
+
+      {/* 선생님 수정 모달 */}
+      {isTeacherEditOpen && (
+        <div className="modal-overlay" onClick={() => setIsTeacherEditOpen(false)}>
+          <div className="teacher-edit-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">선생님 수정</h3>
+            <input
+              type="text"
+              value={editTeacherName}
+              onChange={(e) => setEditTeacherName(e.target.value)}
+              className="teacher-input"
+              placeholder="선생님 이름을 입력하세요"
+            />
+            <div className="modal-buttons">
+              <button 
+                className="btn-cancel"
+                onClick={() => {
+                  setEditTeacherName(teacherName);
+                  setIsTeacherEditOpen(false);
+                }}
+              >
+                취소
+              </button>
+              <button 
+                className="btn-confirm"
+                onClick={() => {
+                  setIsTeacherEditOpen(false);
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
     </div>
   );
 };

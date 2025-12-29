@@ -65,7 +65,11 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
               {errorMessage && (
                 <p className="error-message">{errorMessage}</p>
               )}
+<<<<<<< HEAD
               <button type="submit" className="submit-button">
+=======
+              <button type="submit" className="submit-button1">
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                 비밀번호 찾기
               </button>
             </form>

@@ -1,12 +1,15 @@
 import React, { useState, createContext, useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainBoardStudent from "./pages/Main/Student/MainBoard";
 import MyPageBoardStudent from "./pages/MyPage/Student/MyPageBoard";
-import CommunityBoardStudent from "./pages/Community/Student/CommunityBoard";
 import ClassroomBoardStudent from "./pages/Classroom/Student/ClassroomBoard";
 import MainBoardAdmin from "./pages/Main/Admin/MainBoard";
 import MyPageBoardAdmin from "./pages/MyPage/Admin/MyPageBoard";
-import CommunityBoardAdmin from "./pages/Community/Admin/CommunityBoard";
 import ClassroomBoardAdmin from "./pages/Classroom/Admin/ClassroomBoard";
+import CommunityBoard from "./pages/Community/CommunityBoard";
+import CommunityWritePage from "./pages/Community/CommunityWritePage";
+import CommunityReadPage from "./pages/Community/CommunityReadPage";
+import CommunityEditPage from "./pages/Community/CommunityEditPage";
 import Login from "./pages/Login/Login";
 import EditProfileModal from "./components/UserProfileModal/EditProfileModal";
 import axios from "axios";
@@ -70,18 +73,28 @@ function App() {
   const renderCurrentPage = () => {
     const isAdmin = userRole === 'admin';
     
-    switch(currentPage) {
-      case 'main':
-        return isAdmin ? <MainBoardAdmin /> : <MainBoardStudent />;
-      case 'mypage':
-        return isAdmin ? <MyPageBoardAdmin /> : <MyPageBoardStudent />;
-      case 'community':
-        return isAdmin ? <CommunityBoardAdmin /> : <CommunityBoardStudent />;
-      case 'classroom':
-        return isAdmin ? <ClassroomBoardAdmin /> : <ClassroomBoardStudent />;
-      default:
-        return isAdmin ? <MainBoardAdmin /> : <MainBoardStudent />;
-    }
+    return (
+      <Routes>
+        {/* Main Pages */}
+        <Route path="/main" element={isAdmin ? <MainBoardAdmin /> : <MainBoardStudent />} />
+        
+        {/* MyPage */}
+        <Route path="/mypage" element={isAdmin ? <MyPageBoardAdmin /> : <MyPageBoardStudent />} />
+        
+        {/* Community Pages */}
+        <Route path="/community" element={<CommunityBoard />} />
+        <Route path="/community/write" element={<CommunityWritePage />} />
+        <Route path="/community/read/:postId" element={<CommunityReadPage />} />
+        <Route path="/community/edit/:postId" element={<CommunityEditPage />} />
+        
+        {/* Classroom */}
+        <Route path="/classroom" element={isAdmin ? <ClassroomBoardAdmin /> : <ClassroomBoardStudent />} />
+        
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/main" replace />} />
+        <Route path="*" element={<Navigate to="/main" replace />} />
+      </Routes>
+    );
   };
 
   const handleLogout = async () => {
@@ -131,19 +144,21 @@ function App() {
 
   return (
     <AppContext.Provider value={contextValue}>
-      <div className="App">
-        {renderCurrentPage()}
-        {showProfileModal && profile && (
-          <EditProfileModal 
-            profile={profile}
-            onClose={() => setShowProfileModal(false)} 
-            onSave={(updatedProfile) => {
-              setProfile(updatedProfile);
-              setShowProfileModal(false);
-            }}
-          />
-        )}
-      </div>
+      <Router>
+        <div className="App">
+          {renderCurrentPage()}
+          {showProfileModal && profile && (
+            <EditProfileModal 
+              profile={profile}
+              onClose={() => setShowProfileModal(false)} 
+              onSave={(updatedProfile) => {
+                setProfile(updatedProfile);
+                setShowProfileModal(false);
+              }}
+            />
+          )}
+        </div>
+      </Router>
     </AppContext.Provider>
   );
 }

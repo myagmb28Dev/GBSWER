@@ -20,6 +20,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   font-family: 'Noto Sans KR', sans-serif;
   padding: 30px;
+<<<<<<< HEAD
   position: relative;
 }
 
@@ -57,17 +58,36 @@
 }
 
 .form-group label {
+=======
+  box-sizing: border-box;
+}
+
+.modal-title {
+  margin: 0 0 25px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+
+.form-label {
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
   display: block;
+  margin-top: 20px;
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 600;
   color: #333;
 }
 
+.form-label:first-of-type {
+  margin-top: 0;
+}
+
 .class-name-input {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid #e5e5e5;
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.2s;
@@ -77,6 +97,7 @@
 .class-name-input:focus {
   outline: none;
   border-color: #4DC4AB;
+  box-shadow: 0 0 0 3px rgba(77, 196, 171, 0.1);
 }
 
 .code-section {
@@ -88,12 +109,14 @@
 .code-display {
   padding: 15px;
   background: #f8f9fa;
-  border: 2px solid #e5e5e5;
+  border: 1px solid #ddd;
   border-radius: 8px;
   min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .generated-code {
@@ -113,14 +136,17 @@
   background: #4DC4AB;
   border: none;
   color: white;
-  padding: 8px;
-  border-radius: 5px;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .copy-button:hover {
-  background: #3DB599;
+  background: #3db89a;
 }
 
 .no-code {
@@ -145,7 +171,7 @@
 }
 
 .generate-button:hover {
-  background: #3DB599;
+  background: #3db89a;
 }
 
 .modal-buttons {
@@ -163,25 +189,25 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border: none;
 }
 
 .cancel-button {
-  background: #f8f9fa;
-  border: 2px solid #e5e5e5;
+  background: #f0f0f0;
   color: #666;
 }
 
 .cancel-button:hover {
-  background: #e9ecef;
+  background: #e0e0e0;
 }
 
 .create-button {
   background: #4DC4AB;
-  border: 2px solid #4DC4AB;
   color: white;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
 }
 
 .create-button:hover {
-  background: #3DB599;
-  border-color: #3DB599;
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
 }

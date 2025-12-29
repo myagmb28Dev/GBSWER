@@ -5,11 +5,24 @@ import ClassCreateButton from '../../../components/ClassCreateButton/ClassCreate
 import ClassCard from '../../../components/ClassCard/ClassCard';
 import AdminClassDetailCard from '../../../components/ClassDetailCard/AdminClassDetailCard';
 import AdminClassDetailSidebar from '../../../components/ClassDetailSidebar/AdminClassDetailSidebar';
+<<<<<<< HEAD
 import { adminClasses } from '../../../mocks/mockClasses';
 import './ClassroomBoard.css';
 
 const ClassroomBoard = () => {
   const [selectedClass, setSelectedClass] = useState(adminClasses[0] || null);
+=======
+import { adminClasses, studentClasses } from '../../../mocks/mockClasses';
+import './ClassroomBoard.css';
+
+const ClassroomBoard = () => {
+  // 생성한 클래스와 참여한 클래스를 합치고 중복 제거
+  const allClasses = Array.from(
+    new Map([...adminClasses, ...studentClasses].map(cls => [cls.id, cls])).values()
+  );
+  
+  const [selectedClass, setSelectedClass] = useState(allClasses[0] || null);
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
   const [selectedPost, setSelectedPost] = useState(null);
   const getCurrentDate = () => {
     const now = new Date();
@@ -49,9 +62,15 @@ const ClassroomBoard = () => {
           </div>
 
           {/* 생성한 클래스 목록 */}
+<<<<<<< HEAD
           {adminClasses.length > 0 ? (
             <div className="class-grid">
               {adminClasses.map((classData) => (
+=======
+          {allClasses.length > 0 ? (
+            <div className="class-grid">
+              {allClasses.map((classData) => (
+>>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                 <ClassCard
                   key={classData.id}
                   className={classData.className}

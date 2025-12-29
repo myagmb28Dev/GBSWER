@@ -1,0 +1,144 @@
+.community-edit-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.edit-content {
+  flex: 1;
+  padding: 40px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.edit-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.edit-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.edit-form-container {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #4DC4AB;
+  box-shadow: 0 0 0 3px rgba(77, 196, 171, 0.1);
+}
+
+.form-input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 400px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.btn-cancel,
+.btn-submit {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-submit {
+  background: #4DC4AB;
+  color: white;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.btn-submit:hover {
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .edit-content {
+    padding: 20px 15px;
+  }
+
+  .edit-title {
+    font-size: 24px;
+  }
+
+  .edit-form-container {
+    padding: 20px;
+  }
+
+  .form-textarea {
+    min-height: 300px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+  }
+}

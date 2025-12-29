@@ -95,14 +95,53 @@
 /* 필터 섹션 */
 .filter-section {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  text-align: left;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.write-button {
+  background: #4DC4AB;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+  flex-shrink: 0;
+}
+
+.write-button:hover {
+  background: #3db89a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
 }
 
 .filter-buttons {
   display: flex;
   gap: 8px;
+  flex: 1;
 }
 
 .filter-button {
@@ -126,13 +165,6 @@
   background: #4DC4AB;
   border-color: #4DC4AB;
   color: white;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
 }
 
 /* 게시물 목록 */
@@ -235,3 +267,92 @@
   }
 }
 
+
+
+/* 선생님 수정 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.teacher-edit-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.teacher-edit-modal .modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.teacher-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.teacher-input:focus {
+  outline: none;
+  border-color: #4DC4AB;
+  box-shadow: 0 0 0 3px rgba(77, 196, 171, 0.1);
+}
+
+.teacher-edit-modal .modal-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.teacher-edit-modal .btn-cancel,
+.teacher-edit-modal .btn-confirm {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.teacher-edit-modal .btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.teacher-edit-modal .btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.teacher-edit-modal .btn-confirm {
+  background: #4DC4AB;
+  color: white;
+  box-shadow: 0 2px 4px rgba(77, 196, 171, 0.2);
+}
+
+.teacher-edit-modal .btn-confirm:hover {
+  background: #3db89a;
+  box-shadow: 0 4px 8px rgba(77, 196, 171, 0.3);
+}
