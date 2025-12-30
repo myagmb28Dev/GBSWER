@@ -1,16 +1,59 @@
 import { X, File, Trash2 } from 'lucide-react';
+import axios from 'axios';
 
 const CommunityReadModal = ({ isOpen, onClose, post, onDelete, isAdmin = false }) => {
-    const handleDownload = (file) => {
-    const link = document.createElement('a');
-    link.href = file.url;
-    // URL에서 파일명 추출하거나 기본값 사용
-    const fileName = file.name || file.url.split('/').pop() || 'download';
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
+    const handleDownload = async (file) => {
+        try {
+            // URL에서 파일명 추출하거나 기본값 사용
+            const fileName = file.name || file.url?.split('/').pop() || 'download';
+            let fileUrl = file.url || file.fileUrl || file.downloadUrl;
+            
+            if (!fileUrl) {
+                alert('다운로드할 수 있는 파일 URL이 없습니다.');
+                return;
+            }
+
+            // URL 정규화 (상대 경로를 절대 경로로 변환)
+            if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+                fileUrl = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+                fileUrl = `${window.location.origin}${fileUrl}`;
+            }
+
+            // 토큰이 필요한 경우를 대비해 axios로 다운로드
+            const token = localStorage.getItem('accessToken');
+            const config = token ? { 
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            } : { responseType: 'blob' };
+
+            try {
+                console.log('📥 다운로드 시도:', fileUrl);
+                const response = await axios.get(fileUrl, config);
+                const blob = new Blob([response.data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (axiosError) {
+                console.error('Axios 다운로드 실패:', axiosError);
+                // axios로 다운로드 실패 시 직접 링크로 시도
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('파일 다운로드 실패:', error);
+            alert('파일 다운로드에 실패했습니다.');
+        }
+    };
 
 const handleDelete = () => {
     if (window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {

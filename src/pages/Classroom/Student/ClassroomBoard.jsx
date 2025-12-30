@@ -111,15 +111,27 @@ const ClassroomBoard = () => {
     }
   };
 
-  const handleSubmitAssignment = async (classId, postId, submissionData) => {
+  const handleSubmitAssignment = async (postId, submissionData) => {
+    if (!selectedClass) {
+      alert('클래스를 선택해주세요.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('accessToken');
       const formData = new FormData();
 
-      // 파일들 추가
+      // 파일들 추가 (files로 전송)
       if (submissionData.files && submissionData.files.length > 0) {
         submissionData.files.forEach(file => {
-          formData.append('files[]', file);
+          // file이 File 객체인지 확인
+          if (file instanceof File) {
+            formData.append('files', file);
+          } else if (file.file && file.file instanceof File) {
+            formData.append('files', file.file);
+          } else {
+            console.warn('유효하지 않은 파일 객체:', file);
+          }
         });
       }
 
@@ -128,43 +140,99 @@ const ClassroomBoard = () => {
         formData.append('addToSchedule', submissionData.addToSchedule.toString());
       }
 
-      await axios.post(`/api/classes/${classId}/posts/${postId}/submit`, formData, {
+      await axios.post(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
           // Content-Type은 axios가 자동으로 설정 (boundary 포함)
         }
       });
 
-      alert('과제가 제출되었습니다.');
+      // 게시물 목록 새로고침
+      if (selectedClass) {
+        const res = await axios.get('/api/classes', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+        const data = res.data?.data || [];
+        setClasses(data);
+        
+        // 선택된 클래스 업데이트
+        const updatedClass = data.find(cls => cls.id === selectedClass.id);
+        if (updatedClass) {
+          setSelectedClass(updatedClass);
+          // 선택된 게시물도 업데이트
+          if (selectedPost && selectedPost.id === postId) {
+            const updatedPost = updatedClass.posts?.find(p => p.id === postId);
+            if (updatedPost) {
+              setSelectedPost(updatedPost);
+            }
+          }
+        }
+      }
+
+      // 성공 메시지는 ClassDetailSidebar에서 표시
     } catch (error) {
       console.error('과제 제출 실패:', error);
-      alert('과제 제출에 실패했습니다.');
+      throw error; // 에러를 상위로 전달하여 ClassDetailSidebar에서 처리
     }
   };
 
-  const handleUpdateSubmission = async (classId, postId, submissionData) => {
+  const handleUpdateSubmission = async (postId, submissionData) => {
+    if (!selectedClass) {
+      alert('클래스를 선택해주세요.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('accessToken');
       const formData = new FormData();
 
-      // 파일들 추가
+      // 파일들 추가 (files로 전송)
       if (submissionData.files && submissionData.files.length > 0) {
         submissionData.files.forEach(file => {
-          formData.append('files[]', file);
+          // file이 File 객체인지 확인
+          if (file instanceof File) {
+            formData.append('files', file);
+          } else if (file.file && file.file instanceof File) {
+            formData.append('files', file.file);
+          } else {
+            console.warn('유효하지 않은 파일 객체:', file);
+          }
         });
       }
 
-      await axios.put(`/api/classes/${classId}/posts/${postId}/submit`, formData, {
+      await axios.put(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
           // Content-Type은 axios가 자동으로 설정 (boundary 포함)
         }
       });
 
-      alert('제출물이 수정되었습니다.');
+      // 게시물 목록 새로고침
+      if (selectedClass) {
+        const res = await axios.get('/api/classes', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+        const data = res.data?.data || [];
+        setClasses(data);
+        
+        // 선택된 클래스 업데이트
+        const updatedClass = data.find(cls => cls.id === selectedClass.id);
+        if (updatedClass) {
+          setSelectedClass(updatedClass);
+          // 선택된 게시물도 업데이트
+          if (selectedPost && selectedPost.id === postId) {
+            const updatedPost = updatedClass.posts?.find(p => p.id === postId);
+            if (updatedPost) {
+              setSelectedPost(updatedPost);
+            }
+          }
+        }
+      }
+
+      // 성공 메시지는 ClassDetailSidebar에서 표시
     } catch (error) {
       console.error('제출물 수정 실패:', error);
-      alert('제출물 수정에 실패했습니다.');
+      throw error; // 에러를 상위로 전달하여 ClassDetailSidebar에서 처리
     }
   };
 
@@ -270,10 +338,9 @@ const ClassroomBoard = () => {
           <ClassDetailSidebar
             selectedPost={selectedPost}
             onClose={handleCloseSidebar}
-            onSubmitAssignment={selectedClass ? (postId, submissionData) =>
-              handleSubmitAssignment(selectedClass.id, postId, submissionData) : null}
-            onUpdateSubmission={selectedClass ? (postId, submissionData) =>
-              handleUpdateSubmission(selectedClass.id, postId, submissionData) : null}
+            onSubmitAssignment={selectedClass ? handleSubmitAssignment : null}
+            onUpdateSubmission={selectedClass ? handleUpdateSubmission : null}
+            classId={selectedClass?.id}
           />
         </div>
       </div>

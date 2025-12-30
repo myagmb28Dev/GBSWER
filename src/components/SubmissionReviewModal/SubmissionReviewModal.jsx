@@ -51,14 +51,23 @@ const SubmissionReviewModal = ({
                   className="student-avatar"
                 />
                 <div className="student-details">
-                  <span className="student-name">{submission.studentName}</span>
-                  <span className="student-id">{submission.studentId}</span>
+                  <div className="student-name-row">
+                    <span className="student-name">{submission.studentName}</span>
+                    <span className="student-id">{submission.studentId}</span>
+                  </div>
+                  <div className="submission-time">
+                    제출 시간: {submission.submittedAt ? (
+                      (() => {
+                        try {
+                          const date = new Date(submission.submittedAt);
+                          return isNaN(date.getTime()) ? '제출 시간 정보 없음' : date.toLocaleString('ko-KR');
+                        } catch (error) {
+                          return '제출 시간 정보 없음';
+                        }
+                      })()
+                    ) : '제출 시간 정보 없음'}
+                  </div>
                 </div>
-              </div>
-              <div className="submission-time">
-                제출 시간: {submission.submittedAt ?
-                  new Date(submission.submittedAt).toLocaleString() :
-                  '제출 시간 정보 없음'}
               </div>
             </div>
           </div>
@@ -67,19 +76,64 @@ const SubmissionReviewModal = ({
           <div className="attachments-section">
             <h4 className="section-title">제출 파일</h4>
             <div className="attachments-list">
-              {submission.attachments && submission.attachments.length > 0 ? (
-                submission.attachments.map((file, index) => (
-                  <div key={index} className="attachment-item">
-                    <File size={16} className="file-icon" />
-                    <span className="file-name">{file.fileName || file.name}</span>
-                    <span className="file-size">
-                      ({file.fileSize ? `${(file.fileSize / 1024).toFixed(1)}KB` : '크기 정보 없음'})
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="no-attachments">첨부 파일이 없습니다.</p>
-              )}
+              {(() => {
+                // 여러 가능한 필드명에서 파일 목록 추출
+                const files = submission.attachments || 
+                             submission.files || 
+                             submission.submissionFiles ||
+                             submission.fileList ||
+                             [];
+                
+                // 배열이 아니거나 비어있는 경우 확인
+                const fileList = Array.isArray(files) && files.length > 0 ? files : [];
+                
+                console.log('📎 제출 파일 목록:', fileList);
+                
+                return fileList.length > 0 ? (
+                  fileList.map((file, index) => {
+                    // 파일 이름 추출 (여러 가능한 필드명 확인)
+                    const fileName = file.fileName || 
+                                    file.name || 
+                                    file.originalFileName ||
+                                    file.originalName ||
+                                    '파일';
+                    
+                    // 파일 URL 추출 (다운로드 링크)
+                    const fileUrl = file.url || 
+                                  file.fileUrl || 
+                                  file.downloadUrl ||
+                                  file.file?.url ||
+                                  null;
+                    
+                    console.log('📄 파일 정보:', { 
+                      fileName, 
+                      fileUrl, 
+                      file,
+                      originalSubmission: submission.originalSubmission 
+                    });
+                    
+                    return (
+                      <div key={file.id || file.fileId || index} className="attachment-item">
+                        <File size={16} className="file-icon" />
+                        {fileUrl ? (
+                          <a 
+                            href={fileUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="file-name-link"
+                          >
+                            <span className="file-name">{fileName}</span>
+                          </a>
+                        ) : (
+                          <span className="file-name">{fileName}</span>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="no-attachments">첨부 파일이 없습니다.</p>
+                );
+              })()}
             </div>
           </div>
 

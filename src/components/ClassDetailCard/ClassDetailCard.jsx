@@ -166,17 +166,17 @@ const ClassDetailCard = ({
           <div className="empty-posts-text">게시물이 없습니다.</div>
         ) : (
           filteredPosts.map((post) => (
-            <div 
-              key={post.id} 
-              className="post-item"
-              onClick={() => onPostClick && onPostClick(post)}
-            >
-              <span className={`post-tag ${post.type === '과제' ? 'assignment' : 'notice'}`}>
-                {post.type}
-              </span>
-              <span className="post-title">{post.title}</span>
-              <span className="post-date">{getDisplayDate(post)}</span>
-            </div>
+          <div 
+            key={post.id} 
+            className="post-item"
+            onClick={() => onPostClick && onPostClick(post)}
+          >
+            <span className={`post-tag ${post.type === '과제' ? 'assignment' : 'notice'}`}>
+              {post.type}
+            </span>
+            <span className="post-title">{post.title}</span>
+            <span className="post-date">{getDisplayDate(post)}</span>
+          </div>
           ))
         )}
       </div>

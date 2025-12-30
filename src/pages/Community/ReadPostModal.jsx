@@ -63,13 +63,56 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         fetchPost();
     }, [isOpen, post]);
 
-    const handleDownload = (attachment) => {
-        const link = document.createElement('a');
-        link.href = attachment.url;
-        link.download = attachment.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async (attachment) => {
+        try {
+            const fileName = attachment.name || '파일';
+            let fileUrl = attachment.url || attachment.fileUrl || attachment.downloadUrl;
+            
+            if (!fileUrl) {
+                alert('다운로드할 수 있는 파일 URL이 없습니다.');
+                return;
+            }
+
+            // URL 정규화 (상대 경로를 절대 경로로 변환)
+            if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+                fileUrl = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+                fileUrl = `${window.location.origin}${fileUrl}`;
+            }
+
+            // 토큰이 필요한 경우를 대비해 axios로 다운로드
+            const token = localStorage.getItem('accessToken');
+            const config = token ? { 
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            } : { responseType: 'blob' };
+
+            try {
+                console.log('📥 다운로드 시도:', fileUrl);
+                const response = await axios.get(fileUrl, config);
+                const blob = new Blob([response.data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (axiosError) {
+                console.error('Axios 다운로드 실패:', axiosError);
+                // axios로 다운로드 실패 시 직접 링크로 시도
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('파일 다운로드 실패:', error);
+            alert('파일 다운로드에 실패했습니다.');
+        }
     };
 
     const handleDelete = async () => {
@@ -100,8 +143,9 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 title: updatedPost.title,
                 content: updatedPost.content,
                 major: postData.major || 'ALL',
-                anonymous: updatedPost.anonymous || false
+                anonymous: Boolean(updatedPost.anonymous ?? false)
             };
+            console.log('📤 Community Edit DTO:', dto);
             const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
             form.append('dto', dtoBlob);
             

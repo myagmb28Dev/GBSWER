@@ -5,33 +5,53 @@
   max-width: 400px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   font-family: 'Noto Sans KR', sans-serif;
-  padding: 30px;
-  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.close-button {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  padding: 5px;
-  border-radius: 5px;
-  transition: background 0.2s;
-}
-
-.close-button:hover {
-  background: #f5f5f5;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #4DC4AB;
+  border-bottom: 1px solid #3db89a;
 }
 
 .modal-title {
-  margin: 0 0 25px 0;
+  margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #333;
+  color: white;
+  flex: 1;
   text-align: center;
+}
+
+.close-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  color: white;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-content {
+  padding: 25px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .form-group {

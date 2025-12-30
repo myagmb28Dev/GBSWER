@@ -58,9 +58,9 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('accessToken');
-    // 변경사항이 없는 경우
+    // 변경사항이 없는 경우 (이메일만 수정 가능)
     const isImageChanged = formData.profileImage && formData.profileImage !== profile.profileImage;
-    const isOtherChanged = formData.name !== profile.name || formData.email !== profile.email || formData.major !== profile.major || formData.grade !== profile.grade || formData.classNumber !== profile.classNumber;
+    const isOtherChanged = formData.email !== profile.email;
     if (!isImageChanged && !isOtherChanged) {
       alert('변경된 내용이 없습니다.');
       return;
@@ -92,10 +92,14 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
     if (pendingData) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.put('/api/user/profile', pendingData, {
+        // 이메일만 서버로 전송 (학적 정보는 제외)
+        const payload = {
+          email: pendingData.email
+        };
+        await axios.put('/api/user/profile', payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        onSave(pendingData);
+        onSave({ ...profile, email: pendingData.email });
         onClose();
       } catch (err) {
         alert('프로필 정보 수정 실패');
@@ -168,8 +172,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder="이름을 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -190,8 +194,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="major"
                 value={formData.major}
-                onChange={handleChange}
-                placeholder="학과를 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -202,7 +206,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="grade"
                   value={formData.grade}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="3"
                 />
@@ -214,7 +219,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="classNumber"
                   value={formData.classNumber}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="4"
                 />

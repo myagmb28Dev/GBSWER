@@ -113,7 +113,13 @@ const PersonalScheduleBox = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    return schedules.filter(schedule => {
+    // 오늘 기준 다음 금요일까지 계산
+    const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
+    const daysUntilFriday = dayOfWeek <= 5 ? (5 - dayOfWeek) : (5 + 7 - dayOfWeek);
+    const fridayDate = new Date(today);
+    fridayDate.setDate(today.getDate() + daysUntilFriday);
+    
+    const filtered = schedules.filter(schedule => {
       // 일정표에 표시 안함으로 설정된 일정 제외
       if (schedule.showInSchedule === false) {
         return false;
@@ -122,8 +128,8 @@ const PersonalScheduleBox = () => {
       const endDate = new Date(schedule.endDate);
       endDate.setHours(0, 0, 0, 0);
       
-      // 지난 일정은 제외
-      if (endDate < today) {
+      // 지난 일정은 제외, 금요일까지만 표시
+      if (endDate < today || endDate > fridayDate) {
         return false;
       }
       
@@ -134,6 +140,8 @@ const PersonalScheduleBox = () => {
       const dateB = new Date(b.endDate);
       return dateA - dateB;
     });
+
+    return filtered;
   };
 
   const filteredSchedules = getFilteredSchedules();

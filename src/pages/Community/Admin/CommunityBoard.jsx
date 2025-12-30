@@ -69,13 +69,17 @@ const CommunityBoard = () => {
 
       const form = new FormData();
       
+      // 관리자는 선택한 targetMajor를 사용 (all이면 ALL로 변환)
+      const major = (postData.targetMajor === 'all' || !postData.targetMajor) ? 'ALL' : postData.targetMajor;
+      
       // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
       const dto = {
         title: postData.title || '',
         content: postData.content || '',
-        major: 'ALL',
-        anonymous: postData.anonymous || false
+        major: major,
+        anonymous: Boolean(postData.anonymous ?? false)
       };
+      console.log('📤 Community Write DTO:', dto);
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       form.append('dto', dtoBlob);
       
@@ -146,13 +150,17 @@ const CommunityBoard = () => {
 
       const form = new FormData();
       
+      // 관리자는 선택한 targetMajor를 사용 (all이면 ALL로 변환)
+      const major = (postData.targetMajor === 'all' || !postData.targetMajor) ? 'ALL' : postData.targetMajor;
+      
       // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
       const dto = {
         title: postData.title || '',
         content: postData.content || '',
-        major: 'ALL',
-        anonymous: postData.anonymous || false
+        major: major,
+        anonymous: Boolean(postData.anonymous ?? false)
       };
+      console.log('📤 Community Edit DTO:', dto);
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       form.append('dto', dtoBlob);
 

@@ -73,17 +73,18 @@
 
 .submission-info {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 15px;
   background: #f8f9fa;
   border-radius: 8px;
+  gap: 15px;
 }
 
 .student-info {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+  width: 100%;
 }
 
 .student-avatar {
@@ -97,23 +98,35 @@
 .student-details {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.student-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .student-name {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+  white-space: nowrap;
 }
 
 .student-id {
-  font-size: 14px;
-  color: #666;
+  font-size: 16px;
+  color: #4DC4AB;
+  font-weight: 500;
 }
 
 .submission-time {
   font-size: 14px;
   color: #888;
+  white-space: nowrap;
+  margin-top: 4px;
 }
 
 .attachments-section,
@@ -151,6 +164,18 @@
   flex: 1;
   font-size: 14px;
   color: #333;
+}
+
+.file-name-link {
+  flex: 1;
+  text-decoration: none;
+  color: #4DC4AB;
+  transition: color 0.2s ease;
+}
+
+.file-name-link:hover {
+  color: #3aa890;
+  text-decoration: underline;
 }
 
 .file-size {

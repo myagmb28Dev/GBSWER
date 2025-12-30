@@ -112,17 +112,20 @@ const WeeklySchedule = () => {
     setSchedules(deduped);
   }, [globalEvents, serverSchedules]);
 
-  // 이번주 일정 필터링 (D-day부터 7일까지)
+  // 오늘 기준 다음 금요일까지 일정 필터링
   const getWeeklySchedules = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const sevenDaysLater = new Date(today);
-    sevenDaysLater.setDate(today.getDate() + 7);
+    // 오늘 기준 다음 금요일까지 계산
+    const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
+    const daysUntilFriday = dayOfWeek <= 5 ? (5 - dayOfWeek) : (5 + 7 - dayOfWeek);
+    const fridayDate = new Date(today);
+    fridayDate.setDate(today.getDate() + daysUntilFriday);
 
-    console.log('📅 이번주 일정 필터링 시작');
+    console.log('📅 일정 필터링 시작');
     console.log('오늘 날짜:', today.toISOString().split('T')[0]);
-    console.log('7일 후:', sevenDaysLater.toISOString().split('T')[0]);
+    console.log('금요일 날짜:', fridayDate.toISOString().split('T')[0]);
     console.log('전체 일정 수:', schedules.length);
 
     const filtered = schedules.filter(schedule => {
@@ -134,12 +137,13 @@ const WeeklySchedule = () => {
       const endDate = new Date(schedule.endDate);
       endDate.setHours(0, 0, 0, 0);
 
-      const isInRange = endDate >= today && endDate <= sevenDaysLater;
+      // 지난 일정은 제외, 금요일까지만 표시
+      const isInRange = endDate >= today && endDate <= fridayDate;
       console.log('날짜 범위 체크:', {
         title: schedule.title,
         endDate: endDate.toISOString().split('T')[0],
         today: today.toISOString().split('T')[0],
-        sevenDaysLater: sevenDaysLater.toISOString().split('T')[0],
+        fridayDate: fridayDate.toISOString().split('T')[0],
         isInRange
       });
 

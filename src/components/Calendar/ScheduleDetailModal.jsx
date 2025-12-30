@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { useAppContext } from '../../App';
 import AddEventModal from './AddEventModal';
 import './ScheduleDetailModal.css';
 
@@ -11,6 +12,7 @@ const ScheduleDetailModal = ({
   onDeleteEvent,
   onEditEvent 
 }) => {
+  const { userRole } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date(selectedDate));
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
 
@@ -84,12 +86,15 @@ const ScheduleDetailModal = ({
                     {event.startDate} ~ {event.endDate}
                   </p>
                 </div>
-                <button 
-                  className="delete-event-btn"
-                  onClick={() => onDeleteEvent(event.id)}
-                >
-                  ×
-                </button>
+                {/* 학생은 학사일정을 삭제할 수 없음 (카테고리: 학교, 학사, 학과) */}
+                {(userRole !== 'student' || (event.category !== '학교' && event.category !== '학사' && event.category !== '학과')) && (
+                  <button 
+                    className="delete-event-btn"
+                    onClick={() => onDeleteEvent(event.id)}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))
           ) : (

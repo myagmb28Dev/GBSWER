@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, UserX, UserCheck } from 'lucide-react';
+import { UserX, UserCheck } from 'lucide-react';
 import axios from 'axios';
 import './AdminParticipantsModal.css';
 
@@ -58,9 +58,6 @@ const AdminParticipantsModal = ({ isOpen, onClose, className, classId, participa
       <div className="admin-participants-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">{className} - 참가자 관리</h2>
-          <button className="close-button" onClick={onClose}>
-            <X size={24} />
-          </button>
         </div>
 
         <div className="modal-content">

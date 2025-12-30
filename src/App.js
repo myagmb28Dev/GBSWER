@@ -209,6 +209,7 @@ function App() {
     setShowProfileModal,
     profile,
     setProfile,
+    fetchProfile,
     handleLogout,
     globalEvents,
     setGlobalEvents,

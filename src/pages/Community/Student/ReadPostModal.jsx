@@ -2,10 +2,58 @@ import { useEffect, useState } from 'react';
 import { X, File, Edit, Trash } from 'lucide-react';
 import axios from 'axios';
 import CommunityWriteModal from '../../../components/CommunityWriteModal/CommunityWriteModal';
+import { useAppContext } from '../../../App';
 
 const ReadPostModal = ({ isOpen, onClose, post }) => {
+    const { profile, fetchProfile } = useAppContext();
     const [postData, setPostData] = useState(post);
     const [showEditModal, setShowEditModal] = useState(false);
+
+    // 프로필이 없으면 자동으로 로드
+    useEffect(() => {
+        if (!profile && isOpen) {
+            console.log('🔄 프로필이 없어서 자동으로 로드합니다...');
+            fetchProfile();
+        }
+    }, [profile, isOpen, fetchProfile]);
+
+    // 학생 유저의 학과 정보 추출 (프로필 모달의 major 필드 사용)
+    const getUserMajor = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                console.warn('⚠️ 토큰이 없습니다.');
+                return 'ALL';
+            }
+
+            // 항상 API에서 최신 프로필 데이터 가져오기
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const res = await axios.get('/api/user/profile', config);
+            const profileData = res.data.data;
+            
+            console.log('🔍 프로필 원본 데이터:', profileData);
+            
+            // 다양한 필드명에서 학과 정보 추출
+            const major = profileData.major || profileData.department || profileData.majorName || profileData.dept || profileData.majorTitle || '';
+            const trimmedMajor = major ? String(major).trim() : '';
+            
+            console.log('🔍 추출된 학과 (trim 전):', major);
+            console.log('🔍 추출된 학과 (trim 후):', trimmedMajor);
+            
+            if (trimmedMajor && trimmedMajor !== '' && trimmedMajor !== 'ALL' && trimmedMajor !== 'null' && trimmedMajor !== 'undefined') {
+                console.log('✅ 최종 학과:', trimmedMajor);
+                return trimmedMajor;
+            } else {
+                console.warn('⚠️ 학과 정보를 찾을 수 없습니다.');
+                console.warn('⚠️ 프로필 전체 데이터:', JSON.stringify(profileData, null, 2));
+                return 'ALL';
+            }
+        } catch (err) {
+            console.error('❌ 프로필 조회 실패:', err);
+            console.error('❌ 에러 상세:', err.response?.data || err.message);
+            return 'ALL';
+        }
+    };
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -24,13 +72,56 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         fetchPost();
     }, [isOpen, post]);
 
-    const handleDownload = (file) => {
-        const link = document.createElement('a');
-        link.href = file.url;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async (file) => {
+        try {
+            const fileName = file.name || '파일';
+            let fileUrl = file.url || file.fileUrl || file.downloadUrl;
+            
+            if (!fileUrl) {
+                alert('다운로드할 수 있는 파일 URL이 없습니다.');
+                return;
+            }
+
+            // URL 정규화 (상대 경로를 절대 경로로 변환)
+            if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+                fileUrl = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+                fileUrl = `${window.location.origin}${fileUrl}`;
+            }
+
+            // 토큰이 필요한 경우를 대비해 axios로 다운로드
+            const token = localStorage.getItem('accessToken');
+            const config = token ? { 
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            } : { responseType: 'blob' };
+
+            try {
+                console.log('📥 다운로드 시도:', fileUrl);
+                const response = await axios.get(fileUrl, config);
+                const blob = new Blob([response.data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (axiosError) {
+                console.error('Axios 다운로드 실패:', axiosError);
+                // axios로 다운로드 실패 시 직접 링크로 시도
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('파일 다운로드 실패:', error);
+            alert('파일 다운로드에 실패했습니다.');
+        }
     };
 
     const handleDelete = async () => {
@@ -54,15 +145,27 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     const handleEditSubmit = async (updatedPost) => {
         try {
             const token = localStorage.getItem('accessToken');
+            
+            // 학생은 자신의 학과 정보를 추출 (프로필 모달의 major 필드에서)
+            const userMajor = await getUserMajor();
+            
+            if (!userMajor || userMajor === 'ALL') {
+                alert('학과 정보를 찾을 수 없습니다. 프로필을 확인해주세요.');
+                return;
+            }
+            
+            
             const form = new FormData();
             
             // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
             const dto = {
                 title: updatedPost.title || '',
                 content: updatedPost.content || '',
-                major: postData.major || 'ALL',
-                anonymous: updatedPost.anonymous || false
+                major: userMajor,
+                anonymous: Boolean(updatedPost.anonymous ?? false)
             };
+            console.log('📤 Community Edit DTO:', dto);
+            console.log('📤 전송되는 학과:', userMajor);
             const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
             form.append('dto', dtoBlob);
             
@@ -79,6 +182,15 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                     // Content-Type은 axios가 자동으로 설정 (boundary 포함)
                 }
             });
+
+            // localStorage에 저장 (새로고침 후에도 확인 가능)
+            localStorage.setItem('lastCommunityMajor', userMajor);
+            localStorage.setItem('lastCommunitySubmitTime', new Date().toISOString());
+            localStorage.setItem('lastCommunityDTO', JSON.stringify(dto));
+
+            // 제출 성공 후 학과 정보 표시 (새로고침 전에 확인 가능)
+            alert(`✅ 게시글이 수정되었습니다!\n\n전송된 학과: ${userMajor}\n\n확인 후 페이지가 새로고침됩니다.`);
+
             setShowEditModal(false);
             onClose();
             window.location.reload();

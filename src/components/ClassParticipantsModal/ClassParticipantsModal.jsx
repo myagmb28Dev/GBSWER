@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import './ClassParticipantsModal.css';
 
 const ClassParticipantsModal = ({ 
@@ -27,9 +27,6 @@ const ClassParticipantsModal = ({
               <p className="participant-count">참가자 {participants.length}명</p>
             </div>
           </div>
-          <button className="close-button" onClick={onClose}>
-            <X size={24} />
-          </button>
         </div>
 
         <div className="participants-content">

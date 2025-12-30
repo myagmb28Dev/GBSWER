@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, RefreshCw } from 'lucide-react';
+import { Copy, RefreshCw } from 'lucide-react';
 import './AdminClassModal.css';
 
 const AdminClassModal = ({ isOpen, onClose, onCreateClass }) => {
@@ -48,11 +48,9 @@ const AdminClassModal = ({ isOpen, onClose, onCreateClass }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="admin-class-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={handleClose}>
-          <X size={24} />
-        </button>
-
+        <div className="modal-header">
         <h2 className="modal-title">클래스 생성하기</h2>
+        </div>
 
         <form onSubmit={handleSubmit} className="modal-content">
           <div className="form-group">

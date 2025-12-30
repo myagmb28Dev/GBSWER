@@ -84,8 +84,17 @@ const AssignmentStatusModal = ({ isOpen, onClose, assignmentTitle, participants 
                     <div className="participant-id">{participant.studentId}</div>
                   </div>
                 </div>
-                <div className={`status-badge ${participant.submitted ? 'submitted' : 'pending'}`}>
-                  {participant.submitted ? (
+                <div className={`status-badge ${
+                  participant.reviewed ? 'reviewed' : 
+                  participant.submitted ? 'submitted' : 
+                  'pending'
+                }`}>
+                  {participant.reviewed ? (
+                    <>
+                      <Check size={16} />
+                      <span>평가 완료</span>
+                    </>
+                  ) : participant.submitted ? (
                     <>
                       <Check size={16} />
                       <span>제출 완료</span>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Upload, File, Image } from 'lucide-react';
 import { useAppContext } from '../../App';
 import './PostWriteModal.css';
@@ -80,7 +81,7 @@ const PostWriteModal = ({ isOpen, onClose, onSubmit, classId, initialType = '공
 
       try {
         await onSubmit(formData);
-        handleReset();
+      handleReset();
       } catch (error) {
         console.error('게시물 생성 실패:', error);
         // 에러는 상위에서 처리되므로 여기서는 로그만 남김
@@ -144,11 +145,11 @@ const PostWriteModal = ({ isOpen, onClose, onSubmit, classId, initialType = '공
         content: processedContent,
         type: processedType
       };
-      
+
       if (postType === '과제' && deadline) {
         dto.dueDate = deadline;
       }
-      
+
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       formData.append('dto', dtoBlob);
 
@@ -165,7 +166,7 @@ const PostWriteModal = ({ isOpen, onClose, onSubmit, classId, initialType = '공
 
       try {
         await onSubmit(formData);
-        handleReset();
+      handleReset();
       } catch (error) {
         console.error('게시물 생성 실패:', error);
         // 에러는 상위에서 처리되므로 여기서는 로그만 남김
@@ -196,15 +197,17 @@ const PostWriteModal = ({ isOpen, onClose, onSubmit, classId, initialType = '공
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="post-write-overlay" onClick={handleClose}>
       <div className="post-write-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">글 작성</h2>
         <button className="close-btn" onClick={handleClose}>
-          <X size={24} />
+            <X size={14} />
         </button>
+        </div>
 
-        <h2 className="modal-title">글 작성</h2>
-
+        <div className="modal-content">
         <form onSubmit={handleSubmit} className="write-form">
           {/* 타입 스위치 */}
           <div className="type-switch">
@@ -356,9 +359,12 @@ const PostWriteModal = ({ isOpen, onClose, onSubmit, classId, initialType = '공
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default PostWriteModal;

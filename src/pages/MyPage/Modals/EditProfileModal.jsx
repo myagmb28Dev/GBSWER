@@ -46,24 +46,16 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // 변경사항이 없는 경우
+    // 변경사항이 없는 경우 (이메일만 수정 가능)
     if (formData.profileImage === profile.profileImage &&
-        formData.name === profile.name &&
-        formData.email === profile.email &&
-        formData.major === profile.major &&
-        formData.grade === profile.grade &&
-        formData.classNumber === profile.classNumber) {
+        formData.email === profile.email) {
       alert('변경된 내용이 없습니다.');
       return;
     }
     
     // 프로필 사진만 변경된 경우
     if (formData.profileImage !== profile.profileImage &&
-        formData.name === profile.name &&
-        formData.email === profile.email &&
-        formData.major === profile.major &&
-        formData.grade === profile.grade &&
-        formData.classNumber === profile.classNumber) {
+        formData.email === profile.email) {
       onSave(formData);
       onClose();
       return;
@@ -90,20 +82,16 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
           });
         }
 
-        // Prepare JSON payload without file and map classNumber -> class
+        // 이메일만 서버로 전송 (학적 정보는 제외)
         const payload = {
-          name: pendingData.name,
-          email: pendingData.email,
-          major: pendingData.major,
-          grade: pendingData.grade,
-          class: pendingData.classNumber
+          email: pendingData.email
         };
 
         await axios.put('/api/user/profile', payload, {
           headers: { Authorization: token ? `Bearer ${token}` : '' }
         });
 
-        onSave({ ...profile, ...payload, profileImage: previewImage });
+        onSave({ ...profile, email: pendingData.email, profileImage: previewImage });
         onClose();
       } catch (err) {
         alert('프로필 정보 수정 실패');
@@ -168,8 +156,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder="이름을 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -190,8 +178,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="major"
                 value={formData.major}
-                onChange={handleChange}
-                placeholder="학과를 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -202,7 +190,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="grade"
                   value={formData.grade}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="3"
                 />
@@ -214,7 +203,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="classNumber"
                   value={formData.classNumber}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="4"
                 />

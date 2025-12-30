@@ -298,6 +298,14 @@ const ClassroomBoard = ({ userRole }) => {
               : cls
           )
         );
+
+        // 선택된 게시물도 업데이트
+        if (selectedPost && selectedPost.id === postId) {
+          const updatedPost = updatedPosts.find(p => p.id === postId);
+          if (updatedPost) {
+            setSelectedPost(updatedPost);
+          }
+        }
       }
 
       alert('게시물이 수정되었습니다.');
@@ -339,10 +347,19 @@ const ClassroomBoard = ({ userRole }) => {
         );
       }
 
+      // 선택된 게시물이 삭제된 경우 사이드바 닫기
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost(null);
+      }
+
       alert('게시물이 삭제되었습니다.');
     } catch (error) {
       console.error('게시물 삭제 실패:', error);
-      alert('게시물 삭제에 실패했습니다.');
+      console.error('에러 상태:', error.response?.status);
+      console.error('에러 메시지:', error.response?.data);
+      const errorMessage = error.response?.data?.message || '게시물 삭제에 실패했습니다.';
+      alert(errorMessage);
+      throw error; // 상위 컴포넌트에서 처리할 수 있도록 에러 전달
     }
   };
 

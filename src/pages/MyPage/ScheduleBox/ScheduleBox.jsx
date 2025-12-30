@@ -235,7 +235,7 @@ const ScheduleBox = () => {
 
       // 페이지 새로고침 (메인페이지와 동일하게 즉시 실행)
       console.log('🔄 마이페이지 수정 완료, 새로고침 실행');
-      window.location.reload();
+        window.location.reload();
     } catch (error) {
       console.error('❌ 마이페이지 일정 수정 실패:', error);
       alert('일정 수정에 실패했습니다. 다시 시도해주세요.');

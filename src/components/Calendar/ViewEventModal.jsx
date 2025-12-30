@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useAppContext } from '../../App';
 import './ViewEventModal.css';
 
 const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
+  const { userRole } = useAppContext();
   // React Hooks는 조건부 호출 불가 - 최상위에서 호출해야 함
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -105,6 +107,8 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
             <h2 className="event-title-large">{event.title}</h2>
             <div className="modal-header-actions">
               <div className="category-button">{event.category || '개인'}</div>
+              {/* 학생은 학사일정을 수정/삭제할 수 없음 (카테고리: 학교, 학사, 학과) */}
+              {(userRole !== 'student' || (event.category !== '학교' && event.category !== '학사' && event.category !== '학과')) && (
               <div className="action-buttons">
                 <button onClick={handleEdit} className="btn-edit">
                   수정
@@ -113,6 +117,7 @@ const ViewEventModal = ({ event, onClose, onDelete, onEdit }) => {
                   삭제
                 </button>
               </div>
+              )}
             </div>
             <div className="event-detail">
               <div className="detail-section">
