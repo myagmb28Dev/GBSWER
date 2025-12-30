@@ -49,6 +49,10 @@ public class Community {
     @Column(nullable = false)
     private String major = "ALL";
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean anonymous = false;
+
     @Column(name = "file_names", columnDefinition = "TEXT")
     private String fileNames;
 

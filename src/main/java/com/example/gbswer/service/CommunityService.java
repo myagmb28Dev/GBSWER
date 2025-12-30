@@ -68,9 +68,10 @@ public class CommunityService {
             Community community = Community.builder()
                     .title(request.getTitle())
                     .content(request.getContent())
-                    .writer(author.getName())
+                    .writer(request.getAnonymous() != null && request.getAnonymous() ? "익명" : author.getName())
                     .author(author)
                     .major(request.getMajor() != null ? request.getMajor() : "ALL")
+                    .anonymous(request.getAnonymous() != null ? request.getAnonymous() : false)
                     .build();
 
             if (images != null && !images.isEmpty()) {
@@ -202,6 +203,7 @@ public class CommunityService {
                 .viewCount(community.getViewCount())
                 .major(community.getMajor())
                 .files(files)
+                .anonymous(community.getAnonymous())
                 .build();
     }
 

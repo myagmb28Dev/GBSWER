@@ -21,4 +21,5 @@ public class CommunityDto {
     private Long viewCount;
     private String major;
     private List<FileInfoDto> files;
+    private Boolean anonymous;
 }
