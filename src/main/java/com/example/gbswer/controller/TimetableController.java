@@ -19,6 +19,7 @@ public class TimetableController {
     private final TimetableService timetableService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'TEACHER')")
     public ResponseEntity<?> getFromDb(
             @RequestParam String date,
             @RequestParam(required = false) String major,
@@ -46,13 +47,21 @@ public class TimetableController {
     }
 
     @PostMapping("/refresh-week")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'TEACHER')")
     public ResponseEntity<?> refreshWeek(
             @RequestParam String date,
-            @RequestParam String major,
-            @RequestParam String grade,
-            @RequestParam(name = "class") String classNm) {
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) String grade,
+            @RequestParam(name = "class", required = false) String classNm,
+            @AuthenticationPrincipal UserDto userDto) {
         try {
+            // 선생님인 경우 자신의 grade와 classNumber 사용
+            if (userDto != null && "TEACHER".equalsIgnoreCase(userDto.getRole())) {
+                if (grade == null && userDto.getGrade() != null) grade = userDto.getGrade().toString();
+                if (classNm == null && userDto.getClassNumber() != null) classNm = userDto.getClassNumber().toString();
+                if (major == null) major = userDto.getMajor();
+            }
+
             if (date == null || date.isEmpty() || major == null || major.isEmpty() || grade == null || grade.isEmpty() || classNm == null || classNm.isEmpty()) {
                 return ResponseEntity.badRequest().body(ApiResponseDto.error("required parameter missing: date/major/grade/class"));
             }

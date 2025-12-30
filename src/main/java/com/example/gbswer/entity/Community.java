@@ -55,9 +55,6 @@ public class Community {
     @Column(name = "file_urls", columnDefinition = "TEXT")
     private String fileUrls;
 
-    @Column(nullable = false)
-    private boolean anonymous;
-
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();

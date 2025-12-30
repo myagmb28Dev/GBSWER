@@ -6,21 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaskDto {
-    private Long id;
+public class TaskCreateDto {
     private String title;
     private String content;
-    private String teacherName;
-    private LocalDate dueDate;
     private String type;
+    private LocalDate dueDate;
     private Long classId;
-    private List<FileInfoDto> files;
-    private LocalDateTime createdAt;
 }

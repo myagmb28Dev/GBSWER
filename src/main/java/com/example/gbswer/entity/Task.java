@@ -52,9 +52,6 @@ public class Task {
     @Column(name = "file_urls", columnDefinition = "TEXT")
     private String fileUrls;
 
-    @Column(name = "anonymous", nullable = false)
-    private boolean anonymous;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private User teacher;

@@ -1,5 +1,6 @@
 package com.example.gbswer.service;
 
+import com.example.gbswer.dto.CommunityCreateDto;
 import com.example.gbswer.dto.CommunityDto;
 import com.example.gbswer.dto.FileInfoDto;
 import com.example.gbswer.entity.Community;
@@ -59,18 +60,17 @@ public class CommunityService {
     }
 
     @Transactional
-    public CommunityDto createPost(Long authorId, String title, String content, String major, List<MultipartFile> images, boolean anonymous) {
+    public CommunityDto createPost(Long authorId, CommunityCreateDto request, List<MultipartFile> images) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
         List<String> uploadedUrls = new ArrayList<>();
         try {
             Community community = Community.builder()
-                    .title(title)
-                    .content(content)
-                    .writer(anonymous ? "익명" : author.getName())
+                    .title(request.getTitle())
+                    .content(request.getContent())
+                    .writer(author.getName())
                     .author(author)
-                    .major(major != null ? major : "ALL")
-                    .anonymous(anonymous)
+                    .major(request.getMajor() != null ? request.getMajor() : "ALL")
                     .build();
 
             if (images != null && !images.isEmpty()) {
@@ -110,8 +110,7 @@ public class CommunityService {
     }
 
     @Transactional
-    public CommunityDto updatePost(Long postId, Long authorId, String title, String content,
-                                    String major, List<MultipartFile> files, boolean anonymous) {
+    public CommunityDto updatePost(Long postId, Long authorId, CommunityCreateDto request, List<MultipartFile> files) {
         Community community = findCommunityById(postId);
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
@@ -154,15 +153,14 @@ public class CommunityService {
             community.setFileUrls(null);
         }
 
-        community.setTitle(title);
-        community.setContent(content);
-        community.setAnonymous(anonymous);  // 익명 설정 추가
-        if (major != null) {
+        community.setTitle(request.getTitle());
+        community.setContent(request.getContent());
+        if (request.getMajor() != null) {
             if (author.getRole() == User.Role.TEACHER) {
-                community.setMajor(normalizeMajor(major));
+                community.setMajor(normalizeMajor(request.getMajor()));
             } else {
                 // 학생이면 major 변경 시도 자체를 금지
-                if (!normalizeMajor(major).equalsIgnoreCase(normalizeMajor(community.getMajor()))) {
+                if (!normalizeMajor(request.getMajor()).equalsIgnoreCase(normalizeMajor(community.getMajor()))) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "학생은 게시글의 major를 변경할 수 없습니다.");
                 }
             }
@@ -204,7 +202,6 @@ public class CommunityService {
                 .viewCount(community.getViewCount())
                 .major(community.getMajor())
                 .files(files)
-                .anonymous(community.isAnonymous())
                 .build();
     }
 

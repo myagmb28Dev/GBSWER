@@ -28,7 +28,7 @@ public class ClassController {
     public ResponseEntity<?> createClass(@AuthenticationPrincipal UserDto userDto,
                                          @RequestBody ClassCreateDto request) {
         try {
-            ClassDto result = classService.createClass(userDto.getId(), request);
+            ClassDto result = classService.createClass(userDto, request);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -44,7 +44,7 @@ public class ClassController {
     public ResponseEntity<?> joinClass(@AuthenticationPrincipal UserDto userDto,
                                        @RequestBody ClassJoinDto request) {
         try {
-            ClassJoinDto result = classService.joinClass(userDto.getId(), request);
+            ClassJoinDto result = classService.joinClass(userDto, request);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -59,7 +59,7 @@ public class ClassController {
     @PreAuthorize("hasAnyRole('TEACHER','ADMIN')")
     public ResponseEntity<?> getClassesForTeacher(@AuthenticationPrincipal UserDto userDto) {
         try {
-            List<ClassDto> result = classService.getClassesForTeacher(userDto.getId());
+            List<ClassDto> result = classService.getClassesForTeacher(userDto);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -85,9 +85,9 @@ public class ClassController {
         try {
             List<ClassDto> result;
             if ("TEACHER".equalsIgnoreCase(userDto.getRole())) {
-                result = classService.getClassesForTeacher(userDto.getId());
+                result = classService.getClassesForTeacher(userDto);
             } else {
-                result = classService.getClassesForStudent(userDto.getId());
+                result = classService.getClassesForStudent(userDto);
             }
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
@@ -101,7 +101,7 @@ public class ClassController {
     public ResponseEntity<?> getClassById(@PathVariable Long classId,
                                           @AuthenticationPrincipal UserDto userDto) {
         try {
-            ClassDto result = classService.getClassById(classId, userDto.getId());
+            ClassDto result = classService.getClassById(classId, userDto);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -117,7 +117,7 @@ public class ClassController {
     public ResponseEntity<?> deleteClass(@PathVariable Long classId,
                                          @AuthenticationPrincipal UserDto userDto) {
         try {
-            classService.deleteClass(classId, userDto.getId());
+            classService.deleteClass(classId, userDto);
             return ResponseEntity.ok(ApiResponseDto.success(null));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -133,7 +133,7 @@ public class ClassController {
     public ResponseEntity<?> getParticipants(@PathVariable Long classId,
                                              @AuthenticationPrincipal UserDto userDto) {
         try {
-            List<ClassParticipantDto> result = classService.getParticipants(classId, userDto.getId());
+            List<ClassParticipantDto> result = classService.getParticipants(classId, userDto);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -150,7 +150,7 @@ public class ClassController {
                                                @PathVariable Long studentId,
                                                @AuthenticationPrincipal UserDto userDto) {
         try {
-            classService.removeParticipant(classId, studentId, userDto.getId());
+            classService.removeParticipant(classId, studentId, userDto);
             return ResponseEntity.ok(ApiResponseDto.success(null));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -185,18 +185,17 @@ public class ClassController {
         }
     }
 
-    @PostMapping(path = "/{classId}/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/{classId}/posts", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAnyRole('TEACHER','ADMIN')")
     public ResponseEntity<?> createPost(@PathVariable Long classId,
                                         @AuthenticationPrincipal UserDto userDto,
-                                        @RequestParam String title,
-                                        @RequestParam String content,
-                                        @RequestParam String type,
-                                        @RequestParam(required = false) String dueDate,
-                                        @RequestParam(defaultValue = "false") boolean anonymous,
-                                        @RequestParam(required = false) List<MultipartFile> file) {
+                                        @RequestPart("dto") TaskCreateDto dto,
+                                        @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content is required");
+        }
         try {
-            TaskDto result = taskService.createTask(userDto.getId(), title, content, type, classId, dueDate != null ? java.time.LocalDate.parse(dueDate) : null, anonymous, file);
+            TaskDto result = taskService.createTask(userDto.getId(), dto.getTitle(), dto.getContent(), dto.getType(), classId, dto.getDueDate(), files);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -208,12 +207,12 @@ public class ClassController {
     }
 
     // 과제 제출 관련 API
-    @PostMapping("/{classId}/posts/{postId}/submit")
+    @PostMapping(path = "/{classId}/posts/{postId}/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> submitAssignment(@PathVariable Long classId,
                                               @PathVariable Long postId,
                                               @AuthenticationPrincipal UserDto userDto,
-                                              @RequestParam(required = false) List<MultipartFile> files) {
+                                              @RequestPart(required = false) List<MultipartFile> files) {
         try {
             SubmissionDto result = taskService.submitTask(postId, userDto.getId(), files);
             return ResponseEntity.ok(ApiResponseDto.success(result));
@@ -226,12 +225,12 @@ public class ClassController {
         }
     }
 
-    @PutMapping("/{classId}/posts/{postId}/submit")
+    @PutMapping(path = "/{classId}/posts/{postId}/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> updateSubmission(@PathVariable Long classId,
                                               @PathVariable Long postId,
                                               @AuthenticationPrincipal UserDto userDto,
-                                              @RequestParam(required = false) List<MultipartFile> files) {
+                                              @RequestPart(required = false) List<MultipartFile> files) {
         try {
             SubmissionDto result = taskService.submitTask(postId, userDto.getId(), files);
             return ResponseEntity.ok(ApiResponseDto.success(result));
@@ -267,7 +266,7 @@ public class ClassController {
                                               @AuthenticationPrincipal UserDto userDto,
                                               @RequestBody SubmissionReviewDto request) {
         try {
-            SubmissionDto result = taskService.reviewSubmission(submissionId, request.getFeedback(), request.getStatus());
+            SubmissionDto result = taskService.reviewSubmission(submissionId, request.getFeedback(), com.example.gbswer.entity.Submission.SubmissionStatus.valueOf(request.getStatus()));
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())
@@ -296,19 +295,15 @@ public class ClassController {
         }
     }
 
-    @PutMapping(path = "/{classId}/posts/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{classId}/posts/{postId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAnyRole('TEACHER','ADMIN')")
     public ResponseEntity<?> updatePost(@PathVariable Long classId,
                                         @PathVariable Long postId,
                                         @AuthenticationPrincipal UserDto userDto,
-                                        @RequestParam String title,
-                                        @RequestParam String content,
-                                        @RequestParam String type,
-                                        @RequestParam(required = false) String dueDate,
-                                        @RequestParam(defaultValue = "false") boolean anonymous,
-                                        @RequestParam(required = false) List<MultipartFile> file) {
+                                        @RequestPart("dto") TaskCreateDto dto,
+                                        @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         try {
-            TaskDto result = taskService.updateTask(postId, userDto.getId(), title, content, type, classId, dueDate != null ? java.time.LocalDate.parse(dueDate) : null, anonymous, file);
+            TaskDto result = taskService.updateTask(postId, userDto.getId(), dto.getTitle(), dto.getContent(), dto.getType(), classId, dto.getDueDate(), files);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode())

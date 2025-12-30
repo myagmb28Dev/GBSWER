@@ -1,6 +1,7 @@
 package com.example.gbswer.controller;
 
 import com.example.gbswer.dto.ApiResponseDto;
+import com.example.gbswer.dto.CommunityCreateDto;
 import com.example.gbswer.dto.UserDto;
 import com.example.gbswer.service.CommunityService;
 import lombok.RequiredArgsConstructor;
@@ -59,26 +60,28 @@ public class CommunityController {
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
-    @PostMapping(path = "/write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/write", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal UserDto userDto,
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam(defaultValue = "ALL") String major,
-            @RequestParam(required = false) List<MultipartFile> files,
-            @RequestParam(defaultValue = "false") boolean anonymous) {
+            @RequestPart("dto") CommunityCreateDto dto,
+            @RequestPart(required = false) List<MultipartFile> files) {
         Long authorId = (userDto != null) ? userDto.getId() : null;
         try {
             int fileCount = (files == null) ? 0 : files.size();
 
-            String finalMajor = major;
+            String finalMajor = dto.getMajor() != null ? dto.getMajor() : "ALL";
             // 학생은 자신의 major로만 게시 가능 (요청값 무시)
             if (userDto.getRole() != null && userDto.getRole().equalsIgnoreCase("STUDENT")) {
                 finalMajor = userDto.getMajor();
             }
+            dto.setMajor(finalMajor);
 
-            var result = communityService.createPost(authorId, title, content, finalMajor, files, anonymous);
+            if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content is required");
+            }
+
+            var result = communityService.createPost(authorId, dto, files);
 
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (Exception e) {
@@ -87,23 +90,26 @@ public class CommunityController {
         }
     }
 
-    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> updatePost(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDto userDto,
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam(required = false) String major,
-            @RequestParam(required = false) List<MultipartFile> files,
-            @RequestParam(defaultValue = "false") boolean anonymous) {
+            @RequestPart("dto") CommunityCreateDto dto,
+            @RequestPart(required = false) List<MultipartFile> files) {
         try {
-            String finalMajor = major;
+            String finalMajor = dto.getMajor();
             // 학생은 자신의 major로만 변경 가능(요청값 무시)
             if (userDto.getRole() != null && userDto.getRole().equalsIgnoreCase("STUDENT")) {
                 finalMajor = userDto.getMajor();
             }
-            var result = communityService.updatePost(id, userDto.getId(), title, content, finalMajor, files, anonymous);
+            dto.setMajor(finalMajor);
+
+            if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content is required");
+            }
+
+            var result = communityService.updatePost(id, userDto.getId(), dto, files);
             return ResponseEntity.ok(ApiResponseDto.success(result));
         } catch (ResponseStatusException rse) {
             return ResponseEntity.status(rse.getStatusCode()).body(ApiResponseDto.error(rse.getReason()));

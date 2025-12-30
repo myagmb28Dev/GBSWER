@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
 @RestController
 @RequestMapping("/api/schedule")
 @RequiredArgsConstructor
@@ -24,10 +26,8 @@ public class ScheduleController {
             @RequestParam Integer year,
             @RequestParam Integer month) {
         var result = calendarService.getMonthly(userDto.getId(), year, month);
-        if (result == null || result.isEmpty()) {
-            return ResponseEntity.status(404).body(ApiResponseDto.error("DB에 일정 데이터가 없습니다."));
-        }
-        return ResponseEntity.ok(ApiResponseDto.success(result));
+        // 빈 결과도 정상적인 응답으로 처리 (해당 월에 일정이 없을 수 있음)
+        return ResponseEntity.ok(ApiResponseDto.success(result != null ? result : Collections.emptyList()));
     }
 
     @GetMapping("/today")
@@ -67,7 +67,7 @@ public class ScheduleController {
 
 
     @PostMapping("/refresh-month")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
     public ResponseEntity<?> refreshMonth(@RequestParam int year, @RequestParam int month) {
         var result = calendarService.refreshMonth(year, month);
         return ResponseEntity.ok(ApiResponseDto.success(result));

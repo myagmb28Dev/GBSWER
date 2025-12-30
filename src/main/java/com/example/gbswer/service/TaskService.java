@@ -44,7 +44,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto createTask(Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, boolean anonymous, List<MultipartFile> files) {
+    public TaskDto createTask(Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, List<MultipartFile> files) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
@@ -69,7 +69,6 @@ public class TaskService {
                 .teacherName(teacher.getName())
                 .fileNames(convertListToJson(fileNames))
                 .fileUrls(convertListToJson(fileUrls))
-                .anonymous(anonymous)
                 .build();
 
         taskRepository.save(task);
@@ -77,7 +76,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long taskId, Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, boolean anonymous, List<MultipartFile> files) {
+    public TaskDto updateTask(Long taskId, Long teacherId, String title, String content, String type, Long classId, LocalDate dueDate, List<MultipartFile> files) {
         Task task = findTaskById(taskId);
 
         if (!task.getTeacher().getId().equals(teacherId)) {
@@ -107,7 +106,6 @@ public class TaskService {
         task.setContent(content);
         task.setDueDate(dueDate);
         task.setType(type);
-        task.setAnonymous(anonymous);
         taskRepository.save(task);
         return convertToDto(task);
     }
@@ -245,7 +243,6 @@ public class TaskService {
                 .type(task.getType())
                 .classId(task.getClassEntity() != null ? task.getClassEntity().getId() : null)
                 .files(files)
-                .anonymous(task.isAnonymous())
                 .createdAt(task.getCreatedAt())
                 .build();
     }

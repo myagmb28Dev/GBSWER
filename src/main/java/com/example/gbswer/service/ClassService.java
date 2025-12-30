@@ -28,11 +28,11 @@ public class ClassService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ClassDto createClass(Long teacherId, ClassCreateDto request) {
-        User teacher = userRepository.findById(teacherId)
+    public ClassDto createClass(UserDto teacher, ClassCreateDto request) {
+        User teacherEntity = userRepository.findById(teacher.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
-        if (teacher.getRole() != User.Role.TEACHER) {
+        if (teacherEntity.getRole() != User.Role.TEACHER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "only teachers can create classes");
         }
 
@@ -43,7 +43,7 @@ public class ClassService {
         Class classEntity = Class.builder()
                 .className(request.getClassName())
                 .classCode(request.getClassCode())
-                .teacher(teacher)
+                .teacher(teacherEntity)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -52,20 +52,20 @@ public class ClassService {
     }
 
     @Transactional
-    public ClassJoinDto joinClass(Long studentId, ClassJoinDto request) {
-        User student = userRepository.findById(studentId)
+    public ClassJoinDto joinClass(UserDto student, ClassJoinDto request) {
+        User studentEntity = userRepository.findById(student.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
 
         Class classEntity = classRepository.findByClassCode(request.getClassCode())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
-        if (classParticipantRepository.existsByClassEntityAndStudent(classEntity, student)) {
+        if (classParticipantRepository.existsByClassEntityAndStudent(classEntity, studentEntity)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "already joined this class");
         }
 
         ClassParticipant participant = ClassParticipant.builder()
                 .classEntity(classEntity)
-                .student(student)
+                .student(studentEntity)
                 .joinedAt(LocalDateTime.now())
                 .build();
 
@@ -76,12 +76,12 @@ public class ClassService {
                 .build();
     }
 
-    public List<ClassDto> getClassesForTeacher(Long teacherId) {
-        User teacher = userRepository.findById(teacherId)
+    public List<ClassDto> getClassesForTeacher(UserDto teacher) {
+        User teacherEntity = userRepository.findById(teacher.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
         List<Class> classes = classRepository.findAll().stream()
-                .filter(c -> c.getTeacher().getId().equals(teacherId))
+                .filter(c -> c.getTeacher().getId().equals(teacher.getId()))
                 .collect(Collectors.toList());
 
         return classes.stream()
@@ -89,26 +89,26 @@ public class ClassService {
                 .collect(Collectors.toList());
     }
 
-    public List<ClassDto> getClassesForStudent(Long studentId) {
-        User student = userRepository.findById(studentId)
+    public List<ClassDto> getClassesForStudent(UserDto student) {
+        User studentEntity = userRepository.findById(student.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
 
-        List<ClassParticipant> participants = classParticipantRepository.findByStudent(student);
+        List<ClassParticipant> participants = classParticipantRepository.findByStudent(studentEntity);
         return participants.stream()
                 .map(p -> convertToDtoWithDetails(p.getClassEntity()))
                 .collect(Collectors.toList());
     }
 
-    public ClassDto getClassById(Long classId, Long userId) {
+    public ClassDto getClassById(Long classId, UserDto user) {
         Class classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
         // 권한 체크: 선생님이거나 참가자여야 함
-        User user = userRepository.findById(userId)
+        User userEntity = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
-        boolean isTeacher = classEntity.getTeacher().getId().equals(userId);
-        boolean isParticipant = classParticipantRepository.existsByClassEntityAndStudent(classEntity, user);
+        boolean isTeacher = classEntity.getTeacher().getId().equals(user.getId());
+        boolean isParticipant = classParticipantRepository.existsByClassEntityAndStudent(classEntity, userEntity);
 
         if (!isTeacher && !isParticipant) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
@@ -118,11 +118,11 @@ public class ClassService {
     }
 
     @Transactional
-    public void deleteClass(Long classId, Long teacherId) {
+    public void deleteClass(Long classId, UserDto teacher) {
         Class classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
-        if (!classEntity.getTeacher().getId().equals(teacherId)) {
+        if (!classEntity.getTeacher().getId().equals(teacher.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
@@ -138,11 +138,11 @@ public class ClassService {
         classRepository.delete(classEntity);
     }
 
-    public List<ClassParticipantDto> getParticipants(Long classId, Long userId) {
+    public List<ClassParticipantDto> getParticipants(Long classId, UserDto user) {
         Class classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
-        if (!classEntity.getTeacher().getId().equals(userId)) {
+        if (!classEntity.getTeacher().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
@@ -153,11 +153,11 @@ public class ClassService {
     }
 
     @Transactional
-    public void removeParticipant(Long classId, Long studentId, Long teacherId) {
+    public void removeParticipant(Long classId, Long studentId, UserDto teacher) {
         Class classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
-        if (!classEntity.getTeacher().getId().equals(teacherId)) {
+        if (!classEntity.getTeacher().getId().equals(teacher.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
