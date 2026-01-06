@@ -129,4 +129,4 @@ spring:
 
 file:
   upload-dir: uploads
-  type: s3
+  type: ec2_dir
