@@ -47,10 +47,8 @@ public class MealService {
 
     @Transactional
     public Map<String, DayMealsDto> refreshMonthlyMeals(int year, int month) {
-        // NEIS에서 받아와 저장
         fetchAndSaveMealsFromNeis(year, month);
 
-        // 저장 후 재조회하여 반환
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
         List<Meal> meals = mealRepository.findByMealDateBetweenOrderByMealDateAscMealTypeAsc(startDate, endDate);
@@ -78,7 +76,6 @@ public class MealService {
                 return;
             }
 
-            // 방어적으로 JsonNode로 파싱해서 'row' 배열을 찾아 처리
             JsonNode root = objectMapper.readTree(responseBody);
             if (root == null) {
                 return;
@@ -114,7 +111,6 @@ public class MealService {
                     String mmealScNm = row.hasNonNull("MMEAL_SC_NM") ? row.get("MMEAL_SC_NM").asText() : null;
                     String mealType = convertMealType(mmealScNm);
 
-                    // 기존 데이터 중복 체크
                     if (mealRepository.findByMealDateAndMealType(mealDate, mealType).isPresent()) {
                         continue;
                     }
@@ -138,7 +134,6 @@ public class MealService {
                     mealRepository.save(meal);
                     savedCount++;
                 } catch (Exception e) {
-                    // 예외 발생 시 로그를 남기고, 세션에 남은 엔티티로 인한 flush 오류 방지
                     System.err.println("[MealService] Meal 저장 중 예외 발생: " + e.getMessage());
                     e.printStackTrace();
                     entityManager.clear();
@@ -147,7 +142,6 @@ public class MealService {
 
 
         } catch (Exception e) {
-            // 전체 예외도 반드시 로그로 남김
             System.err.println("[MealService] NEIS 급식 데이터 파싱/저장 전체 예외: " + e.getMessage());
             e.printStackTrace();
         }

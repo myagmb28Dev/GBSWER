@@ -103,7 +103,6 @@ public class ClassService {
         Class classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "class not found"));
 
-        // 권한 체크: 선생님이거나 참가자여야 함
         User userEntity = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
@@ -126,11 +125,9 @@ public class ClassService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        // 관련 데이터 삭제
         List<ClassParticipant> participants = classParticipantRepository.findByClassEntity(classEntity);
         classParticipantRepository.deleteAll(participants);
 
-        // 관련 posts 삭제 (Task에서 classId가 있는 것들)
         taskRepository.findAll().stream()
                 .filter(t -> t.getClassEntity() != null && t.getClassEntity().getId().equals(classId))
                 .forEach(taskRepository::delete);

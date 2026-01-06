@@ -43,9 +43,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetCode(String email) {
-        // generate temporary password
         String temp = generateTemporaryPassword();
-        // store temp password in redis with TTL
         redisTemplate.opsForValue().set(PASSWORD_RESET_PREFIX + email, temp, verificationProperties.getExpirationMinutes(), TimeUnit.MINUTES);
 
         SimpleMailMessage message = new SimpleMailMessage();

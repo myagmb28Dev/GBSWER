@@ -35,8 +35,6 @@ public class CommunityService {
     @Value("${file.type}")
     private String fileType;
 
-    private String storageType() { return fileType; }
-
     public Page<CommunityDto> getAllPosts(int page, int size) {
         return communityRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size))
                 .map(this::convertToDto);
@@ -81,7 +79,6 @@ public class CommunityService {
                         String url = fileUploadService.uploadCommunityImage(file);
                         uploadedUrls.add(url);
                     } catch (Exception fe) {
-                        // 롤백: 업로드된 url 삭제
                         if (!uploadedUrls.isEmpty()) {
                             try {
                                 deleteFilesByUrls(uploadedUrls);
@@ -160,7 +157,6 @@ public class CommunityService {
             if (author.getRole() == User.Role.TEACHER) {
                 community.setMajor(normalizeMajor(request.getMajor()));
             } else {
-                // 학생이면 major 변경 시도 자체를 금지
                 if (!normalizeMajor(request.getMajor()).equalsIgnoreCase(normalizeMajor(community.getMajor()))) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "학생은 게시글의 major를 변경할 수 없습니다.");
                 }
@@ -231,8 +227,7 @@ public class CommunityService {
     }
 
     private void deleteFilesByUrls(List<String> urls) {
-        boolean useLocal = "local".equalsIgnoreCase(storageType());
-        if (useLocal) {
+        if ("local".equalsIgnoreCase(fileType) || "ec2_upload".equalsIgnoreCase(fileType)) {
             fileUploadService.deleteLocalFiles(urls);
         } else {
             fileUploadService.deleteFiles(urls);

@@ -30,7 +30,6 @@ public class AuthService {
     @Transactional
     public AuthResponseDto login(LoginRequestDto request) {
 
-        // 1. userId로 사용자 조회
         Optional<User> opt = userRepository.findByUserId(request.getUserId());
         if (opt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid credentials");
@@ -38,19 +37,16 @@ public class AuthService {
 
         User user = opt.get();
 
-        // 2. 비밀번호 검증 및 초기 설정 로직
         if (user.getPassword() == null) {
 
             if (!"0000".equals(request.getPassword())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid credentials");
             }
 
-            // "0000"을 BCrypt로 해시하여 저장
             String hashedPassword = passwordEncoder.encode("0000");
             user.setPassword(hashedPassword);
             userRepository.save(user);
         } else {
-            // 이미 비밀번호가 설정된 경우: BCrypt로 검증
 
             if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid credentials");
@@ -58,12 +54,10 @@ public class AuthService {
         }
 
         try {
-            // 3. JWT 토큰 생성
             String accessToken = tokenService.createToken(user.getId(), user.getName(), user.getRole().name());
             String refreshToken = tokenService.createTokenWithExpiration(user.getId(), user.getName(), user.getRole().name(), jwtProperties.getRefreshExpirationMs());
 
 
-            // 4. 토큰 저장
             user.setAccessToken(accessToken);
             user.setRefreshToken(refreshToken);
             userRepository.save(user);

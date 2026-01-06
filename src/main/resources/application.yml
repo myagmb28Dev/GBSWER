@@ -2,7 +2,7 @@ spring:
   application:
     name: gbswer
   profiles:
-    active: local
+    active: prod
     group:
       local:
         - common
@@ -69,14 +69,6 @@ jwt:
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR}
-  type: ${FILE_STORAGE_TYPE}
-
-aws:
-  s3:
-    bucket: ${AWS_S3_BUCKET}
-    region: ${AWS_REGION}
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
 
 verification:
   code:
@@ -128,5 +120,6 @@ spring:
       on-profile: prod
 
 file:
-  upload-dir: uploads
-  type: s3
+  upload-dir: /app/uploads
+  type: ec2_upload
+  server-url: ${FILE_SERVER_URL}

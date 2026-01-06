@@ -39,7 +39,7 @@ public class TimetableService {
 
 
     private final Map<String, Long> recentRequests = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final long REQUEST_TTL_MS = 30_000; // 30초
+    private static final long REQUEST_TTL_MS = 30_000;
 
     public int getOfficialClass(String major, int displayClass) {
         if ("인공지능소프트웨어과".equals(major) || "게임개발과".equals(major)) {
@@ -83,7 +83,6 @@ public class TimetableService {
             if (body == null || body.getHisTimetable() == null || body.getHisTimetable().isEmpty()) {
                 return new NeisTimetableApiResponse();
             }
-            // 배열 순회하면서 row 찾기
             List<NeisTimetableApiResponse.TimetableRow> foundRows = null;
             for (NeisTimetableApiResponse.TimetableBlock block : body.getHisTimetable()) {
                 if (block.getRow() != null && !block.getRow().isEmpty()) {
@@ -94,7 +93,6 @@ public class TimetableService {
             if (foundRows == null) {
                 return new NeisTimetableApiResponse();
             }
-            // 성공적으로 파싱된 응답 반환
             return body;
         } catch (Exception e) {
             return new NeisTimetableApiResponse();
@@ -128,7 +126,7 @@ public class TimetableService {
     public List<TimetableDto> refreshWeeklyByDate(String date, String major, String grade, String displayClass) {
         LocalDate target = (date != null && !date.isEmpty()) ? LocalDate.parse(date, DATE_FORMATTER) : LocalDate.now();
         LocalDate start = target.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate end = start.plusDays(4); // 월~금
+        LocalDate end = start.plusDays(4);
 
         String weekStart = start.format(DATE_FORMATTER);
         String reqKey = String.join("|", weekStart, major, grade, displayClass);
@@ -145,7 +143,6 @@ public class TimetableService {
         }
         recentRequests.put(reqKey, now);
 
-        // 기존 로직 계속 수행 (start/end 가 이미 계산되어 있음)
         int gradeInt = Integer.parseInt(grade);
         int classInt = Integer.parseInt(displayClass);
         int officialClass = getOfficialClass(major, classInt);
@@ -157,17 +154,14 @@ public class TimetableService {
         if (!allTimetables.isEmpty()) {
             saveTimetableEntities(allTimetables, major, gradeInt, officialClass);
         } else {
-            // 강제 리프레시 시 NEIS에서 데이터가 없습니다.
         }
         return getTimetableFromDbOrEmpty(start, end, major, gradeInt, officialClass);
     }
 
-    // 응답에서 특정 학년/반만 필터링해서 DTO로 변환
     private List<TimetableDto> convertToDto(NeisTimetableApiResponse response, int grade, int classNumber) {
         if (response == null || response.getHisTimetable() == null || response.getHisTimetable().isEmpty()) {
             return Collections.emptyList();
         }
-        // 배열을 순회하면서 row가 있는 블록만 찾기
         List<NeisTimetableApiResponse.TimetableRow> rows = null;
         for (NeisTimetableApiResponse.TimetableBlock block : response.getHisTimetable()) {
             if (block.getRow() != null && !block.getRow().isEmpty()) {
@@ -187,7 +181,6 @@ public class TimetableService {
                 })
                 .collect(Collectors.groupingBy(row -> row.getAllTiYmd() != null ? row.getAllTiYmd().trim() : ""));
 
-        // 날짜별 TimetableDto 생성
         List<TimetableDto> result = new ArrayList<>();
         for (var entry : groupedByDate.entrySet()) {
             String date = entry.getKey();
@@ -275,12 +268,9 @@ public class TimetableService {
             }
         }
 
-        // Bulk save with exception handling for unique constraint race
         try {
             timetableRepository.saveAll(toSave);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // 중복 충돌 발생, 개별 처리로 폴백
-            // 중요: 예외 발생 시 퍼시스턴스 컨텍스트가 불안정해질 수 있으므로 명시적으로 clear
             try {
                 entityManager.clear();
             } catch (Exception emEx) {
@@ -289,8 +279,6 @@ public class TimetableService {
                 try {
                     timetableRepository.save(t);
                 } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-                    // 중복 삽입 충돌 발생(개별), 기존 레코드 업데이트로 전환
-                    // 예외 시 세션 정리 후 재조회
                     try {
                         entityManager.clear();
                     } catch (Exception emEx) {
@@ -335,7 +323,7 @@ public class TimetableService {
     public List<TimetableDto> getWeeklyFromDb(String date, String major, String grade, String displayClass) {
         LocalDate target = (date != null && !date.isEmpty()) ? LocalDate.parse(date, DATE_FORMATTER) : LocalDate.now();
         LocalDate start = target.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate end = start.plusDays(4); // 월~금
+        LocalDate end = start.plusDays(4);
 
         int gradeInt;
         int classInt;
@@ -343,8 +331,6 @@ public class TimetableService {
             gradeInt = Integer.parseInt(grade);
             classInt = Integer.parseInt(displayClass);
         } catch (Exception e) {
-            // 잘못된 파라미터는 빈 결과로 처리
-            // 빈 주간 템플릿 반환
             List<TimetableDto> dtos = new ArrayList<>();
             for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
                 dtos.add(createEmptyTimetable(d.format(DATE_FORMATTER)));

@@ -32,8 +32,8 @@ public class CalendarService {
     private static final DateTimeFormatter RESPONSE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String CATEGORY_SCHOOL = "학교";
     private static final String CATEGORY_PERSONAL = "개인";
-    private static final String DEFAULT_SCHOOL_COLOR = "#FFDFBA"; // 연주황
-    private static final String DEFAULT_PERSONAL_COLOR = "#E0BBE4"; // 연보라
+    private static final String DEFAULT_SCHOOL_COLOR = "#FFDFBA";
+    private static final String DEFAULT_PERSONAL_COLOR = "#E0BBE4";
 
     private final CalendarEventRepository calendarEventRepository;
     private final UserRepository userRepository;
@@ -103,7 +103,6 @@ public class CalendarService {
         if (CATEGORY_SCHOOL.equals(event.getCategory())) {
             throw new ResponseStatusException(FORBIDDEN, "school events are read-only");
         }
-        // ADMIN은 모든 개인 일정 삭제 가능, 그 외는 본인만
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "user not found"));
         if (!User.Role.ADMIN.equals(user.getRole()) && (event.getUser() == null || !event.getUser().getId().equals(userId))) {
@@ -123,13 +122,11 @@ public class CalendarService {
     private List<CalendarEventDto> findVisibleEvents(Long userId, LocalDate start, LocalDate end) {
         List<CalendarEvent> events = new ArrayList<>();
 
-        // 학교 일정 추가
         List<CalendarEvent> schoolEvents = calendarEventRepository.findByStartDateBetween(start, end).stream()
                 .filter(ev -> CATEGORY_SCHOOL.equals(ev.getCategory()))
                 .collect(Collectors.toList());
         events.addAll(schoolEvents);
 
-        // 개인 일정 추가 (userId가 있으면)
         if (userId != null) {
             List<CalendarEvent> personalEvents = calendarEventRepository.findByStartDateBetweenAndUserId(start, end, userId);
             events.addAll(personalEvents);
@@ -185,9 +182,6 @@ public class CalendarService {
                 .build();
     }
 
-    /**
-     * NEIS에서 학교 일정을 받아 통합 테이블에 저장한다.
-     */
     private void fetchSchoolEventsFromNeis(LocalDate startDate, LocalDate endDate) {
         String url = String.format(
                 "%s?KEY=%s&Type=json&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=%s&SD_SCHUL_CODE=%s&AA_FROM_YMD=%s&AA_TO_YMD=%s",
@@ -217,7 +211,6 @@ public class CalendarService {
                     String title = row.getEventNm();
                     if (title == null || title.isBlank()) continue;
 
-                    // 중복 방지
                     if (calendarEventRepository.findByCategoryAndTitleAndStartDate(CATEGORY_SCHOOL, title, eventDate).isPresent()) {
                         continue;
                     }
@@ -250,7 +243,6 @@ public class CalendarService {
         return rows;
     }
 
-    // 기본 색상 설정을 사용자 정의 가능하도록 개선
     private String getDefaultPersonalColor() {
         return System.getProperty("default.personal.color", DEFAULT_PERSONAL_COLOR);
     }

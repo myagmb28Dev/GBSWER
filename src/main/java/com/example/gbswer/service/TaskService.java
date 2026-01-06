@@ -83,9 +83,7 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
 
-        // 파일 업데이트 처리
         if (files != null && !files.isEmpty()) {
-            // 기존 파일 삭제
             if (task.getFileUrls() != null) {
                 fileUploadService.deleteFiles(convertJsonToList(task.getFileUrls()));
             }

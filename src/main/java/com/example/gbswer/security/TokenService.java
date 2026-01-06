@@ -83,6 +83,5 @@ public class TokenService {
     }
 
     public void revoke(String token) {
-        // Stateless JWT: revoke requires additional store (blacklist) — not implemented here
     }
 }

@@ -1,17 +1,11 @@
 package com.example.gbswer.service;
 
-import com.example.gbswer.config.properties.AwsProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -28,17 +22,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUploadService {
 
-    @Autowired(required = false)
-    private S3Client s3Client; // optional
-
-    @Autowired(required = false)
-    private AwsProperties awsProperties; // optional
-
     @Value("${file.upload-dir}")
     private String uploadDir;
-
-    @Value("${file.type}")
-    private String storageType;
 
     private String serverPort() { return System.getProperty("server.port", "8080"); }
 
@@ -63,72 +48,31 @@ public class FileUploadService {
     private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;
     private static final long MAX_TASK_FILE_SIZE = 50 * 1024 * 1024;
 
-    // S3 업로드 메소드
+
     public String uploadCommunityImage(MultipartFile file) {
         validateImageFile(file);
-        if ("s3".equalsIgnoreCase(storageType)) {
-            return uploadToS3(file, "posts");
-        }
         return uploadToLocal(file, "posts");
     }
 
     public String uploadTaskFile(MultipartFile file) {
         validateTaskFile(file);
-        if ("s3".equalsIgnoreCase(storageType)) {
-            return uploadToS3(file, "tasks");
-        }
         return uploadToLocal(file, "tasks");
     }
 
     public String uploadSubmissionFile(MultipartFile file) {
-        validateTaskFile(file);
-        if ("s3".equalsIgnoreCase(storageType)) {
-            return uploadToS3(file, "submissions");
-        }
-        return uploadToLocal(file, "submissions");
-    }
-
-    // 로컬 저장 메소드 (테스트용)
-    public String uploadCommunityImageLocal(MultipartFile file) {
-        validateImageFile(file);
-        return uploadToLocal(file, "posts");
-    }
-
-    public String uploadTaskFileLocal(MultipartFile file) {
-        validateTaskFile(file);
-        return uploadToLocal(file, "tasks");
-    }
-
-    public String uploadSubmissionFileLocal(MultipartFile file) {
         validateTaskFile(file);
         return uploadToLocal(file, "submissions");
     }
 
     public void deleteFile(String imageUrl) {
         if (imageUrl == null || imageUrl.isEmpty()) return;
-
-        try {
-            String s3Key = extractS3Key(imageUrl);
-            if (s3Key == null) return;
-
-            if (s3Client != null && awsProperties != null) {
-                s3Client.deleteObject(DeleteObjectRequest.builder()
-                        .bucket(awsProperties.getBucket())
-                        .key(s3Key)
-                        .build());
-            } else {
-                deleteLocalFile(imageUrl);
-            }
-        } catch (Exception e) {
-        }
+        deleteLocalFile(imageUrl);
     }
 
     public void deleteFiles(List<String> imageUrls) {
         if (imageUrls == null) return;
         imageUrls.forEach(this::deleteFile);
     }
-
-    // 로컬 파일 삭제
     public void deleteLocalFile(String fileName) {
         if (fileName == null || fileName.isEmpty()) return;
         try {
@@ -144,33 +88,6 @@ public class FileUploadService {
         fileNames.forEach(this::deleteLocalFile);
     }
 
-    private String uploadToS3(MultipartFile file, String folder) {
-        if (s3Client == null || awsProperties == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "S3 is not configured on this instance.");
-        }
-
-        String extension = getExtension(file.getOriginalFilename());
-        String generatedFilename = UUID.randomUUID() + "." + extension;
-        LocalDate now = LocalDate.now();
-        String s3Key = String.format("%s/%s/%s/%s", folder,
-                now.format(DateTimeFormatter.ofPattern("yyyy")),
-                now.format(DateTimeFormatter.ofPattern("MM")),
-                generatedFilename);
-
-        try {
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(awsProperties.getBucket())
-                            .key(s3Key)
-                            .contentType(file.getContentType())
-                            .build(),
-                    RequestBody.fromBytes(file.getBytes()));
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
-        }
-
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProperties.getBucket(), awsProperties.getRegion(), s3Key);
-    }
 
     private String uploadToLocal(MultipartFile file, String folder) {
         String extension = getExtension(file.getOriginalFilename());
@@ -187,7 +104,6 @@ public class FileUploadService {
             Files.createDirectories(fullPath.getParent());
             file.transferTo(fullPath.toFile());
 
-            // 항상 전체 URL 반환 (상대경로나 파일명만 반환되는 문제 방지)
             String port = serverPort();
             return String.format("http://localhost:%s/uploads/%s", port, relativePath);
         } catch (IOException e) {
@@ -226,29 +142,14 @@ public class FileUploadService {
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
     }
 
-    private String extractS3Key(String imageUrl) {
-        try {
-            if (awsProperties == null) return null;
-            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", awsProperties.getBucket(), awsProperties.getRegion());
-            if (imageUrl.startsWith(prefix)) {
-                return imageUrl.substring(prefix.length());
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     private String extractLocalPath(String fileName) {
         if (fileName == null || fileName.isEmpty()) return null;
         try {
-            // If fileName is a full URL like http://localhost:8080/uploads/posts/2025/12/uuid.png
-            // extract the part after /uploads/
             int idx = fileName.indexOf("/uploads/");
             if (idx != -1) {
-                return fileName.substring(idx + 9); // length of "/uploads/"
+                return fileName.substring(idx + 9);
             }
-            // If it's already a relative path like posts/2025/12/uuid.png, return as-is
             return fileName.replaceFirst("^/+", "");
         } catch (Exception e) {
             return fileName;
@@ -265,7 +166,6 @@ public class FileUploadService {
             if (!Files.exists(base)) {
                 Files.createDirectories(base);
             }
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
     }
 }

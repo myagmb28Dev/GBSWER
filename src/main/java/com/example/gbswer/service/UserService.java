@@ -81,7 +81,6 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "인증 코드가 올바르지 않거나 만료되었습니다.");
         }
 
-        // 중복 이메일 방지: 이미 다른 사용자가 사용 중이면 충돌 응답
         userRepository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
             if (!existingUser.getId().equals(userId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
@@ -129,11 +128,10 @@ public class UserService {
     public UserDto updateProfileImage(Long userId, MultipartFile profileImage) {
         User user = findUserById(userId);
         String oldImage = user.getProfileImage();
-        // 기존 이미지 삭제(선택적 보완)
         if (oldImage != null) {
             fileUploadService.deleteFile(oldImage);
         }
-        String imageUrl = fileUploadService.uploadCommunityImageLocal(profileImage);
+        String imageUrl = fileUploadService.uploadCommunityImage(profileImage);
         user.setProfileImage(imageUrl);
         userRepository.save(user);
         log.info("User profile image updated (userId={}): [profileImage] '{}' -> '{}'", userId, oldImage, imageUrl);
@@ -143,7 +141,7 @@ public class UserService {
     @Transactional
     public UserDto setDefaultProfileImage(Long userId) {
         User user = findUserById(userId);
-        user.setProfileImage(null); // 기본 이미지 경로(/profile.png)로 강제 저장하는 로직 없이 null만 저장
+        user.setProfileImage(null);
         userRepository.save(user);
         return convertToDto(user);
     }
@@ -207,9 +205,8 @@ public class UserService {
             user.setEmail(request.getEmail());
             changed = true;
         }
-        // profileImage가 null일 때 /profile.png로 강제 저장하는 로직 없음
         if (changed) {
-            log.info("User profile updated (userId={}): {}", userId, changeLog.toString());
+            log.info("User profile updated (userId={}): {}", userId, changeLog);
         }
         userRepository.save(user);
         return convertToDto(user);
