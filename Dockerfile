@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM gradle:8.5-jdk21 AS builder
+FROM gradle:8.5-jdk17 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY src src
 RUN ./gradlew build -x test --no-daemon
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
