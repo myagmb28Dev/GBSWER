@@ -17,10 +17,9 @@
 ## 🛠️ 기술 스택
 
 - **Framework**: Spring Boot 3.5.6
-- **Language**: Java 21
+- **Language**: Java 17
 - **Database**: MySQL 8.0
 - **Cache**: Redis 7
-- **Storage**: AWS S3
 - **Security**: Spring Security + JWT
 - **Build Tool**: Gradle
 
@@ -45,7 +44,7 @@ docker-compose logs -f app
 ### 2. 로컬에서 실행
 
 **사전 요구사항:**
-- Java 21
+- Java 17
 - MySQL 8.0 (실행 중)
 - Redis (실행 중)
 

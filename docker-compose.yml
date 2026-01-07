@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: gbswer-redis
@@ -24,8 +23,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-
-  # Spring Boot Application
   app:
     image: myagmb28/gbswer-app:latest
     container_name: gbswer-app
@@ -60,4 +57,3 @@ volumes:
 networks:
   gbswer-network:
     driver: bridge
-
