@@ -19,12 +19,26 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Verify Java installation
+      run: |
+        echo "Verifying Java installation..."
+        java -version
+        echo "JAVA_HOME: $JAVA_HOME"
+        which java
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Verify Gradle Wrapper
+      run: |
+        echo "Checking Gradle Wrapper..."
+        ls -la gradlew
+        cat gradle/wrapper/gradle-wrapper.properties
+
     - name: Build with Gradle
-      run: ./gradlew build -x test --no-daemon
+      run: ./gradlew build -x test --no-daemon --info
 
     - name: Login to Docker Hub
       if: github.event_name == 'push'
