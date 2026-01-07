@@ -117,13 +117,19 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
     fi
 else
-    JAVACMD=java
-    if ! command -v java >/dev/null 2>&1
-    then
-        die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+    # Auto-set JAVA_HOME to Java 17 if not defined
+    if [ -d "/usr/lib/jvm/java-17-openjdk-amd64" ]; then
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+        JAVACMD=$JAVA_HOME/bin/java
+    else
+        JAVACMD=java
+        if ! command -v java >/dev/null 2>&1
+        then
+            die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
 
 Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
+        fi
     fi
 fi
 

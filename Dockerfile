@@ -4,8 +4,10 @@ FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
 
 COPY gradle gradle
-COPY build.gradle settings.gradle gradlew ./
+COPY gradle.properties settings.gradle gradlew gradlew.bat ./
 RUN chmod +x ./gradlew
+
+COPY build.gradle ./
 
 COPY src src
 

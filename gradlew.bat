@@ -39,6 +39,13 @@ set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 @rem Find java.exe
 if defined JAVA_HOME goto findJavaFromJavaHome
 
+@rem Auto-set JAVA_HOME to Java 17 if not defined
+if not defined JAVA_HOME (
+    if exist "C:\Program Files\Java\jdk-17" (
+        set JAVA_HOME=C:\Program Files\Java\jdk-17
+    )
+)
+
 set JAVA_EXE=java.exe
 %JAVA_EXE% -version >NUL 2>&1
 if %ERRORLEVEL% equ 0 goto execute
