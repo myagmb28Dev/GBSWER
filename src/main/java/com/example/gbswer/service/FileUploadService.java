@@ -25,7 +25,11 @@ public class FileUploadService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    private String serverPort() { return System.getProperty("server.port", "8080"); }
+    @Value("${file.type}")
+    private String fileType;
+
+    @Value("${server.url:http://localhost:8080}")
+    private String serverUrl;
 
     private static final Set<String> ALLOWED_IMAGE_MIME_TYPES = Set.of(
             "image/jpeg", "image/png", "image/gif", "image/webp"
@@ -104,12 +108,12 @@ public class FileUploadService {
             Files.createDirectories(fullPath.getParent());
             file.transferTo(fullPath.toFile());
 
-            String port = serverPort();
-            return String.format("http://localhost:%s/uploads/%s", port, relativePath);
+            return String.format("%s/uploads/%s", serverUrl, relativePath);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
     }
+
 
     private void validateImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
