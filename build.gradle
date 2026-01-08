@@ -36,6 +36,7 @@ dependencies {
     // DevTools for local development only
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+
     // MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -63,4 +64,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jar {
+    enabled = false
 }

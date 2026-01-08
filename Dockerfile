@@ -1,33 +1,48 @@
-# Multi-stage build with Java 17
-FROM gradle:8.5-jdk17 AS builder
+# Build stage
+FROM eclipse-temurin:17-jdk AS builder
 
-WORKDIR /app
+WORKDIR /workspace
 
+# Gradle Wrapper 파일 복사 (의존성 캐싱을 위해 먼저 복사)
+COPY gradlew .
 COPY gradle gradle
-COPY gradle.properties settings.gradle gradlew gradlew.bat ./
-RUN chmod +x ./gradlew
+COPY build.gradle .
+COPY settings.gradle .
+COPY gradle.properties .
 
-COPY build.gradle ./
+# gradle.properties에서 Windows 경로 제거 및 실행 권한 부여
+RUN sed -i '/org.gradle.java.home/d' gradle.properties || true && \
+    chmod +x gradlew && \
+    sed -i 's/\r$//' gradlew
 
+# 소스 코드 복사 (의존성과 분리하여 캐싱 최적화)
 COPY src src
 
-RUN ./gradlew build -x test --no-daemon
+# Gradle Wrapper로 빌드 및 빌드 캐시 정리
+RUN ./gradlew bootJar -x test --no-daemon && \
+    rm -rf /root/.gradle/caches/* && \
+    rm -rf /workspace/.gradle && \
+    find /workspace -name "*.class" -delete
 
-# Runtime stage with Java 17 JRE
+# Runtime stage
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN addgroup -S spring && adduser -S spring -G spring
-RUN mkdir -p uploads && chown -R spring:spring /app
+# 비root 사용자 생성 및 업로드 디렉토리 생성 (한 번에 처리)
+RUN addgroup -S spring && \
+    adduser -S spring -G spring && \
+    mkdir -p uploads && \
+    chown -R spring:spring /app
 
-COPY --from=builder /app/build/libs/*.jar app.jar
+# 빌드된 JAR 파일 복사
+COPY --from=builder /workspace/build/libs/*.jar app.jar
 
+# 비root 사용자로 전환
 USER spring
 
+# 포트 노출
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
-
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod}", "app.jar"]
+# 애플리케이션 실행
+ENTRYPOINT ["java", "-jar", "app.jar"]

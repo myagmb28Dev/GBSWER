@@ -3,11 +3,6 @@
 .gitignore
 .gitattributes
 
-# Gradle
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
 # IDE
 .idea
 .vscode
@@ -16,10 +11,10 @@ build/
 *.iws
 out/
 
-# Environment
+# Environment files
 .env
 .env.local
-.env.production
+.env.prod
 
 # Logs
 *.log
@@ -33,11 +28,24 @@ Thumbs.db
 uploads/
 
 # Docker
-Dockerfile
 docker-compose.yml
 .dockerignore
 
 # Documentation
 README.md
 docs/
+
+# GitHub
+.github/
+
+# Test files
+**/test/
+**/*Test.java
+**/*Tests.java
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
 

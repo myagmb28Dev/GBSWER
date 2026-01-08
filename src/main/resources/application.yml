@@ -1,38 +1,21 @@
 spring:
   application:
     name: gbswer
-  profiles:
-    active: local
-    group:
-      local:
-        - common
-        - local
-      prod:
-        - common
-        - prod
-
----
-
-# Common settings
-spring:
   config:
-    activate:
-      on-profile: common
-  application:
-    name: gbswer
+    import: optional:file:.env.local[.properties]
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
-    baseline-on-migrate: true
-    baseline-version: 0
-    locations: classpath:db/migration
+
   servlet:
     encoding:
       charset: UTF-8
@@ -41,14 +24,16 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+
   data:
     redis:
       host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      port: 6379
       password: ${REDIS_PASSWORD}
+
   mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
+    host: smtp.gmail.com
+    port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
@@ -64,21 +49,22 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration-ms: ${JWT_EXPIRATION_MS}
-  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
+  expiration-ms: 3600000
+  refresh-expiration-ms: 86400000
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR}
+  type: ${FILE_TYPE}
 
 verification:
   code:
-    expiration-minutes: ${VERIFICATION_CODE_EXPIRATION:5}
+    expiration-minutes: 5
 
 neis:
   api:
-    key: ${NEIS_API_KEY}
-    atpt-code: ${NEIS_ATPT_CODE}
-    school-code: ${NEIS_SCHOOL_CODE}
+    key: d0bb18c4c6d5402c9b7d38f4bff96e95
+    atpt-code: R10
+    school-code: 8750829
     url: https://open.neis.go.kr/hub/mealServiceDietInfo
     schedule-url: https://open.neis.go.kr/hub/SchoolSchedule
     timetable-url: https://open.neis.go.kr/hub/hisTimetable
@@ -92,34 +78,3 @@ management:
     health:
       show-details: when-authorized
 
----
-
-# Local Settings
-spring:
-  config:
-    activate:
-      on-profile: local
-    import: optional:file:.env.local[.properties]
-  devtools:
-    restart:
-      enabled: true
-    livereload:
-      enabled: true
-      port: 35729
-
-file:
-  upload-dir: D:/Codes/GBSWER/Back/uploads
-  type: local
-
----
-
-# Prod settings
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-file:
-  upload-dir: /app/uploads
-  type: ec2_upload
-  server-url: ${FILE_SERVER_URL}
