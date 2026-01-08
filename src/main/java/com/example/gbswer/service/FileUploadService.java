@@ -94,6 +94,10 @@ public class FileUploadService {
 
 
     private String uploadToLocal(MultipartFile file, String folder) {
+        if (uploadDir == null || uploadDir.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 디렉토리가 설정되지 않았습니다.");
+        }
+        
         String extension = getExtension(file.getOriginalFilename());
         String generatedFilename = UUID.randomUUID() + "." + extension;
         LocalDate now = LocalDate.now();
@@ -110,7 +114,11 @@ public class FileUploadService {
 
             return String.format("%s/uploads/%s", serverUrl, relativePath);
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "파일 업로드에 실패했습니다: " + e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "파일 업로드 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
@@ -164,12 +172,21 @@ public class FileUploadService {
     public void initUploadDir() {
         try {
             if (uploadDir == null || uploadDir.isEmpty()) {
+                System.err.println("[FileUploadService] WARNING: file.upload-dir이 설정되지 않았습니다.");
                 return;
             }
             Path base = Paths.get(uploadDir);
             if (!Files.exists(base)) {
                 Files.createDirectories(base);
+                System.out.println("[FileUploadService] 업로드 디렉토리 생성: " + base.toAbsolutePath());
             }
-        } catch (Exception e) {}
+            // 쓰기 권한 확인
+            if (!Files.isWritable(base)) {
+                System.err.println("[FileUploadService] WARNING: 업로드 디렉토리에 쓰기 권한이 없습니다: " + base.toAbsolutePath());
+            }
+        } catch (Exception e) {
+            System.err.println("[FileUploadService] 업로드 디렉토리 초기화 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

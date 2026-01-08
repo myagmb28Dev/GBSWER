@@ -126,16 +126,25 @@ public class UserService {
 
     @Transactional
     public UserDto updateProfileImage(Long userId, MultipartFile profileImage) {
-        User user = findUserById(userId);
-        String oldImage = user.getProfileImage();
-        if (oldImage != null) {
-            fileUploadService.deleteFile(oldImage);
+        try {
+            User user = findUserById(userId);
+            String oldImage = user.getProfileImage();
+            if (oldImage != null) {
+                try {
+                    fileUploadService.deleteFile(oldImage);
+                } catch (Exception e) {
+                    log.warn("기존 프로필 이미지 삭제 실패 (userId={}, image={}): {}", userId, oldImage, e.getMessage());
+                }
+            }
+            String imageUrl = fileUploadService.uploadCommunityImage(profileImage);
+            user.setProfileImage(imageUrl);
+            userRepository.save(user);
+            log.info("User profile image updated (userId={}): [profileImage] '{}' -> '{}'", userId, oldImage, imageUrl);
+            return convertToDto(user);
+        } catch (Exception e) {
+            log.error("프로필 이미지 업데이트 실패 (userId={}): {}", userId, e.getMessage(), e);
+            throw e;
         }
-        String imageUrl = fileUploadService.uploadCommunityImage(profileImage);
-        user.setProfileImage(imageUrl);
-        userRepository.save(user);
-        log.info("User profile image updated (userId={}): [profileImage] '{}' -> '{}'", userId, oldImage, imageUrl);
-        return convertToDto(user);
     }
 
     @Transactional
