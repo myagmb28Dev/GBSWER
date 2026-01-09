@@ -10,6 +10,7 @@ import com.example.gbswer.repository.SubmissionRepository;
 import com.example.gbswer.repository.TaskRepository;
 import com.example.gbswer.repository.UserRepository;
 import com.example.gbswer.repository.ClassRepository;
+import com.example.gbswer.util.JsonConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unused")
     public TaskDto getTaskById(Long taskId) {
         return convertToDto(findTaskById(taskId));
     }
@@ -53,7 +55,7 @@ public class TaskService {
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 if (file == null || file.isEmpty()) continue;
-                String url = fileUploadService.uploadTaskFile(file);
+                String url = fileUploadService.uploadTaskFile(teacherId, file);
                 fileUrls.add(url);
                 fileNames.add(file.getOriginalFilename());
             }
@@ -67,8 +69,8 @@ public class TaskService {
                 .classEntity(classId != null ? classRepository.findById(classId).orElse(null) : null)
                 .teacher(teacher)
                 .teacherName(teacher.getName())
-                .fileNames(convertListToJson(fileNames))
-                .fileUrls(convertListToJson(fileUrls))
+                .fileNames(JsonConverter.convertListToJson(fileNames))
+                .fileUrls(JsonConverter.convertListToJson(fileUrls))
                 .build();
 
         taskRepository.save(task);
@@ -85,25 +87,28 @@ public class TaskService {
 
         if (files != null && !files.isEmpty()) {
             if (task.getFileUrls() != null) {
-                fileUploadService.deleteFiles(convertJsonToList(task.getFileUrls()));
+                fileUploadService.deleteFiles(JsonConverter.convertJsonToList(task.getFileUrls()));
             }
 
             List<String> fileUrls = new ArrayList<>();
             List<String> fileNames = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (file == null || file.isEmpty()) continue;
-                String url = fileUploadService.uploadTaskFile(file);
+                String url = fileUploadService.uploadTaskFile(teacherId, file);
                 fileUrls.add(url);
                 fileNames.add(file.getOriginalFilename());
             }
-            task.setFileNames(convertListToJson(fileNames));
-            task.setFileUrls(convertListToJson(fileUrls));
+            task.setFileNames(JsonConverter.convertListToJson(fileNames));
+            task.setFileUrls(JsonConverter.convertListToJson(fileUrls));
         }
 
         task.setTitle(title);
         task.setContent(content);
         task.setDueDate(dueDate);
         task.setType(type);
+        if (classId != null) {
+            task.setClassEntity(classRepository.findById(classId).orElse(null));
+        }
         taskRepository.save(task);
         return convertToDto(task);
     }
@@ -122,7 +127,7 @@ public class TaskService {
         List<String> fileNames = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file == null || file.isEmpty()) continue;
-            String url = fileUploadService.uploadSubmissionFile(file);
+            String url = fileUploadService.uploadSubmissionFile(studentId, file);
             fileUrls.add(url);
             fileNames.add(file.getOriginalFilename());
         }
@@ -131,11 +136,11 @@ public class TaskService {
                 .orElse(Submission.builder().task(task).student(student).build());
 
         if (submission.getFileNames() != null) {
-            fileUploadService.deleteFiles(convertJsonToList(submission.getFileNames()));
+            fileUploadService.deleteFiles(JsonConverter.convertJsonToList(submission.getFileNames()));
         }
 
-        submission.setFileNames(convertListToJson(fileNames));
-        submission.setFileUrls(convertListToJson(fileUrls));
+        submission.setFileNames(JsonConverter.convertListToJson(fileNames));
+        submission.setFileUrls(JsonConverter.convertListToJson(fileUrls));
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setStatus(Submission.SubmissionStatus.SUBMITTED);
         submission.setFeedback(null);
@@ -161,12 +166,14 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unused")
     public SubmissionDto getSubmissionById(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "submission not found"));
         return convertSubmissionToDto(submission);
     }
 
+    @SuppressWarnings("unused")
     public List<TaskDto> getUpcomingTasks() {
         return taskRepository.findByDueDateAfter(LocalDate.now()).stream()
                 .limit(5)
@@ -200,13 +207,13 @@ public class TaskService {
         }
 
         if (task.getFileNames() != null) {
-            fileUploadService.deleteFiles(convertJsonToList(task.getFileNames()));
+            fileUploadService.deleteFiles(JsonConverter.convertJsonToList(task.getFileNames()));
         }
 
         List<Submission> submissions = submissionRepository.findByTask(task);
         for (Submission submission : submissions) {
             if (submission.getFileNames() != null) {
-                fileUploadService.deleteFiles(convertJsonToList(submission.getFileNames()));
+                fileUploadService.deleteFiles(JsonConverter.convertJsonToList(submission.getFileNames()));
             }
         }
 
@@ -218,20 +225,8 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "task not found"));
     }
 
-    private List<FileInfoDto> buildFileInfoList(String fileUrlsJson, String fileNamesJson) {
-        List<String> fileUrls = convertJsonToList(fileUrlsJson);
-        List<String> fileNames = convertJsonToList(fileNamesJson);
-        List<FileInfoDto> files = new ArrayList<>();
-        for (int i = 0; i < fileUrls.size(); i++) {
-            String url = fileUrls.get(i);
-            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
-            files.add(new FileInfoDto(url, name));
-        }
-        return files;
-    }
-
     private TaskDto convertToDto(Task task) {
-        List<FileInfoDto> files = buildFileInfoList(task.getFileUrls(), task.getFileNames());
+        List<FileInfoDto> files = JsonConverter.buildFileInfoList(task.getFileUrls(), task.getFileNames());
         return TaskDto.builder()
                 .id(task.getId())
                 .title(task.getTitle())
@@ -246,7 +241,7 @@ public class TaskService {
     }
 
     private SubmissionDto convertSubmissionToDto(Submission submission) {
-        List<FileInfoDto> files = buildFileInfoList(submission.getFileUrls(), submission.getFileNames());
+        List<FileInfoDto> files = JsonConverter.buildFileInfoList(submission.getFileUrls(), submission.getFileNames());
         return SubmissionDto.builder()
                 .id(submission.getId())
                 .taskId(submission.getTask().getId())
@@ -261,21 +256,4 @@ public class TaskService {
                 .build();
     }
 
-    private String convertListToJson(List<String> list) {
-        if (list == null || list.isEmpty()) return null;
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(list);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private List<String> convertJsonToList(String json) {
-        if (json == null || json.isEmpty()) return new ArrayList<>();
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {});
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
 }

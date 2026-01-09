@@ -57,8 +57,6 @@ public class AuthService {
             String accessToken = tokenService.createToken(user.getId(), user.getName(), user.getRole().name());
             String refreshToken = tokenService.createTokenWithExpiration(user.getId(), user.getName(), user.getRole().name(), jwtProperties.getRefreshExpirationMs());
 
-
-            user.setAccessToken(accessToken);
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
@@ -83,8 +81,6 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "refresh token mismatch");
         }
         String newAccessToken = tokenService.createToken(user.getId(), user.getName(), user.getRole().name());
-        user.setAccessToken(newAccessToken);
-        userRepository.save(user);
         return new AuthResponseDto(newAccessToken, refreshToken);
     }
 }

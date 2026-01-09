@@ -19,11 +19,11 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("deprecation")
 public class TokenService {
 
     private final JwtProperties jwtProperties;
@@ -46,15 +46,13 @@ public class TokenService {
 
     public String createTokenWithExpiration(Long userId, String name, String roles, long customExpirationMillis) {
         Instant now = Instant.now();
-        Date issuedAt = Date.from(now);
-        Date exp = Date.from(now.plusMillis(customExpirationMillis));
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))
+                .subject(String.valueOf(userId))
                 .claim("name", name)
                 .claim("role", roles)
-                .setIssuedAt(issuedAt)
-                .setExpiration(exp)
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(customExpirationMillis)))
+                .signWith(signingKey)
                 .compact();
     }
 

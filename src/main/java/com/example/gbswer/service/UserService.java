@@ -136,7 +136,7 @@ public class UserService {
                     log.warn("기존 프로필 이미지 삭제 실패 (userId={}, image={}): {}", userId, oldImage, e.getMessage());
                 }
             }
-            String imageUrl = fileUploadService.uploadCommunityImage(profileImage);
+            String imageUrl = fileUploadService.uploadProfileImage(userId, profileImage);
             user.setProfileImage(imageUrl);
             userRepository.save(user);
             log.info("User profile image updated (userId={}): [profileImage] '{}' -> '{}'", userId, oldImage, imageUrl);
@@ -158,7 +158,6 @@ public class UserService {
     @Transactional
     public void logout(Long userId) {
         User user = findUserById(userId);
-        user.setAccessToken(null);
         user.setRefreshToken(null);
         userRepository.save(user);
     }

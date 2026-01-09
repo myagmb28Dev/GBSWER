@@ -7,9 +7,7 @@ import com.example.gbswer.entity.Community;
 import com.example.gbswer.entity.User;
 import com.example.gbswer.repository.CommunityRepository;
 import com.example.gbswer.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.gbswer.util.JsonConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,7 +28,6 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;
     private final FileUploadService fileUploadService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${file.type}")
     private String fileType;
@@ -62,13 +59,28 @@ public class CommunityService {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
         List<String> uploadedUrls = new ArrayList<>();
+        List<String> uploadedFileNames = new ArrayList<>();
         try {
+            // 학생인 경우 자신의 학과로만 설정, 교사/관리자는 요청한 major 사용 (없으면 ALL)
+            String major;
+            if (author.getRole() == User.Role.STUDENT) {
+                // 학생은 자신의 학과로만 게시글 작성 가능
+                major = author.getMajor() != null && !author.getMajor().isEmpty() 
+                        ? normalizeMajor(author.getMajor()) 
+                        : "ALL";
+            } else {
+                // 교사/관리자는 요청한 major 사용 (없으면 ALL)
+                major = request.getMajor() != null && !request.getMajor().isEmpty() 
+                        ? normalizeMajor(request.getMajor()) 
+                        : "ALL";
+            }
+            
             Community community = Community.builder()
                     .title(request.getTitle())
                     .content(request.getContent())
                     .writer(request.getAnonymous() != null && request.getAnonymous() ? "익명" : author.getName())
                     .author(author)
-                    .major(request.getMajor() != null ? request.getMajor() : "ALL")
+                    .major(major)
                     .anonymous(request.getAnonymous() != null ? request.getAnonymous() : false)
                     .build();
 
@@ -76,20 +88,21 @@ public class CommunityService {
                 for (MultipartFile file : images) {
                     if (file == null || file.isEmpty()) continue;
                     try {
-                        String url = fileUploadService.uploadCommunityImage(file);
+                        String url = fileUploadService.uploadCommunityImage(authorId, file);
                         uploadedUrls.add(url);
+                        uploadedFileNames.add(file.getOriginalFilename());
                     } catch (Exception fe) {
                         if (!uploadedUrls.isEmpty()) {
                             try {
                                 deleteFilesByUrls(uploadedUrls);
-                            } catch (Exception de) {
+                            } catch (Exception ignored) {
                             }
                         }
                         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "file upload failed");
                     }
                 }
-                community.setFileNames(convertListToJson(new ArrayList<>())); 
-                community.setFileUrls(convertListToJson(uploadedUrls));
+                community.setFileNames(JsonConverter.convertListToJson(uploadedFileNames));
+                community.setFileUrls(JsonConverter.convertListToJson(uploadedUrls));
             }
 
             communityRepository.save(community);
@@ -100,7 +113,7 @@ public class CommunityService {
             if (!uploadedUrls.isEmpty()) {
                 try {
                     deleteFilesByUrls(uploadedUrls);
-                } catch (Exception de) {
+                } catch (Exception ignored) {
                 }
             }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to create post");
@@ -124,13 +137,13 @@ public class CommunityService {
             for (MultipartFile file : files) {
                 if (file == null || file.isEmpty()) continue;
                 try {
-                    String url = fileUploadService.uploadCommunityImage(file);
+                    String url = fileUploadService.uploadCommunityImage(authorId, file);
                     newFileUrls.add(url);
                     newFileNames.add(file.getOriginalFilename());
                 } catch (Exception e) {
                     try {
                         deleteFilesByUrls(newFileUrls);
-                    } catch (Exception ex) {
+                    } catch (Exception ignored) {
                     }
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
                 }
@@ -138,14 +151,14 @@ public class CommunityService {
         }
 
         try {
-            List<String> oldUrls = convertJsonToList(community.getFileUrls());
+            List<String> oldUrls = JsonConverter.convertJsonToList(community.getFileUrls());
             deleteFilesByUrls(oldUrls);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         if (!newFileUrls.isEmpty()) {
-            community.setFileNames(convertListToJson(newFileNames));
-            community.setFileUrls(convertListToJson(newFileUrls));
+            community.setFileNames(JsonConverter.convertListToJson(newFileNames));
+            community.setFileUrls(JsonConverter.convertListToJson(newFileUrls));
         } else {
             community.setFileNames(null);
             community.setFileUrls(null);
@@ -172,7 +185,7 @@ public class CommunityService {
         if (!community.getAuthor().getId().equals(authorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not authorized");
         }
-        deleteFilesByUrls(convertJsonToList(community.getFileNames()));
+        deleteFilesByUrls(JsonConverter.convertJsonToList(community.getFileNames()));
         communityRepository.delete(community);
     }
 
@@ -182,14 +195,7 @@ public class CommunityService {
     }
 
     private CommunityDto convertToDto(Community community) {
-        List<String> fileUrls = convertJsonToList(community.getFileUrls());
-        List<String> fileNames = convertJsonToList(community.getFileNames());
-        List<FileInfoDto> files = new ArrayList<>();
-        for (int i = 0; i < fileUrls.size(); i++) {
-            String url = fileUrls.get(i);
-            String name = (i < fileNames.size()) ? fileNames.get(i) : null;
-            files.add(new FileInfoDto(url, name));
-        }
+        List<FileInfoDto> files = JsonConverter.buildFileInfoList(community.getFileUrls(), community.getFileNames());
         return CommunityDto.builder()
                 .id(community.getId())
                 .title(community.getTitle())
@@ -206,24 +212,6 @@ public class CommunityService {
     private String normalizeMajor(String major) {
         if (major == null) return "ALL";
         return major.trim();
-    }
-
-    private String convertListToJson(List<String> list) {
-        if (list == null || list.isEmpty()) return null;
-        try {
-            return objectMapper.writeValueAsString(list);
-        } catch (JsonProcessingException e) {
-            return null;
-        }
-    }
-
-    private List<String> convertJsonToList(String json) {
-        if (json == null || json.isEmpty()) return new ArrayList<>();
-        try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
     }
 
     private void deleteFilesByUrls(List<String> urls) {

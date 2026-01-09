@@ -51,9 +51,6 @@ public class User {
     @Column(name = "student_number")
     private Integer studentNumber;
 
-    @Column(name = "access_token", length = 512)
-    private String accessToken;
-
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 

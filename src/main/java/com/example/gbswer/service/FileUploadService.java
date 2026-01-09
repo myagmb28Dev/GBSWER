@@ -1,6 +1,8 @@
 package com.example.gbswer.service;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUploadService {
 
+    private static final Logger log = LoggerFactory.getLogger(FileUploadService.class);
+
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @Value("${file.type}")
-    private String fileType;
 
     @Value("${server.url:http://localhost:8080}")
     private String serverUrl;
@@ -53,19 +55,24 @@ public class FileUploadService {
     private static final long MAX_TASK_FILE_SIZE = 50 * 1024 * 1024;
 
 
-    public String uploadCommunityImage(MultipartFile file) {
+    public String uploadProfileImage(Long userId, MultipartFile file) {
         validateImageFile(file);
-        return uploadToLocal(file, "posts");
+        return uploadToLocal(file, userId, "profile");
     }
 
-    public String uploadTaskFile(MultipartFile file) {
-        validateTaskFile(file);
-        return uploadToLocal(file, "tasks");
+    public String uploadCommunityImage(Long userId, MultipartFile file) {
+        validateImageFile(file);
+        return uploadToLocal(file, userId, "posts");
     }
 
-    public String uploadSubmissionFile(MultipartFile file) {
+    public String uploadTaskFile(Long userId, MultipartFile file) {
         validateTaskFile(file);
-        return uploadToLocal(file, "submissions");
+        return uploadToLocal(file, userId, "tasks");
+    }
+
+    public String uploadSubmissionFile(Long userId, MultipartFile file) {
+        validateTaskFile(file);
+        return uploadToLocal(file, userId, "submissions");
     }
 
     public void deleteFile(String imageUrl) {
@@ -83,7 +90,7 @@ public class FileUploadService {
             String relativePath = extractLocalPath(fileName);
             Path path = Paths.get(uploadDir, relativePath);
             Files.deleteIfExists(path);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
     }
 
@@ -93,7 +100,7 @@ public class FileUploadService {
     }
 
 
-    private String uploadToLocal(MultipartFile file, String folder) {
+    private String uploadToLocal(MultipartFile file, Long userId, String folder) {
         if (uploadDir == null || uploadDir.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 디렉토리가 설정되지 않았습니다.");
         }
@@ -102,7 +109,7 @@ public class FileUploadService {
         String generatedFilename = UUID.randomUUID() + "." + extension;
         LocalDate now = LocalDate.now();
 
-        String relativePath = String.format("%s/%s/%s/%s", folder,
+        String relativePath = String.format("user_%d/%s/%s/%s/%s", userId, folder,
                 now.format(DateTimeFormatter.ofPattern("yyyy")),
                 now.format(DateTimeFormatter.ofPattern("MM")),
                 generatedFilename);
@@ -172,21 +179,19 @@ public class FileUploadService {
     public void initUploadDir() {
         try {
             if (uploadDir == null || uploadDir.isEmpty()) {
-                System.err.println("[FileUploadService] WARNING: file.upload-dir이 설정되지 않았습니다.");
+                log.warn("[FileUploadService] WARNING: file.upload-dir이 설정되지 않았습니다.");
                 return;
             }
             Path base = Paths.get(uploadDir);
             if (!Files.exists(base)) {
                 Files.createDirectories(base);
-                System.out.println("[FileUploadService] 업로드 디렉토리 생성: " + base.toAbsolutePath());
+                log.info("[FileUploadService] 업로드 디렉토리 생성: {}", base.toAbsolutePath());
             }
-            // 쓰기 권한 확인
             if (!Files.isWritable(base)) {
-                System.err.println("[FileUploadService] WARNING: 업로드 디렉토리에 쓰기 권한이 없습니다: " + base.toAbsolutePath());
+                log.warn("[FileUploadService] WARNING: 업로드 디렉토리에 쓰기 권한이 없습니다: {}", base.toAbsolutePath());
             }
         } catch (Exception e) {
-            System.err.println("[FileUploadService] 업로드 디렉토리 초기화 실패: " + e.getMessage());
-            e.printStackTrace();
+            log.error("[FileUploadService] 업로드 디렉토리 초기화 실패: {}", e.getMessage(), e);
         }
     }
 }
