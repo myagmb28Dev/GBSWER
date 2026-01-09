@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useAppContext } from '../../App';
 import AddEventModal from '../Calendar/AddEventModal';
 import ViewEventModal from '../Calendar/ViewEventModal';
@@ -14,8 +14,6 @@ const PersonalScheduleBox = () => {
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const year = new Date().getFullYear();
         const month = new Date().getMonth() + 1;
         const userId = profile?.id || profile?.userId || 'unknown';
@@ -28,7 +26,7 @@ const PersonalScheduleBox = () => {
         }
 
         // 캐시에 없으면 API 호출
-        const res = await axios.get(`/api/schedule?year=${year}&month=${month}`, config);
+        const res = await axiosInstance.get(`/api/schedule?year=${year}&month=${month}`);
         let data = res.data?.data || [];
 
         // 백엔드에서 모든 사용자의 일정을 반환하므로 현재 사용자만 필터링
@@ -86,7 +84,7 @@ const PersonalScheduleBox = () => {
             }
 
             setSchedulesRefreshing(prev => ({ ...prev, [cacheKey]: true }));
-            const refreshRes = await axios.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {}, config);
+            const refreshRes = await axiosInstance.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {});
             let data = refreshRes.data?.data || [];
 
             // 리프레시된 데이터도 사용자별 필터링

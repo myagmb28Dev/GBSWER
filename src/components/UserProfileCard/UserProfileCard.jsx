@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import EditProfileModal from '../UserProfileModal/EditProfileModal';
 import './UserProfileCard.css';
 
@@ -10,10 +10,7 @@ const UserProfileCard = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/user/profile', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get('/api/user/profile');
         setProfile(res.data?.data || res.data || null);
       } catch (err) {
         console.error('프로필 불러오기 실패:', err?.response?.data || err.message);

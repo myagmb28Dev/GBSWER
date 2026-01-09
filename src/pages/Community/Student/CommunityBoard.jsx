@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import { Plus } from "lucide-react";
 import CommunityWriteModal from "../../../components/CommunityWriteModal/CommunityWriteModal";
 import ReadPostModal from "./ReadPostModal";
@@ -22,17 +22,13 @@ const CommunityBoard = () => {
   // 프로필이 없으면 자동으로 로드
   useEffect(() => {
     if (!profile) {
-      console.log('🔄 프로필이 없어서 자동으로 로드합니다...');
       fetchProfile();
     }
   }, [profile, fetchProfile]);
 
   const fetchPosts = useCallback(async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.get(`/api/community/?page=${currentPage - 1}&size=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get(`/api/community/?page=${currentPage - 1}&size=10`);
       const postsData = Array.isArray(res.data) ? res.data : (res.data?.data?.content || []);
       
       // 익명 게시물 처리 (bit(1) 타입 고려)
@@ -66,73 +62,20 @@ const CommunityBoard = () => {
 
   const postsPerPage = 10;
 
-  // 학생 유저의 학과 정보 추출 (프로필 모달의 major 필드 사용)
-  const getUserMajor = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        console.warn('⚠️ 토큰이 없습니다.');
-        return 'ALL';
-      }
-
-      // 항상 API에서 최신 프로필 데이터 가져오기
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('/api/user/profile', config);
-      const profileData = res.data.data;
-      
-      console.log('🔍 프로필 원본 데이터:', profileData);
-      
-      // 다양한 필드명에서 학과 정보 추출
-      const major = profileData.major || profileData.department || profileData.majorName || profileData.dept || profileData.majorTitle || '';
-      const trimmedMajor = major ? String(major).trim() : '';
-      
-      console.log('🔍 추출된 학과 (trim 전):', major);
-      console.log('🔍 추출된 학과 (trim 후):', trimmedMajor);
-      
-      if (trimmedMajor && trimmedMajor !== '' && trimmedMajor !== 'ALL' && trimmedMajor !== 'null' && trimmedMajor !== 'undefined') {
-        console.log('✅ 최종 학과:', trimmedMajor);
-        return trimmedMajor;
-      } else {
-        console.warn('⚠️ 학과 정보를 찾을 수 없습니다.');
-        console.warn('⚠️ 프로필 전체 데이터:', JSON.stringify(profileData, null, 2));
-        return 'ALL';
-      }
-    } catch (err) {
-      console.error('❌ 프로필 조회 실패:', err);
-      console.error('❌ 에러 상세:', err.response?.data || err.message);
-      return 'ALL';
-    }
-  };
 
   const handleWritePost = async (postData) => {
     // 새 글 작성 후 목록 새로고침
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
-      // 사용자 학과 정보 추출 (프로필 모달의 major 필드에서)
-      const userMajor = await getUserMajor();
-      
-      if (!userMajor || userMajor === 'ALL') {
-        alert('학과 정보를 찾을 수 없습니다. 프로필을 확인해주세요.');
-        return;
-      }
-
-
       const form = new FormData();
       
-      // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+      // 학생 계정: major 필드를 보내지 않음 (백엔드에서 자동으로 학생의 학과로 설정)
       const dto = {
         title: postData.title || '',
         content: postData.content || '',
-        major: userMajor,
         anonymous: Boolean(postData.anonymous ?? false)
       };
-      console.log('📤 Community Write DTO:', dto);
-      console.log('📤 전송되는 학과:', userMajor);
+      // major 필드를 추가하지 않음 - 백엔드에서 자동으로 학생의 학과로 설정됨
+      
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       form.append('dto', dtoBlob);
 
@@ -144,20 +87,7 @@ const CommunityBoard = () => {
       }
       
       // 게시글 작성 API 호출
-      await axios.post('/api/community/write', form, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
-
-      // localStorage에 저장 (새로고침 후에도 확인 가능)
-      localStorage.setItem('lastCommunityMajor', userMajor);
-      localStorage.setItem('lastCommunitySubmitTime', new Date().toISOString());
-      localStorage.setItem('lastCommunityDTO', JSON.stringify(dto));
-
-      // 제출 성공 후 학과 정보 표시 (새로고침 전에 확인 가능)
-      alert(`✅ 게시글이 작성되었습니다!\n\n전송된 학과: ${userMajor}\n\n확인 후 페이지가 새로고침됩니다.`);
+      await axiosInstance.post('/api/community/write', form);
       
       // 작성 완료 후 페이지 새로고침으로 최신 데이터 반영
       setShowWriteModal(false);

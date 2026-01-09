@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../App';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import ViewEventModal from '../Calendar/ViewEventModal';
 import './WeeklySchedule.css';
 
@@ -14,8 +14,6 @@ const WeeklySchedule = () => {
   useEffect(() => {
     const fetchServerSchedules = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const year = new Date().getFullYear();
         const month = new Date().getMonth() + 1;
         const key = `${year}-${month}`;
@@ -29,7 +27,7 @@ const WeeklySchedule = () => {
         if (cachedSchedules && cachedSchedules[key] === undefined) {
           console.log('🔄 캐시 무효화됨, 최신 데이터 불러오기');
         }
-        const res = await axios.get(`/api/schedule?year=${year}&month=${month}`, config);
+        const res = await axiosInstance.get(`/api/schedule?year=${year}&month=${month}`);
         console.log('📥 학사일정 API 응답:', res.data);
         const scheduleData = res.data?.data || [];
         console.log('학사일정 데이터 개수:', scheduleData.length);
@@ -41,8 +39,6 @@ const WeeklySchedule = () => {
       } catch (err) {
         if (err.response && err.response.status === 404) {
           try {
-            const token = localStorage.getItem('accessToken');
-            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
             const year = new Date().getFullYear();
             const month = new Date().getMonth() + 1;
             const key = `${year}-${month}`;
@@ -61,7 +57,7 @@ const WeeklySchedule = () => {
 
             setSchedulesRefreshing(prev => ({ ...prev, [key]: true }));
             console.log('🔄 학사일정 리프레시 시도:', `/api/schedule/refresh-month?year=${year}&month=${month}`);
-            const refreshRes = await axios.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {}, config);
+            const refreshRes = await axiosInstance.post(`/api/schedule/refresh-month?year=${year}&month=${month}`, {});
             console.log('리프레시 API 응답:', refreshRes.data);
             const data = refreshRes.data?.data || [];
             console.log('리프레시 후 일정 개수:', data.length);
@@ -202,9 +198,7 @@ const WeeklySchedule = () => {
       }
 
       console.log('🗑️ 개인 일정 DB 삭제 시도:', eventId);
-      await axios.delete(`/api/schedule/${eventId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/schedule/${eventId}`);
 
       console.log('✅ 개인 일정 DB 삭제 성공');
 
@@ -249,12 +243,7 @@ const WeeklySchedule = () => {
       console.log('📡 API 요청 URL:', `/api/schedule/${eventId}`);
       console.log('🔑 Authorization 헤더:', `Bearer ${token.substring(0, 20)}...`);
 
-      const response = await axios.put(`/api/schedule/${eventId}`, updatePayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axiosInstance.put(`/api/schedule/${eventId}`, updatePayload);
 
       console.log('✅ 개인 일정 DB 수정 성공, 응답:', response.data);
       console.log('🔄 응답 showInSchedule 값:', response.data?.showInSchedule);

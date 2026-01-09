@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './Timetable.css';
 import { useAppContext } from '../../../App';
 
@@ -39,9 +39,7 @@ const Timetable = () => {
 
         const url = `/api/timetable${params}`;
         console.log('Timetable 요청 URL:', url);
-        const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get(url);
         const data = res.data?.data ?? res.data;
         if (Array.isArray(data)) {
           const schedule = data.map(day => (day.periods || []).map(p => p.subjectName || ''));
@@ -85,7 +83,7 @@ const Timetable = () => {
             setTimetableRefreshing && setTimetableRefreshing(prev => ({ ...prev, [key]: true }));
             console.log('Timetable refresh 요청 URL:', `/api/timetable/refresh-week${params}`);
             const token = localStorage.getItem('accessToken');
-            const refreshRes = await axios.post(`/api/timetable/refresh-week${params}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            const refreshRes = await axiosInstance.post(`/api/timetable/refresh-week${params}`, {});
             const data = refreshRes.data?.data ?? refreshRes.data;
               if (Array.isArray(data)) {
                 const schedule = data.map(day => (day.periods || []).map(p => p.subjectName || ''));

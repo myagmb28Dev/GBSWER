@@ -5,7 +5,7 @@ import ClassCreateButton from '../../../components/ClassCreateButton/ClassCreate
 import ClassCard from '../../../components/ClassCard/ClassCard';
 import ClassDetailCard from '../../../components/ClassDetailCard/ClassDetailCard';
 import ClassDetailSidebar from '../../../components/ClassDetailSidebar/ClassDetailSidebar';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './ClassroomBoard.css';
 
 const ClassroomBoard = () => {
@@ -33,9 +33,7 @@ const ClassroomBoard = () => {
     const fetchClasses = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/classes', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get('/api/classes');
         let data = res.data?.data || [];
 
         // eslint-disable-next-line no-console
@@ -84,16 +82,12 @@ const ClassroomBoard = () => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      await axios.post('/api/classes/join', {
+      await axiosInstance.post('/api/classes/join', {
         classCode: classCode
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       // 클래스 목록 새로고침
-      const res = await axios.get('/api/classes', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get('/api/classes');
       const data = res.data?.data || [];
       setClasses(data);
       if (!selectedClass && data.length > 0) setSelectedClass(data[0]);
@@ -140,18 +134,11 @@ const ClassroomBoard = () => {
         formData.append('addToSchedule', submissionData.addToSchedule.toString());
       }
 
-      await axios.post(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.post(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData);
 
       // 게시물 목록 새로고침
       if (selectedClass) {
-        const res = await axios.get('/api/classes', {
-          headers: { Authorization: `Bearer ${token}` }
-      });
+        const res = await axiosInstance.get('/api/classes');
         const data = res.data?.data || [];
         setClasses(data);
         
@@ -200,18 +187,11 @@ const ClassroomBoard = () => {
         });
       }
 
-      await axios.put(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.put(`/api/classes/${selectedClass.id}/posts/${postId}/submit`, formData);
 
       // 게시물 목록 새로고침
       if (selectedClass) {
-        const res = await axios.get('/api/classes', {
-          headers: { Authorization: `Bearer ${token}` }
-      });
+        const res = await axiosInstance.get('/api/classes');
         const data = res.data?.data || [];
         setClasses(data);
         
@@ -256,14 +236,10 @@ const ClassroomBoard = () => {
         return;
       }
 
-      await axios.delete(`/api/classes/${selectedClass.id}/participants/${studentId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/classes/${selectedClass.id}/participants/${studentId}`);
 
       // 클래스 목록 새로고침
-      const res = await axios.get('/api/classes', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get('/api/classes');
       const data = res.data?.data || [];
       setClasses(data);
 

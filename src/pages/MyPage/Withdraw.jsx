@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './Withdraw.css';
 
 const Withdraw = () => {
@@ -11,12 +11,10 @@ const Withdraw = () => {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.delete('/api/user/withdraw', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete('/api/user/withdraw');
       setSuccess(true);
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
     } catch (err) {
       setError('회원 탈퇴에 실패했습니다.');
     }

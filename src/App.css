@@ -1,0 +1,28 @@
+.App {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 페이지 전환 시 부드러운 전환 효과 */
+.page-transition {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 레이아웃 시프트 방지를 위한 최소 높이 설정 */
+.page-container {
+  min-height: calc(100vh - 140px);
+  width: 100%;
+}
+

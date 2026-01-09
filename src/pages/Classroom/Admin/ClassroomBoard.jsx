@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import Header from '../../../components/Header/Header';
 import Footer from '../../../components/Footer/Footer';
 import ClassCreateButton from '../../../components/ClassCreateButton/ClassCreateButton';
@@ -49,9 +49,7 @@ const ClassroomBoard = ({ userRole }) => {
 
         console.log('🔍 클래스 로딩 시도 - userRole:', userRole, 'endpoint:', endpoint);
 
-        const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axiosInstance.get(endpoint);
 
         let data = response.data?.data || [];
         console.log('✅ 로딩된 클래스 수:', data.length);
@@ -120,18 +118,14 @@ const ClassroomBoard = ({ userRole }) => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      await axios.post('/api/classes/create', {
+      await axiosInstance.post('/api/classes/create', {
         className: classData.className,
         classCode: classData.classCode
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       // 클래스 목록 새로고침
       const listEndpoint = userRole === 'admin' ? '/api/classes/admin' : '/api/classes/teacher';
-      const res = await axios.get(listEndpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get(listEndpoint);
       const data = res.data?.data || [];
       setClasses(data);
 
@@ -204,18 +198,11 @@ const ClassroomBoard = ({ userRole }) => {
         }
       }
 
-      await axios.post(`/api/classes/${classId}/posts`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.post(`/api/classes/${classId}/posts`, formData);
 
       // 게시물 목록 새로고침
       if (selectedClass && selectedClass.id === classId) {
-        const postsResponse = await axios.get(`/api/classes/${classId}/posts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const postsResponse = await axiosInstance.get(`/api/classes/${classId}/posts`);
         const updatedPosts = postsResponse.data?.data || [];
 
         setSelectedClass(prev => ({
@@ -271,18 +258,11 @@ const ClassroomBoard = ({ userRole }) => {
         }
       }
 
-      await axios.put(`/api/classes/${classId}/posts/${postId}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.put(`/api/classes/${classId}/posts/${postId}`, formData);
 
       // 게시물 목록 새로고침
       if (selectedClass && selectedClass.id === classId) {
-        const postsResponse = await axios.get(`/api/classes/${classId}/posts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const postsResponse = await axiosInstance.get(`/api/classes/${classId}/posts`);
         const updatedPosts = postsResponse.data?.data || [];
 
         setSelectedClass(prev => ({
@@ -321,15 +301,11 @@ const ClassroomBoard = ({ userRole }) => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      await axios.delete(`/api/classes/${classId}/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/classes/${classId}/posts/${postId}`);
 
       // 게시물 목록 새로고침
       if (selectedClass && selectedClass.id === classId) {
-        const postsResponse = await axios.get(`/api/classes/${classId}/posts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const postsResponse = await axiosInstance.get(`/api/classes/${classId}/posts`);
         const updatedPosts = postsResponse.data?.data || [];
 
         setSelectedClass(prev => ({
@@ -369,15 +345,11 @@ const ClassroomBoard = ({ userRole }) => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      await axios.delete(`/api/classes/${classId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/classes/${classId}`);
 
       // 클래스 목록 새로고침
       const endpoint = userRole === 'admin' ? '/api/classes/admin' : '/api/classes/teacher';
-      const response = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(endpoint);
       const data = response.data?.data || [];
       setClasses(data);
 

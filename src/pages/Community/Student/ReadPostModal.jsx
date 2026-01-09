@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, File, Edit, Trash } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import CommunityWriteModal from '../../../components/CommunityWriteModal/CommunityWriteModal';
 import { useAppContext } from '../../../App';
 
@@ -12,57 +12,16 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     // 프로필이 없으면 자동으로 로드
     useEffect(() => {
         if (!profile && isOpen) {
-            console.log('🔄 프로필이 없어서 자동으로 로드합니다...');
             fetchProfile();
         }
     }, [profile, isOpen, fetchProfile]);
 
-    // 학생 유저의 학과 정보 추출 (프로필 모달의 major 필드 사용)
-    const getUserMajor = async () => {
-        try {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                console.warn('⚠️ 토큰이 없습니다.');
-                return 'ALL';
-            }
-
-            // 항상 API에서 최신 프로필 데이터 가져오기
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            const res = await axios.get('/api/user/profile', config);
-            const profileData = res.data.data;
-            
-            console.log('🔍 프로필 원본 데이터:', profileData);
-            
-            // 다양한 필드명에서 학과 정보 추출
-            const major = profileData.major || profileData.department || profileData.majorName || profileData.dept || profileData.majorTitle || '';
-            const trimmedMajor = major ? String(major).trim() : '';
-            
-            console.log('🔍 추출된 학과 (trim 전):', major);
-            console.log('🔍 추출된 학과 (trim 후):', trimmedMajor);
-            
-            if (trimmedMajor && trimmedMajor !== '' && trimmedMajor !== 'ALL' && trimmedMajor !== 'null' && trimmedMajor !== 'undefined') {
-                console.log('✅ 최종 학과:', trimmedMajor);
-                return trimmedMajor;
-            } else {
-                console.warn('⚠️ 학과 정보를 찾을 수 없습니다.');
-                console.warn('⚠️ 프로필 전체 데이터:', JSON.stringify(profileData, null, 2));
-                return 'ALL';
-            }
-        } catch (err) {
-            console.error('❌ 프로필 조회 실패:', err);
-            console.error('❌ 에러 상세:', err.response?.data || err.message);
-            return 'ALL';
-        }
-    };
 
     useEffect(() => {
         const fetchPost = async () => {
             if (!isOpen || !post?.id) return;
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await axios.get(`/api/community/${post.id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await axiosInstance.get(`/api/community/${post.id}`);
                 setPostData(res.data.data);
             } catch (err) {
                 // 조회 실패 시 무시
@@ -71,6 +30,29 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
 
         fetchPost();
     }, [isOpen, post]);
+
+    // 파일 MIME 타입 가져오기
+    const getMimeType = (fileName) => {
+        if (!fileName) return 'application/octet-stream';
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        const mimeTypes = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'bmp': 'image/bmp',
+            'pdf': 'application/pdf',
+            'zip': 'application/zip',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'txt': 'text/plain',
+        };
+        return mimeTypes[ext] || 'application/octet-stream';
+    };
 
     const handleDownload = async (file) => {
         try {
@@ -96,30 +78,24 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
             } : { responseType: 'blob' };
 
             try {
-                console.log('📥 다운로드 시도:', fileUrl);
-                const response = await axios.get(fileUrl, config);
-                const blob = new Blob([response.data]);
+                const response = await axiosInstance.get(fileUrl, config);
+                
+                // MIME 타입 가져오기
+                const mimeType = getMimeType(fileName);
+                const blob = new Blob([response.data], { type: mimeType });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = fileName;
+                link.style.display = 'none'; // 링크를 숨김
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
             } catch (axiosError) {
-                console.error('Axios 다운로드 실패:', axiosError);
-                // axios로 다운로드 실패 시 직접 링크로 시도
-                const link = document.createElement('a');
-                link.href = fileUrl;
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
             }
         } catch (error) {
-            console.error('파일 다운로드 실패:', error);
             alert('파일 다운로드에 실패했습니다.');
         }
     };
@@ -127,10 +103,7 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     const handleDelete = async () => {
         if (!window.confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const token = localStorage.getItem('accessToken');
-            await axios.delete(`/api/community/${postData.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axiosInstance.delete(`/api/community/${postData.id}`);
             onClose();
             window.location.reload();
         } catch (err) {
@@ -144,28 +117,16 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
 
     const handleEditSubmit = async (updatedPost) => {
         try {
-            const token = localStorage.getItem('accessToken');
-            
-            // 학생은 자신의 학과 정보를 추출 (프로필 모달의 major 필드에서)
-            const userMajor = await getUserMajor();
-            
-            if (!userMajor || userMajor === 'ALL') {
-                alert('학과 정보를 찾을 수 없습니다. 프로필을 확인해주세요.');
-                return;
-            }
-            
-            
             const form = new FormData();
             
-            // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
+            // 학생 계정: major 필드를 보내지 않음 (백엔드에서 자동으로 학생의 학과로 설정)
             const dto = {
                 title: updatedPost.title || '',
                 content: updatedPost.content || '',
-                major: userMajor,
                 anonymous: Boolean(updatedPost.anonymous ?? false)
             };
-            console.log('📤 Community Edit DTO:', dto);
-            console.log('📤 전송되는 학과:', userMajor);
+            // major 필드를 추가하지 않음 - 백엔드에서 자동으로 학생의 학과로 설정됨
+            
             const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
             form.append('dto', dtoBlob);
             
@@ -176,20 +137,7 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 }
             });
             
-            await axios.put(`/api/community/${postData.id}`, form, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                    // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-                }
-            });
-
-            // localStorage에 저장 (새로고침 후에도 확인 가능)
-            localStorage.setItem('lastCommunityMajor', userMajor);
-            localStorage.setItem('lastCommunitySubmitTime', new Date().toISOString());
-            localStorage.setItem('lastCommunityDTO', JSON.stringify(dto));
-
-            // 제출 성공 후 학과 정보 표시 (새로고침 전에 확인 가능)
-            alert(`✅ 게시글이 수정되었습니다!\n\n전송된 학과: ${userMajor}\n\n확인 후 페이지가 새로고침됩니다.`);
+            await axiosInstance.put(`/api/community/${postData.id}`, form);
 
             setShowEditModal(false);
             onClose();

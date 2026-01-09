@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './StudentManagement.css';
 
 const StudentManagement = () => {
@@ -14,10 +14,7 @@ const StudentManagement = () => {
   const fetchStudents = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/student/list?page=${currentPage}&size=${studentsPerPage}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/student/list?page=${currentPage}&size=${studentsPerPage}`);
 
       const studentData = response.data?.data?.content || [];
       setStudents(studentData);
@@ -36,10 +33,7 @@ const StudentManagement = () => {
 
   const fetchStudentProfile = async (studentId) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/student/${studentId}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/student/${studentId}/profile`);
 
       setSelectedStudent(response.data?.data);
     } catch (error) {

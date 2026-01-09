@@ -10,7 +10,8 @@ import CommunityBoardAdmin from "./pages/Community/Admin/CommunityBoard";
 import ClassroomBoardAdmin from "./pages/Classroom/Admin/ClassroomBoard";
 import Login from "./pages/Login/Login";
 import EditProfileModal from "./components/UserProfileModal/EditProfileModal";
-import axios from "axios";
+import axiosInstance from "./api/axiosInstance";
+import './App.css';
 
 const AppContext = createContext();
 export const useAppContext = () => {
@@ -67,13 +68,12 @@ function App() {
     };
 
     try {
-      const res = await axios.get('/api/user/profile');
+      const res = await axiosInstance.get('/api/user/profile');
       let data = res.data.data;
-      console.log('프로필 API 응답:', res.data);
       // 프로필 이미지가 없으면 기본 이미지로 설정
       if (!data.profileImage) {
         try {
-          await axios.delete('/api/user/profile-image');
+          await axiosInstance.delete('/api/user/profile-image');
         } catch (err) {}
         data.profileImage = '/profile.png';
       }
@@ -122,7 +122,6 @@ function App() {
         localStorage.removeItem('selectedUserRole');
       }
     } catch (err) {
-      console.error('프로필 불러오기 실패:', err?.response?.data || err.message);
       // 프로필을 불러오지 못하면 null로 설정 (더 이상 localStorage fallback 사용하지 않음)
       setProfile(null);
       // 프로필 조회 실패 시 임시 role 정보 정리
@@ -131,14 +130,6 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    // set axios default Authorization header when token exists
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-
     // 앱 시작 시 오래된 로컬 프로필 항목 제거 (더 이상 폴백으로 사용하지 않음)
     try {
       localStorage.removeItem('profile');
@@ -175,14 +166,12 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        await fetch('/api/user/logout', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
-    } catch (err) {}
+      // 서버에서 Refresh Token 삭제
+      await axiosInstance.post('/api/user/logout');
+    } catch (err) {
+      // 로그아웃 API 실패해도 클라이언트에서는 로그아웃 처리
+    }
+    // 클라이언트 토큰 삭제
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userRole');
@@ -236,7 +225,9 @@ function App() {
   return (
     <AppContext.Provider value={contextValue}>
       <div className="App">
-        {renderCurrentPage()}
+        <div className="page-transition">
+          {renderCurrentPage()}
+        </div>
         {showProfileModal && profile && (
           <EditProfileModal 
             profile={profile}

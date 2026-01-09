@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import PasswordConfirmModal from './PasswordConfirmModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import { useAppContext } from '../../App';
@@ -47,10 +47,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
 
   const handleDefaultProfile = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.delete('/api/user/profile-image', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete('/api/user/profile-image');
       setPreviewImage('/profile-icon.svg');
       setFormData(prev => ({ ...prev, profileImage: null }));
     } catch (err) {
@@ -60,7 +57,6 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('accessToken');
     // 변경사항이 없는 경우 (이메일만 수정 가능)
     const isImageChanged = formData.profileImage && formData.profileImage !== profile.profileImage;
     const isOtherChanged = formData.email !== profile.email;
@@ -73,12 +69,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
       try {
         const form = new FormData();
         form.append('profileImage', formData.profileImage);
-        await axios.put('/api/user/profile-image', form, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await axiosInstance.put('/api/user/profile-image', form);
         onSave({ ...profile, profileImage: previewImage });
         onClose();
       } catch (err) {
@@ -94,17 +85,11 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handlePasswordConfirmed = async () => {
     if (pendingData) {
       try {
-        const token = localStorage.getItem('accessToken');
         // If profileImage is a File, upload it first via multipart
         if (pendingData.profileImage && pendingData.profileImage instanceof File) {
           const form = new FormData();
           form.append('profileImage', pendingData.profileImage);
-          await axios.put('/api/user/profile-image', form, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          });
+          await axiosInstance.put('/api/user/profile-image', form);
         }
 
         // 이메일만 서버로 전송 (학적 정보는 제외)
@@ -112,9 +97,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
           email: pendingData.email
         };
 
-        await axios.put('/api/user/profile', payload, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axiosInstance.put('/api/user/profile', payload);
 
         onSave({ ...profile, email: pendingData.email, profileImage: previewImage });
         onClose();

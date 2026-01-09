@@ -1,7 +1,30 @@
 import { X, File, Trash2, Edit } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 
 const ReadPostModal = ({ isOpen, onClose, post, onDelete, isAdmin, onEdit }) => {
+
+    // 파일 MIME 타입 가져오기
+    const getMimeType = (fileName) => {
+        if (!fileName) return 'application/octet-stream';
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        const mimeTypes = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'bmp': 'image/bmp',
+            'pdf': 'application/pdf',
+            'zip': 'application/zip',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'txt': 'text/plain',
+        };
+        return mimeTypes[ext] || 'application/octet-stream';
+    };
 
     const handleDownload = async (file) => {
         try {
@@ -19,35 +42,28 @@ const ReadPostModal = ({ isOpen, onClose, post, onDelete, isAdmin, onEdit }) => 
                 fileUrl = `${window.location.origin}${fileUrl}`;
             }
 
-            // 토큰이 필요한 경우를 대비해 axios로 다운로드
-            const token = localStorage.getItem('accessToken');
-            const config = token ? { 
-                headers: { Authorization: `Bearer ${token}` },
-                responseType: 'blob'
-            } : { responseType: 'blob' };
+            // axiosInstance로 다운로드
+            const config = { responseType: 'blob' };
 
             try {
                 console.log('📥 다운로드 시도:', fileUrl);
-                const response = await axios.get(fileUrl, config);
-                const blob = new Blob([response.data]);
+                const response = await axiosInstance.get(fileUrl, config);
+                
+                // MIME 타입 가져오기
+                const mimeType = getMimeType(fileName);
+                const blob = new Blob([response.data], { type: mimeType });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = fileName;
+                link.style.display = 'none'; // 링크를 숨김
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
             } catch (axiosError) {
                 console.error('Axios 다운로드 실패:', axiosError);
-                // axios로 다운로드 실패 시 직접 링크로 시도
-                const link = document.createElement('a');
-                link.href = fileUrl;
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
             }
         } catch (error) {
             console.error('파일 다운로드 실패:', error);

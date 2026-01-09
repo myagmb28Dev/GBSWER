@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, File, Edit, Trash } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import WritePostModal from './WritePostModal';
 
 const ReadPostModal = ({ isOpen, onClose, post }) => {
@@ -18,20 +18,15 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         const fetchPost = async () => {
             if (!isOpen || !post?.id) return;
             try {
-                const token = localStorage.getItem('accessToken');
                 // 먼저 조회수 증가 API 호출
                 try {
-                    await axios.put(`/api/community/${post.id}/view`, {}, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
+                    await axiosInstance.put(`/api/community/${post.id}/view`, {});
                 } catch (viewErr) {
                     // 404 등 무시하고 계속 진행
                     console.log('조회수 증가 API 호출 실패 (무시):', viewErr);
                 }
                 // 상세 조회
-                const res = await axios.get(`/api/community/${post.id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await axiosInstance.get(`/api/community/${post.id}`);
                 const payload = res.data?.data ?? res.data;
                 console.log('상세 게시글 API 응답 원본:', res.data);
                 console.log('상세 게시글 payload:', payload);
@@ -63,6 +58,29 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
         fetchPost();
     }, [isOpen, post]);
 
+    // 파일 MIME 타입 가져오기
+    const getMimeType = (fileName) => {
+        if (!fileName) return 'application/octet-stream';
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        const mimeTypes = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'bmp': 'image/bmp',
+            'pdf': 'application/pdf',
+            'zip': 'application/zip',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'txt': 'text/plain',
+        };
+        return mimeTypes[ext] || 'application/octet-stream';
+    };
+
     const handleDownload = async (attachment) => {
         try {
             const fileName = attachment.name || '파일';
@@ -79,35 +97,28 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 fileUrl = `${window.location.origin}${fileUrl}`;
             }
 
-            // 토큰이 필요한 경우를 대비해 axios로 다운로드
-            const token = localStorage.getItem('accessToken');
-            const config = token ? { 
-                headers: { Authorization: `Bearer ${token}` },
-                responseType: 'blob'
-            } : { responseType: 'blob' };
+            // axiosInstance로 다운로드
+            const config = { responseType: 'blob' };
 
             try {
                 console.log('📥 다운로드 시도:', fileUrl);
-                const response = await axios.get(fileUrl, config);
-                const blob = new Blob([response.data]);
+                const response = await axiosInstance.get(fileUrl, config);
+                
+                // MIME 타입 가져오기
+                const mimeType = getMimeType(fileName);
+                const blob = new Blob([response.data], { type: mimeType });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = fileName;
+                link.style.display = 'none'; // 링크를 숨김
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
             } catch (axiosError) {
                 console.error('Axios 다운로드 실패:', axiosError);
-                // axios로 다운로드 실패 시 직접 링크로 시도
-                const link = document.createElement('a');
-                link.href = fileUrl;
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
             }
         } catch (error) {
             console.error('파일 다운로드 실패:', error);
@@ -118,10 +129,7 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
     const handleDelete = async () => {
         if (!window.confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const token = localStorage.getItem('accessToken');
-            await axios.delete(`/api/community/${postData.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axiosInstance.delete(`/api/community/${postData.id}`);
             alert('삭제되었습니다.');
             onClose();
         } catch (err) {
@@ -135,7 +143,6 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
 
     const handleEditSubmit = async (updatedPost) => {
         try {
-            const token = localStorage.getItem('accessToken');
             const form = new FormData();
             
             // 새로운 API 형식: dto 파트에 JSON 문자열로 전송 (Blob으로 변환하여 Content-Type 명시)
@@ -154,12 +161,7 @@ const ReadPostModal = ({ isOpen, onClose, post }) => {
                 form.append('files', att.file);
             });
             
-            await axios.put(`/api/community/${postData.id}`, form, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                    // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-                }
-            });
+            await axiosInstance.put(`/api/community/${postData.id}`, form);
             alert('수정되었습니다.');
             setShowEditModal(false);
             onClose();

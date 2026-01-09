@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserX, UserCheck } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './AdminParticipantsModal.css';
 
 const AdminParticipantsModal = ({ isOpen, onClose, className, classId, participants }) => {
@@ -10,10 +10,7 @@ const AdminParticipantsModal = ({ isOpen, onClose, className, classId, participa
   const fetchParticipants = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/classes/${classId}/participants`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/classes/${classId}/participants`);
 
       setParticipantsList(response.data?.data || []);
     } catch (error) {
@@ -37,10 +34,7 @@ const AdminParticipantsModal = ({ isOpen, onClose, className, classId, participa
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.delete(`/api/classes/${classId}/participants/${studentId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/classes/${classId}/participants/${studentId}`);
 
       // 목록에서 제거
       setParticipantsList(prev => prev.filter(p => p.studentId !== studentId));

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './PasswordConfirmModal.css';
 
 const ChangePasswordModal = ({ onClose, onSave, currentPassword, userEmail }) => {
@@ -29,10 +29,7 @@ const ChangePasswordModal = ({ onClose, onSave, currentPassword, userEmail }) =>
       return;
     }
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.put('/api/user/password', formData, {
-        headers: { Authorization: token ? `Bearer ${token}` : '' }
-      });
+      await axiosInstance.put('/api/user/password', formData);
       onSave(formData.newPassword);
       onClose();
     } catch (err) {

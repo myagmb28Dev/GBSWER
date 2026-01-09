@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './SchoolMealCard.css';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useEffect } from 'react';
 import { useAppContext } from '../../App';
 
@@ -59,9 +59,7 @@ const SchoolMealCard = () => {
           setIsLoading(false);
           return;
         }
-        const res = await axios.get(`/api/meals?year=${year}&month=${month}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
         console.log('SchoolMealCard: GET /api/meals raw response:', res.data);
 
         console.log('SchoolMealCard: Current local date info:');
@@ -195,7 +193,7 @@ const SchoolMealCard = () => {
             setMealsRefreshing(prev => ({ ...prev, [key]: true }));
             try {
             console.log('SchoolMealCard: POST /api/meals/refresh called');
-            const refreshRes = await axios.post(`/api/meals/refresh?year=${year}&month=${month}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            const refreshRes = await axiosInstance.post(`/api/meals/refresh?year=${year}&month=${month}`, {});
             console.log('SchoolMealCard: refresh raw response:', refreshRes.data);
             const resp = refreshRes.data?.data || refreshRes.data || {};
             const todayKey = now.toISOString().slice(0,10);
@@ -274,7 +272,7 @@ const SchoolMealCard = () => {
             return;
             }
             try {
-              const getRes = await axios.get(`/api/meals?year=${year}&month=${month}`, { headers: { Authorization: `Bearer ${token}` } });
+              const getRes = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
               console.log('급식 GET(리프레시 후) 응답 원본:', getRes.data);
               console.log('SchoolMealCard: GET-after-refresh raw response:', getRes.data);
               const getResp = getRes.data?.data ?? getRes.data ?? {};
@@ -388,9 +386,7 @@ const SchoolMealCard = () => {
               return;
             }
             setMealsRefreshing(prev => ({ ...prev, [key]: true }));
-            const refreshRes = await axios.post(`/api/meals/refresh?year=${year}&month=${month}`, {}, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
+            const refreshRes = await axiosInstance.post(`/api/meals/refresh?year=${year}&month=${month}`, {});
             const resp = refreshRes.data?.data || refreshRes.data || {};
             const isoNoDash = `${year}${String(month).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
             const dayNum = String(now.getDate());
@@ -423,7 +419,7 @@ const SchoolMealCard = () => {
             }
             // Otherwise, GET after refresh to try reading DB-populated data
             try {
-              const getRes = await axios.get(`/api/meals?year=${year}&month=${month}`, { headers: { Authorization: `Bearer ${token}` } });
+              const getRes = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
               console.log('급식 GET(리프레시 후) 응답 원본:', getRes.data);
               const getResp = getRes.data?.data ?? getRes.data ?? {};
               let finalRaw = {};

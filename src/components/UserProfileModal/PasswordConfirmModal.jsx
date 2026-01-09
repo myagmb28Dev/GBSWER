@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './PasswordConfirmModal.css';
 
 const PasswordConfirmModal = ({ onClose, onConfirm, currentPassword, userEmail }) => {
@@ -11,11 +11,9 @@ const PasswordConfirmModal = ({ onClose, onConfirm, currentPassword, userEmail }
     e.preventDefault();
     setError('');
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         '/api/user/confirm-password',
-        { password },
-        { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+        { password }
       );
       if (res.status === 200) {
         onConfirm();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './SystemMonitoring.css';
 
 const SystemMonitoring = () => {
@@ -28,9 +28,9 @@ const SystemMonitoring = () => {
 
       // 여러 API를 동시에 호출해서 통계 수집
       const [usersRes, postsRes, classesRes] = await Promise.allSettled([
-        axios.get('/api/user/list?page=0&size=1000', { headers: { Authorization: token } }),
-        axios.get('/api/community/?page=0&size=1000', { headers: { Authorization: token } }),
-        axios.get('/api/classes/admin?page=0&size=1000', { headers: { Authorization: token } })
+        axiosInstance.get('/api/user/list?page=0&size=1000'),
+        axiosInstance.get('/api/community/?page=0&size=1000'),
+        axiosInstance.get('/api/classes/admin?page=0&size=1000')
       ]);
 
       // 사용자 통계

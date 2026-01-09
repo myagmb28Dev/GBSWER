@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
 import ForgotPasswordModal from '../../components/ForgotPasswordModal/ForgotPasswordModal';
@@ -19,21 +19,17 @@ const Login = ({ onLogin }) => {
     }
 
     try {
-      // 테스트용 로그인 (실제 API 없을 때)
-      try {
-        const response = await axios.post('/api/auth/login', {
-          userId: id,
-          password: password
-        });
-        const { accessToken, refreshToken } = response.data.data;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        onLogin(accountType);
-      } catch (apiError) {
-        // API 호출 실패 시 오류 표시
-        console.error('로그인 API 호출 실패:', apiError.response?.data || apiError.message);
-        alert('로그인 실패: API 서버 응답 없음 또는 인증 오류');
-      }
+      const response = await axiosInstance.post('/api/auth/login', {
+        userId: id,
+        password: password
+      });
+      const { accessToken, refreshToken } = response.data.data;
+      
+      // 두 토큰 모두 저장
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      
+      onLogin(accountType);
     } catch (error) {
       alert('로그인 실패: ' + (error.response?.data?.message || '서버 오류'));
     }

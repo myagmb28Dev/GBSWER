@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './StudentManage.css';
 
 const StudentManage = () => {
@@ -9,10 +9,7 @@ const StudentManage = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/students', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get('/api/students');
         setStudents(res.data.data);
       } catch (err) {
         setStudents([]);

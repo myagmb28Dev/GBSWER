@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './ScheduleManagement.css';
 
 const ScheduleManagement = () => {
@@ -13,9 +13,7 @@ const ScheduleManagement = () => {
       setRefreshing(true);
       const token = localStorage.getItem('accessToken');
 
-      const response = await axios.post(`/api/schedule/refresh-month?year=${selectedYear}&month=${selectedMonth}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.post(`/api/schedule/refresh-month?year=${selectedYear}&month=${selectedMonth}`, {});
 
       setLastRefresh(new Date());
       alert(`${selectedYear}년 ${selectedMonth}월 학사일정이 성공적으로 새로고침되었습니다.`);
@@ -32,9 +30,7 @@ const ScheduleManagement = () => {
   const getCurrentMonthSchedule = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/schedule?year=${selectedYear}&month=${selectedMonth}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/schedule?year=${selectedYear}&month=${selectedMonth}`);
 
       console.log('현재 월 일정 조회:', response.data);
       alert(`${selectedYear}년 ${selectedMonth}월 일정을 확인했습니다. (콘솔에서 확인)`);
@@ -47,9 +43,7 @@ const ScheduleManagement = () => {
   const getTodaySchedule = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.get('/api/schedule/today', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get('/api/schedule/today');
 
       console.log('오늘 일정 조회:', response.data);
       alert('오늘 일정을 확인했습니다. (콘솔에서 확인)');

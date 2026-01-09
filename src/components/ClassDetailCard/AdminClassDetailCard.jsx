@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { Users, Plus, Settings, Trash2 } from 'lucide-react';
 import ClassParticipantsModal from '../ClassParticipantsModal/ClassParticipantsModal';
 import AdminParticipantsModal from '../AdminParticipantsModal/AdminParticipantsModal';
@@ -39,10 +39,7 @@ const AdminClassDetailCard = ({
 
     try {
       setLoadingPosts(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/classes/${classId}/posts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/classes/${classId}/posts`);
 
       setPosts(response.data?.data || []);
     } catch (error) {

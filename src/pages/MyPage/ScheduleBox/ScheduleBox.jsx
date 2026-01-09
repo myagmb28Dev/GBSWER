@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import { useAppContext } from '../../../App';
 import AddEventModal from '../../../components/Calendar/AddEventModal';
 import ViewEventModal from '../../../components/Calendar/ViewEventModal';
@@ -82,12 +82,7 @@ const ScheduleBox = () => {
         showInSchedule: eventData.showInSchedule !== undefined ? eventData.showInSchedule : true
       };
 
-      const response = await axios.post('/api/schedule/add', eventPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axiosInstance.post('/api/schedule/add', eventPayload);
 
       // 전역 상태에 추가 (DB에서 저장된 ID 사용)
       const newEvent = {
@@ -139,9 +134,7 @@ const ScheduleBox = () => {
         return;
       }
 
-      await axios.delete(`/api/schedule/${eventId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/schedule/${eventId}`);
 
       // 전역 상태에서 삭제
       const safeGlobalEvents = Array.isArray(globalEvents) ? globalEvents : [];
@@ -183,12 +176,7 @@ const ScheduleBox = () => {
       console.log('🔑 Authorization 헤더:', `Bearer ${token.substring(0, 20)}...`);
       console.log('📦 요청 페이로드:', JSON.stringify(updatePayload, null, 2));
 
-      const response = await axios.put(`/api/schedule/${eventId}`, updatePayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axiosInstance.put(`/api/schedule/${eventId}`, updatePayload);
 
       console.log('✅ 마이페이지 일정 수정 성공, 응답:', response.data);
       console.log('🔄 응답 showInSchedule 값:', response.data?.showInSchedule || response.data?.data?.showInSchedule);

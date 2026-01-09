@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import './CommunityManagement.css';
 
 const CommunityManagement = () => {
@@ -22,9 +22,7 @@ const CommunityManagement = () => {
         url = `/api/community/major/${encodeURIComponent(selectedMajor)}?page=${currentPage}&size=${postsPerPage}`;
       }
 
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(url);
 
       setPosts(response.data?.data?.content || []);
       setTotalPages(response.data?.data?.totalPages || 0);
@@ -47,9 +45,7 @@ const CommunityManagement = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.delete(`/api/community/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/community/${postId}`);
 
       alert('게시물이 삭제되었습니다.');
       fetchPosts(); // 목록 새로고침
@@ -75,9 +71,7 @@ const CommunityManagement = () => {
 
       // 선택된 게시물들을 순차적으로 삭제
       for (const post of selectedPosts) {
-        await axios.delete(`/api/community/${post.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axiosInstance.delete(`/api/community/${post.id}`);
       }
 
       alert(`${selectedPosts.length}개의 게시물이 삭제되었습니다.`);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit2, X, Check } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useAppContext } from '../../App';
 import './ClassTimetable.css';
 
@@ -19,8 +19,6 @@ const AdminClassTimetable = ({ userRole }) => {
   useEffect(() => {
     const fetchTimetable = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const now = new Date();
         const dateParam = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
         if (!profile) return;
@@ -68,7 +66,7 @@ const AdminClassTimetable = ({ userRole }) => {
           return;
         }
         console.log('AdminClassTimetable 요청 URL:', `/api/timetable${params}`);
-        const res = await axios.get(`/api/timetable${params}`, config);
+        const res = await axiosInstance.get(`/api/timetable${params}`);
         const data = res.data?.data ?? res.data;
         if (Array.isArray(data)) {
           // API 데이터가 [요일][교시] 구조라고 가정
@@ -164,7 +162,7 @@ const AdminClassTimetable = ({ userRole }) => {
 
             setTimetableRefreshing(prev => ({ ...prev, [key]: true }));
             console.log('AdminClassTimetable refresh 요청 URL:', `/api/timetable/refresh-week${params}`);
-            const refreshRes = await axios.post(`/api/timetable/refresh-week${params}`, {}, config);
+            const refreshRes = await axiosInstance.post(`/api/timetable/refresh-week${params}`, {});
             const data = refreshRes.data?.data ?? refreshRes.data;
             if (Array.isArray(data)) {
               const maxPeriods = Math.max(...data.map(day => day.periods?.length || 0));

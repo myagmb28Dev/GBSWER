@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { File, Plus, Download } from 'lucide-react';
 import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
 import { useAppContext } from '../../App';
@@ -114,11 +114,8 @@ const ClassDetailSidebar = ({
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
       // 학생의 제출 상태 확인 API 호출
-      const response = await axios.get(`/api/classes/${classId}/posts/${selectedPost.id}/my-submission`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/classes/${classId}/posts/${selectedPost.id}/my-submission`);
 
       const submission = response.data?.data || response.data;
       console.log('📋 제출 상태 확인 응답:', submission);
@@ -295,6 +292,29 @@ const ClassDetailSidebar = ({
     return `/${url}`;
   };
 
+  // 파일 MIME 타입 가져오기
+  const getMimeType = (fileName) => {
+    if (!fileName) return 'application/octet-stream';
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const mimeTypes = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+      'svg': 'image/svg+xml',
+      'bmp': 'image/bmp',
+      'pdf': 'application/pdf',
+      'zip': 'application/zip',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'txt': 'text/plain',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  };
+
   // 파일 다운로드 함수
   const handleDownload = async (file) => {
     try {
@@ -321,27 +341,24 @@ const ClassDetailSidebar = ({
         const downloadUrl = fileUrl.startsWith('http') ? fileUrl : `${window.location.origin}${fileUrl}`;
         console.log('📥 다운로드 시도:', downloadUrl);
         
-        const response = await axios.get(downloadUrl, config);
-        const blob = new Blob([response.data]);
+        const response = await axiosInstance.get(downloadUrl, config);
+        
+        // MIME 타입 가져오기
+        const mimeType = getMimeType(fileName);
+        const blob = new Blob([response.data], { type: mimeType });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = fileName;
+        link.style.display = 'none'; // 링크를 숨김
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } catch (axiosError) {
         console.error('Axios 다운로드 실패:', axiosError);
-        // axios로 다운로드 실패 시 직접 링크로 시도 (절대 URL 사용)
-        const downloadUrl = fileUrl.startsWith('http') ? fileUrl : `${window.location.origin}${fileUrl}`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // axios로 다운로드 실패 시 직접 링크로 시도하지 않고 에러 표시
+        alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
       console.error('파일 다운로드 실패:', error);

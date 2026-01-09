@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { Trash2, File, X, Upload } from 'lucide-react';
 import AssignmentStatusModal from '../AssignmentStatusModal/AssignmentStatusModal';
 import SubmissionReviewModal from '../SubmissionReviewModal/SubmissionReviewModal';
@@ -35,9 +35,7 @@ const AdminClassDetailSidebar = ({
       // 1. 클래스의 모든 참가자 목록 가져오기
       let allParticipants = [];
       try {
-        const participantsResponse = await axios.get(`/api/classes/${classId}/participants`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const participantsResponse = await axiosInstance.get(`/api/classes/${classId}/participants`);
         allParticipants = participantsResponse.data?.data || [];
         console.log('👥 클래스 참가자 목록:', allParticipants);
       } catch (error) {
@@ -45,9 +43,7 @@ const AdminClassDetailSidebar = ({
       }
 
       // 2. 제출 현황 가져오기
-      const response = await axios.get(`/api/classes/${classId}/posts/${selectedPost.id}/submissions`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/classes/${classId}/posts/${selectedPost.id}/submissions`);
 
       console.log('📋 제출 현황 API 응답:', response.data);
       
@@ -445,15 +441,9 @@ const AdminClassDetailSidebar = ({
         data: apiReviewData
       });
       
-      await axios.post(
+      await axiosInstance.post(
         `/api/classes/${classId}/posts/${selectedPost.id}/submissions/${selectedSubmission.id}/review`, 
-        apiReviewData, 
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        apiReviewData
       );
 
       alert('평가가 저장되었습니다.');

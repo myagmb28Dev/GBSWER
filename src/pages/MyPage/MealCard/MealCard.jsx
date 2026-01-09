@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import { useAppContext } from '../../../App';
 import './MealCard.css';
 
@@ -57,9 +57,7 @@ const MealCard = () => {
 
         // try GET first
         try {
-          const res = await axios.get(`/api/meals?year=${year}&month=${month}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const res = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
           console.log('MealCard: GET /api/meals raw response:', res.data);
           const respData = res.data?.data ?? res.data ?? {};
           // backend returns map YYYY-MM-DD -> DayMealsDto
@@ -87,7 +85,7 @@ const MealCard = () => {
             setMealsRefreshing && setMealsRefreshing(prev => ({ ...prev, [key]: true }));
             try {
               console.log('MealCard: POST /api/meals/refresh called');
-              const refreshRes = await axios.post(`/api/meals/refresh?year=${year}&month=${month}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+              const refreshRes = await axiosInstance.post(`/api/meals/refresh?year=${year}&month=${month}`, {});
               console.log('MealCard: refresh raw response:', refreshRes.data);
               const resp = refreshRes.data?.data ?? refreshRes.data ?? {};
               // Normalize refresh response: if it's a month-map, map entire month and cache it.
@@ -133,7 +131,7 @@ const MealCard = () => {
               }
               // else try GET-after-refresh
               try {
-                const getAfter = await axios.get(`/api/meals?year=${year}&month=${month}`, { headers: { Authorization: `Bearer ${token}` } });
+                const getAfter = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
                 console.log('MealCard: GET-after-refresh raw response:', getAfter.data);
                 const getResp = getAfter.data?.data ?? getAfter.data ?? {};
                 let finalDay = {};
@@ -173,9 +171,7 @@ const MealCard = () => {
 
           setMealsRefreshing && setMealsRefreshing(prev => ({ ...prev, [key]: true }));
           try {
-            const refreshRes = await axios.post(`/api/meals/refresh?year=${year}&month=${month}`, {}, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
+            const refreshRes = await axiosInstance.post(`/api/meals/refresh?year=${year}&month=${month}`, {});
             const resp = refreshRes.data?.data ?? refreshRes.data ?? {};
             // Normalize and cache refresh response as month-map when applicable
             let mappedFromRefresh = {};
@@ -227,9 +223,7 @@ const MealCard = () => {
 
             // Otherwise, try GET after refresh as a fallback to read DB-populated data
             try {
-              const getAfter = await axios.get(`/api/meals?year=${year}&month=${month}`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
+              const getAfter = await axiosInstance.get(`/api/meals?year=${year}&month=${month}`);
               const getResp = getAfter.data?.data ?? getAfter.data ?? {};
               let finalDay = {};
               if (getResp && typeof getResp === 'object' && !Array.isArray(getResp)) {

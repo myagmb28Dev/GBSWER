@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -13,10 +13,7 @@ const UserManagement = () => {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`/api/user/list?page=${currentPage}&size=${usersPerPage}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.get(`/api/user/list?page=${currentPage}&size=${usersPerPage}`);
 
       const userData = response.data?.data?.content || [];
       setUsers(userData);
@@ -35,10 +32,7 @@ const UserManagement = () => {
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.put(`/api/user/role/${userId}`, { role: newRole }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.put(`/api/user/role/${userId}`, { role: newRole });
 
       alert('사용자 권한이 변경되었습니다.');
       fetchUsers(); // 목록 새로고침

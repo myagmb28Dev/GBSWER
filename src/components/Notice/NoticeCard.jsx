@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { RefreshCw, Plus } from 'lucide-react';
 import PostWriteModal from '../PostWriteModal/PostWriteModal';
 import { useAppContext } from '../../App';
@@ -31,9 +31,7 @@ const NoticeCard = () => {
       if (isStudent) {
         // 학생은 클래스룸의 공지사항을 가져옴
         try {
-          const classesResponse = await axios.get('/api/classes', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const classesResponse = await axiosInstance.get('/api/classes');
           const classes = classesResponse.data?.data || [];
           
           // 각 클래스의 게시물 중 공지만 추출
@@ -43,9 +41,7 @@ const NoticeCard = () => {
               if (classItem.posts && Array.isArray(classItem.posts) && classItem.posts.length > 0) {
                 posts = classItem.posts;
               } else {
-                const postsResponse = await axios.get(`/api/classes/${classItem.id}/posts`, {
-                  headers: { Authorization: `Bearer ${token}` }
-                });
+                const postsResponse = await axiosInstance.get(`/api/classes/${classItem.id}/posts`);
                 posts = postsResponse.data?.data || [];
               }
               
@@ -94,9 +90,7 @@ const NoticeCard = () => {
       } else {
         // 선생님/관리자는 전역 공지사항
         try {
-          const noticeResponse = await axios.get('/api/classes/notices/today', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const noticeResponse = await axiosInstance.get('/api/classes/notices/today');
           notices = noticeResponse.data?.data || [];
           
           // 공지사항 필터링: 오늘 날짜인 것만
@@ -129,9 +123,7 @@ const NoticeCard = () => {
       if (isStudent) {
         console.log('🎓 학생 계정 확인됨, 과제물 가져오기 시작');
         try {
-          const classesResponse = await axios.get('/api/classes', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const classesResponse = await axiosInstance.get('/api/classes');
           const classes = classesResponse.data?.data || [];
           
           console.log('📚 클래스 목록:', classes.length, '개');
@@ -159,9 +151,7 @@ const NoticeCard = () => {
               } else {
                 // posts가 없으면 별도 API 호출
                 console.log(`  📡 /api/classes/${classItem.id}/posts API 호출 중...`);
-                const postsResponse = await axios.get(`/api/classes/${classItem.id}/posts`, {
-                  headers: { Authorization: `Bearer ${token}` }
-                });
+                const postsResponse = await axiosInstance.get(`/api/classes/${classItem.id}/posts`);
                 posts = postsResponse.data?.data || [];
                 console.log(`  ✅ API 호출로 ${posts.length}개 게시물 가져옴`);
               }

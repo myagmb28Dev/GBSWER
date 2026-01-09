@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import EditProfileModal from '../Modals/EditProfileModal';
 import './ProfileCard.css';
 
@@ -10,10 +10,7 @@ const ProfileCard = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        if (!token) return;
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const res = await axios.get('/api/user/profile', config);
+        const res = await axiosInstance.get('/api/user/profile');
         setProfile(res.data.data);
       } catch (err) {
         setProfile(null);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import { Plus } from "lucide-react";
 import CommunityWriteModal from "../../../components/CommunityWriteModal/CommunityWriteModal";
 import ReadPostModal from "./ReadPostModal";
@@ -21,10 +21,7 @@ const CommunityBoard = () => {
   // Fetch posts from server
   const fetchPosts = useCallback(async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.get(`/api/community/?page=${currentPage - 1}&size=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get(`/api/community/?page=${currentPage - 1}&size=10`);
       const postsData = Array.isArray(res.data) ? res.data : (res.data?.data?.content || []);
       
       // 익명 게시물 처리 (bit(1) 타입 고려)
@@ -61,12 +58,6 @@ const CommunityBoard = () => {
   const handleWritePost = async (postData) => {
     // 새 글 작성 후 목록 새로고침
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
       const form = new FormData();
       
       // 관리자는 선택한 targetMajor를 사용 (all이면 ALL로 변환)
@@ -79,7 +70,6 @@ const CommunityBoard = () => {
         major: major,
         anonymous: Boolean(postData.anonymous ?? false)
       };
-      console.log('📤 Community Write DTO:', dto);
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       form.append('dto', dtoBlob);
       
@@ -91,12 +81,7 @@ const CommunityBoard = () => {
       }
 
       // 게시글 작성 API 호출
-      await axios.post('/api/community/write', form, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.post('/api/community/write', form);
 
       // 작성 완료 후 페이지 새로고침으로 최신 데이터 반영
       setShowWriteModal(false);
@@ -114,10 +99,7 @@ const CommunityBoard = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.delete(`/api/community/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/api/community/${postId}`);
       // 삭제 완료 후 페이지 새로고침으로 최신 데이터 반영
       setShowReadModal(false);
       window.location.reload();
@@ -142,12 +124,6 @@ const CommunityBoard = () => {
 
   const handleEditSubmit = async (postData) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
       const form = new FormData();
       
       // 관리자는 선택한 targetMajor를 사용 (all이면 ALL로 변환)
@@ -160,7 +136,6 @@ const CommunityBoard = () => {
         major: major,
         anonymous: Boolean(postData.anonymous ?? false)
       };
-      console.log('📤 Community Edit DTO:', dto);
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       form.append('dto', dtoBlob);
 
@@ -172,12 +147,7 @@ const CommunityBoard = () => {
       }
 
       // 게시글 수정 API 호출
-      await axios.put(`/api/community/${editPost.id}`, form, {
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Content-Type은 axios가 자동으로 설정 (boundary 포함)
-        }
-      });
+      await axiosInstance.put(`/api/community/${editPost.id}`, form);
 
       // 수정 완료 후 페이지 새로고침으로 최신 데이터 반영
       setShowWriteModal(false);

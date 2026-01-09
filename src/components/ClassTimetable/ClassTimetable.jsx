@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useAppContext } from '../../App';
 import './ClassTimetable.css';
 
@@ -17,9 +17,6 @@ const ClassTimetable = () => {
 
   useEffect(() => {
     const fetchTimetable = async () => {
-      const token = localStorage.getItem('accessToken');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
       // 날짜 계산
       const now = new Date();
       const dateParam = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
@@ -78,7 +75,7 @@ const ClassTimetable = () => {
         }
 
         console.log('ClassTimetable 요청 URL:', `/api/timetable${params}`);
-        const res = await axios.get(`/api/timetable${params}`, config);
+        const res = await axiosInstance.get(`/api/timetable${params}`);
         const data = res.data?.data ?? res.data;
         console.log('시간표 API 응답:', data);
 
@@ -159,7 +156,7 @@ const ClassTimetable = () => {
 
             setTimetableRefreshing(prev => ({ ...prev, [key]: true }));
             console.log('ClassTimetable refresh 요청 URL:', `/api/timetable/refresh-week${params}`);
-            const refreshRes = await axios.post(`/api/timetable/refresh-week${params}`, {}, config);
+            const refreshRes = await axiosInstance.post(`/api/timetable/refresh-week${params}`, {});
             const data = refreshRes.data?.data ?? refreshRes.data;
             if (Array.isArray(data)) {
               const maxPeriods = Math.max(...data.map(day => day.periods?.length || 0));

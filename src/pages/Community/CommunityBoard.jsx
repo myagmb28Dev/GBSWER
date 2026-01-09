@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { Plus } from "lucide-react";
 import WritePostModal from "./WritePostModal";
 import ReadPostModal from "./ReadPostModal";
@@ -15,10 +15,7 @@ const CommunityBoard = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const res = await axios.get('/api/community/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axiosInstance.get('/api/community/');
         const payload = res.data?.data ?? res.data;
         // API 명세서 기준: CommunityDto { id, title, content, writer, createdAt, viewCount, major, files, anonymous }
         const mapCommunity = (item) => ({
@@ -53,10 +50,7 @@ const CommunityBoard = () => {
   const handleWritePost = async (newPost) => {
     // 새 글 작성 후 목록 새로고침
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.get('/api/community/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axiosInstance.get('/api/community/');
       setPosts(res.data.data);
       setShowWriteModal(false);
       setCurrentPage(1);

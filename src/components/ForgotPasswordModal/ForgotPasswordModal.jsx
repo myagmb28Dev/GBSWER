@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './ForgotPasswordModal.css';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
@@ -22,7 +22,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
 
     try {
       // 비밀번호 재설정 코드 전송
-      await axios.post('/api/user/password/reset/send-code', { email });
+      await axiosInstance.post('/api/user/password/reset/send-code', { email });
       setStep('code');
     } catch (err) {
       console.error('인증 코드 전송 실패:', err?.response?.data || err.message);
@@ -41,7 +41,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
 
     try {
       // 이메일 인증 및 임시 비밀번호 발급
-      const response = await axios.post('/api/user/password/reset/verify', {
+      const response = await axiosInstance.post('/api/user/password/reset/verify', {
         email,
         code: verificationCode
       });
@@ -69,7 +69,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
 
     try {
       // 비밀번호 재설정
-      await axios.post('/api/user/password/reset/verify', {
+      await axiosInstance.post('/api/user/password/reset/verify', {
         email,
         tempPassword,
         newPassword,
