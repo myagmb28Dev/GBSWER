@@ -1,70 +1,108 @@
-# Getting Started with Create React App
+# GBSWER - 학교 통합 관리 시스템
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+GBSWER는 학교의 클래스, 과제, 공지사항, 커뮤니티를 통합으로 관리할 수 있는 웹 기반 플랫폼입니다.
 
-## Available Scripts
+## 주요 기능
 
-In the project directory, you can run:
+### 클래스룸 (Classroom)
+- **클래스 생성 및 관리**: 관리자가 클래스를 생성하고 참여 코드 생성
+- **과제 및 공지사항**: 과제와 공지사항을 작성, 수정, 삭제
+- **과제 현황 관리**: 학생들의 과제 제출 현황 확인
+- **시간표 관리**: 클래스별 시간표 설정 및 수정
+- **참가자 관리**: 클래스 참가자 목록 확인
 
-### `npm start`
+### 커뮤니티 (Community)
+- **게시물 작성**: 자유로운 주제로 게시물 작성
+- **게시물 읽기 및 수정**: 작성한 게시물 조회 및 수정
+- **페이지네이션**: 한 페이지에 8개씩 게시물 표시
+- **조회수 및 작성자 정보**: 게시물의 조회수, 작성자, 작성일 표시
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 마이페이지 (MyPage)
+- **프로필 관리**: 사용자 프로필 정보 확인
+- **개인 일정**: 개인 일정 및 시간표 관리
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 메인 페이지 (Main)
+- **학교 급식**: 학교 급식 정보 표시
+- **공지사항**: 주요 공지사항 표시
+- **일정 관리**: 학교 일정 및 개인 일정 표시
 
-### `npm test`
+## 기술 스택
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Frontend**: React.js
+- **Styling**: CSS3, Tailwind CSS
+- **Icons**: Lucide React
+- **Routing**: React Router
+- **State Management**: React Hooks (useState, useEffect)
 
-### `npm run build`
+## 설치 및 실행
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 필수 요구사항
+- Node.js (v14 이상)
+- npm 또는 yarn
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 설치
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 개발 서버 실행
+```bash
+npm start
+```
+브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.
 
-### `npm run eject`
+### 프로덕션 빌드
+```bash
+npm run build
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 프로젝트 구조
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── components/          # 재사용 가능한 컴포넌트
+│   ├── Header/         # 헤더
+│   ├── Footer/         # 푸터
+│   ├── ClassCard/      # 클래스 카드
+│   ├── ClassDetailCard/    # 클래스 상세 정보
+│   ├── ClassDetailSidebar/ # 클래스 사이드바
+│   ├── AdminClassModal/    # 클래스 생성 모달
+│   ├── ClassTimetable/     # 시간표
+│   └── ...
+├── pages/              # 페이지 컴포넌트
+│   ├── Main/          # 메인 페이지
+│   ├── Classroom/     # 클래스룸 페이지
+│   ├── Community/     # 커뮤니티 페이지
+│   ├── MyPage/        # 마이페이지
+│   └── ...
+├── mocks/             # 모의 데이터
+├── utils/             # 유틸리티 함수
+├── App.js             # 메인 앱 컴포넌트
+└── index.js           # 진입점
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 주요 페이지
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 클래스룸 (관리자)
+- 클래스 목록 및 선택
+- 과제/공지사항 작성 및 관리
+- 학생 참가자 관리
+- 시간표 설정
 
-## Learn More
+### 커뮤니티
+- 게시물 목록 (페이지당 8개)
+- 게시물 작성
+- 게시물 상세 조회
+- 게시물 수정
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 마이페이지
+- 프로필 정보
+- 개인 일정 및 시간표
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 최근 업데이트
 
-### Code Splitting
+- 커뮤니티 페이지 재구성 (페이지당 8개 게시물)
+- 클래스 상세 사이드바 수정 모드 개선
+- AdminClassModal 단일 박스 구조로 통합
+- 과제 수용 범위(기한/무제한) 선택 기능 추가
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
