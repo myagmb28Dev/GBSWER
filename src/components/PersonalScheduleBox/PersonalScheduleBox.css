@@ -83,19 +83,19 @@
 
 .personal-schedule-list::-webkit-scrollbar-track,
 .school-schedule-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
   border-radius: 3px;
 }
 
 .personal-schedule-list::-webkit-scrollbar-thumb,
 .school-schedule-list::-webkit-scrollbar-thumb {
-  background: #4DC4AB;
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 3px;
 }
 
 .personal-schedule-list::-webkit-scrollbar-thumb:hover,
 .school-schedule-list::-webkit-scrollbar-thumb:hover {
-  background: #3DB599;
+  background: rgba(0, 0, 0, 1.0);
 }
 
 .category-label {

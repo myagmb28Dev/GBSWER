@@ -129,12 +129,12 @@
 }
 
 .class-grid::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 3px;
 }
 
 .class-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 1.0);
 }
 
 .empty-class-list {

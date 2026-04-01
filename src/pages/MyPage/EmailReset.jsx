@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './EmailReset.css';
 
 const EmailReset = () => {
@@ -12,7 +12,7 @@ const EmailReset = () => {
     setLoading(true);
     setMessage('');
     try {
-      await axios.post('/api/auth/email-reset', { email });
+      await axiosInstance.post('/api/auth/email-reset', { email });
       setMessage('이메일 인증/비밀번호 재설정 메일이 발송되었습니다.');
     } catch (err) {
       setMessage('메일 발송에 실패했습니다.');

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../../App';
 
 function Header() {
-    const { setCurrentPage, handleLogout, userRole } = useAppContext();
+    const { setCurrentPage, handleLogout, userRole, profile } = useAppContext();
     const [showLogoutMenu, setShowLogoutMenu] = useState(false);
 =======
 import React, { useState, useRef, useEffect } from 'react';
@@ -92,9 +92,9 @@ function Header() {
                 <div className="profile-menu" ref={profileBoxRef}>
 >>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
                     <img 
-                        src="/profile.png" 
-                        alt="프로필" 
-                        className="profile" 
+                        src={profile && profile.profileImage ? profile.profileImage : '/profile.png'}
+                        alt="프로필"
+                        className="profile"
                         onClick={handleProfileClick}
                     />
 <<<<<<< HEAD

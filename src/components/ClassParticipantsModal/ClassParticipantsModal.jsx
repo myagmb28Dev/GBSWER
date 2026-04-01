@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import './ClassParticipantsModal.css';
 
 const ClassParticipantsModal = ({ 

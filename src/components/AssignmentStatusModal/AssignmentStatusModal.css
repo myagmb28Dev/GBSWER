@@ -155,6 +155,22 @@
   background: #f0f0f0;
 }
 
+.participant-item.clickable {
+  cursor: pointer;
+}
+
+.participant-item.clickable:hover {
+  background: #e8f5f0;
+  border: 1px solid #4DC4AB;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
 .participant-info {
   display: flex;
   align-items: center;
@@ -202,6 +218,11 @@
   color: #4DC4AB;
 }
 
+.status-badge.reviewed {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
 .status-badge.pending {
   background: rgba(255, 107, 107, 0.1);
   color: #FF6B6B;
@@ -235,17 +256,25 @@
 
 .participants-list::-webkit-scrollbar-thumb {
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: rgba(0, 0, 0, 0.1);
 =======
   background: #4DC4AB;
 >>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
+=======
+  background: rgba(0, 0, 0, 0.8);
+>>>>>>> 7e3d6f31fa82cad99a32fad380cecbf8e089487f
   border-radius: 3px;
 }
 
 .participants-list::-webkit-scrollbar-thumb:hover {
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: rgba(0, 0, 0, 0.15);
 =======
   background: #3db89a;
 >>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
+=======
+  background: rgba(0, 0, 0, 1.0);
+>>>>>>> 7e3d6f31fa82cad99a32fad380cecbf8e089487f
 }

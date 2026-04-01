@@ -195,7 +195,7 @@
 }
 
 .attachments-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
 }
 
@@ -291,4 +291,19 @@
 
 .btn-submit:hover {
   background: #3db89a;
+}
+
+.major-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.major-select:focus {
+  outline: none;
+  border-color: #4DC4AB;
+  box-shadow: 0 0 0 2px rgba(77, 196, 171, 0.1);
 }

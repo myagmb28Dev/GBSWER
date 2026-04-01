@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 import './StudentClassModal.css';
 
 const StudentClassModal = ({ isOpen, onClose, onJoinClass }) => {
@@ -32,6 +31,7 @@ const StudentClassModal = ({ isOpen, onClose, onJoinClass }) => {
     <div className="modal-overlay" onClick={handleClose}>
       <div className="student-class-modal" onClick={(e) => e.stopPropagation()}>
 <<<<<<< HEAD
+<<<<<<< HEAD
         <button className="close-button" onClick={handleClose}>
           <X size={24} />
         </button>
@@ -39,6 +39,11 @@ const StudentClassModal = ({ isOpen, onClose, onJoinClass }) => {
         <h2 className="modal-title">클래스 참여하기</h2>
 =======
 >>>>>>> 81ca26b (커뮤니티 페이지 및 사이드바 수정: 페이지당 8개 게시물, 테이블 크기 조정, 수정 모드 개선)
+=======
+        <div className="modal-header">
+          <h2 className="modal-title">클래스 참여 코드</h2>
+        </div>
+>>>>>>> 7e3d6f31fa82cad99a32fad380cecbf8e089487f
 
         <h2 className="modal-title">클래스 참여하기</h2>
 

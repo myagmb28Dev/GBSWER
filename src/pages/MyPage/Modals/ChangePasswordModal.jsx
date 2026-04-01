@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axiosInstance from '../../../api/axiosInstance';
 import './PasswordConfirmModal.css';
 
 const ChangePasswordModal = ({ onClose, onSave, currentPassword, userEmail }) => {
@@ -16,26 +17,25 @@ const ChangePasswordModal = ({ onClose, onSave, currentPassword, userEmail }) =>
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (formData.oldPassword !== currentPassword) {
-      setError('기존 비밀번호가 일치하지 않습니다.');
-      return;
-    }
-    
+    setError('');
     if (formData.newPassword.length < 4) {
       setError('새 비밀번호는 4자 이상이어야 합니다.');
       return;
     }
-    
     if (formData.newPassword !== formData.confirmPassword) {
       setError('새 비밀번호가 일치하지 않습니다.');
       return;
     }
-
-    onSave(formData.newPassword);
-    onClose();
+    try {
+      await axiosInstance.put('/api/user/password', formData);
+      onSave(formData.newPassword);
+      onClose();
+    } catch (err) {
+      const msg = err?.response?.data?.message || '비밀번호 변경에 실패했습니다.';
+      setError(msg);
+    }
   };
 
   const handleForgotPassword = () => {

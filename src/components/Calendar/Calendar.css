@@ -7,6 +7,25 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: transparent;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.8) transparent;
+}
+
+.calendar-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.calendar-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 3px;
+}
+
+.calendar-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 1.0);
 }
 
 .calendar-header {

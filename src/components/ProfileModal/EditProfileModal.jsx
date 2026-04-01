@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import PasswordConfirmModal from './PasswordConfirmModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import { useAppContext } from '../../App';
@@ -44,10 +44,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
 
   const handleDefaultProfile = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.delete('/api/user/profile-image', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete('/api/user/profile-image');
       setPreviewImage('/profile-icon.svg');
       setFormData(prev => ({ ...prev, profileImage: null }));
     } catch (err) {
@@ -57,10 +54,9 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('accessToken');
-    // 변경사항이 없는 경우
+    // 변경사항이 없는 경우 (이메일만 수정 가능)
     const isImageChanged = formData.profileImage && formData.profileImage !== profile.profileImage;
-    const isOtherChanged = formData.name !== profile.name || formData.email !== profile.email || formData.major !== profile.major || formData.grade !== profile.grade || formData.classNumber !== profile.classNumber;
+    const isOtherChanged = formData.email !== profile.email;
     if (!isImageChanged && !isOtherChanged) {
       alert('변경된 내용이 없습니다.');
       return;
@@ -70,12 +66,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
       try {
         const form = new FormData();
         form.append('profileImage', formData.profileImage);
-        await axios.put('/api/user/profile-image', form, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await axiosInstance.put('/api/user/profile-image', form);
         onSave({ ...profile, profileImage: previewImage });
         onClose();
       } catch (err) {
@@ -91,11 +82,19 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handlePasswordConfirmed = async () => {
     if (pendingData) {
       try {
-        const token = localStorage.getItem('accessToken');
-        await axios.put('/api/user/profile', pendingData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        onSave(pendingData);
+        // If profileImage is a File, upload it first via multipart
+        if (pendingData.profileImage && pendingData.profileImage instanceof File) {
+          const form = new FormData();
+          form.append('profileImage', pendingData.profileImage);
+          await axiosInstance.put('/api/user/profile-image', form);
+        }
+
+        // 이메일만 서버로 전송 (학적 정보는 제외)
+        const payload = {
+          email: pendingData.email
+        };
+        await axiosInstance.put('/api/user/profile', payload);
+        onSave({ ...profile, email: pendingData.email, profileImage: previewImage });
         onClose();
       } catch (err) {
         alert('프로필 정보 수정 실패');
@@ -106,9 +105,7 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
   const handlePasswordChange = async (newPassword) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.put('/api/user/profile', { password: newPassword }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.put('/api/user/profile', { password: newPassword });
       onSave({ password: newPassword });
     } catch (err) {
       alert('비밀번호 변경 실패');
@@ -168,8 +165,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder="이름을 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -190,8 +187,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                 type="text"
                 name="major"
                 value={formData.major}
-                onChange={handleChange}
-                placeholder="학과를 입력하세요"
+                disabled
+                className="disabled-input"
               />
             </div>
 
@@ -202,7 +199,8 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="grade"
                   value={formData.grade}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="3"
                 />
@@ -214,26 +212,15 @@ const EditProfileModal = ({ profile, onClose, onSave }) => {
                   type="number"
                   name="classNumber"
                   value={formData.classNumber}
-                  onChange={handleChange}
+                  disabled
+                  className="disabled-input"
                   min="1"
                   max="4"
                 />
               </div>
             </div>
 
-            <div className="logout-section">
-              <button
-                type="button"
-                className="logout-btn"
-                onClick={() => {
-                  if (window.confirm('로그아웃 하시겠습니까?')) {
-                    handleLogout();
-                  }
-                }}
-              >
-                로그아웃
-              </button>
-            </div>
+            {/* 로그아웃 버튼은 헤더 드롭다운으로 통합됨 - 모달 내 로그아웃 버튼 제거 */}
 
             <div className="modal-buttons-bottom">
               <button

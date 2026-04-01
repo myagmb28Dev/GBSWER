@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './Login.css';
 import Footer from '../../components/Footer/Footer';
 import ForgotPasswordModal from '../../components/ForgotPasswordModal/ForgotPasswordModal';
-import { getMockUserByRole } from '../../mocks/mockUsers';
 
 const Login = ({ onLogin }) => {
   const [id, setId] = useState('');
@@ -20,29 +19,17 @@ const Login = ({ onLogin }) => {
     }
 
     try {
-      // 테스트용 로그인 (실제 API 없을 때)
-      try {
-        const response = await axios.post('/api/auth/login', {
-          userId: id,
-          password: password
-        });
-        const { accessToken, refreshToken } = response.data.data;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        onLogin(accountType);
-      } catch (apiError) {
-        // API 없을 때 테스트 모드로 진행
-        console.log('API 서버 없음. 테스트 모드로 진행합니다.');
-        const testToken = 'test_token_' + Date.now();
-        localStorage.setItem('accessToken', testToken);
-        localStorage.setItem('refreshToken', testToken);
-        
-        // 역할별 임시 사용자 데이터 저장
-        const mockUser = getMockUserByRole(accountType);
-        localStorage.setItem('mockUser', JSON.stringify(mockUser));
-        
-        onLogin(accountType);
-      }
+      const response = await axiosInstance.post('/api/auth/login', {
+        userId: id,
+        password: password
+      });
+      const { accessToken, refreshToken } = response.data.data;
+      
+      // 두 토큰 모두 저장
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      
+      onLogin(accountType);
     } catch (error) {
       alert('로그인 실패: ' + (error.response?.data?.message || '서버 오류'));
     }
